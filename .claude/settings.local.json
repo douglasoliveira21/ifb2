@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(docker --version)",
+      "Bash(where python3 *)",
+      "Bash(where py *)",
+      "Read(//c/Users/Douglas/AppData/Local/Programs/**)",
+      "Bash(where docker *)",
+      "Bash(npx --yes create-next-app@latest frontend --typescript --tailwind --eslint --app --src-dir=false --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(npm run *)",
+      "WebFetch(domain:api.bcb.gov.br)",
+      "Bash(python -m pip --version)",
+      "Bash(python -m venv .venv)",
+      "Bash(\".venv/Scripts/python.exe\" -m pip install --upgrade pip -q)",
+      "Bash(\".venv/Scripts/python.exe\" -m pip install -e \".[dev]\" -q)",
+      "Bash(\".venv/Scripts/python.exe\" -m pytest -v)",
+      "Bash(netstat -ano)",
+      "Bash(tasklist //FI \"PID eq 5568\")",
+      "Bash(where psql *)",
+      "Read(//c/Program Files/PostgreSQL/**)",
+      "Bash(grep -v \"^$\")",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(\".venv/Scripts/python.exe\" -m pytest -q)",
+      "Bash(mkdir -p \"/c/Users/Douglas/Desktop/ifb 2.0/frontend/app/indicadores/[slug]\")",
+      "WebFetch(domain:www3.bcb.gov.br)",
+      "WebFetch(domain:olinda.bcb.gov.br)",
+      "WebFetch(domain:apisidra.ibge.gov.br)",
+      "WebFetch(domain:dadosabertos.bcb.gov.br)",
+      "WebFetch(domain:servicodados.ibge.gov.br)",
+      "WebFetch(domain:terrabrasilis.dpi.inpe.br)",
+      "WebFetch(domain:opendatasus.saude.gov.br)",
+      "WebFetch(domain:dadosabertos.saude.gov.br)",
+      "Bash(mkdir -p \"/c/Users/Douglas/Desktop/ifb 2.0/frontend/app/estados/[uf]\")",
+      "Bash(mkdir -p \"/c/Users/Douglas/Desktop/ifb 2.0/frontend/app/rankings/[slug]\")",
+      "Bash(\".venv/Scripts/python.exe\" -m pytest tests/test_admin_auth.py -v)",
+      "Bash(npx next *)",
+      "Bash(npm install *)",
+      "Bash(npx playwright *)",
+      "Bash(grep -rohE 'href=\\\\{?[`\"]\\\\/[a-zA-Z0-9/$\\\\{\\\\}._-]*' app components)"
+    ]
+  }
+}

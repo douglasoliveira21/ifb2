@@ -1,0 +1,7 @@
+# env files na raiz (usados pelo docker-compose)
+.env
+.env.*
+!.env.example
+
+.DS_Store
+Thumbs.db

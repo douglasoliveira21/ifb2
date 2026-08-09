@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ifb
+      POSTGRES_PASSWORD: ifb
+      POSTGRES_DB: ifb
+    volumes:
+      - ifb_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ifb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://ifb:ifb@db:5432/ifb
+      CORS_ORIGINS: http://localhost:3000
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  # Sincronização sob demanda: docker compose run --rm sync
+  # Em produção (EasyPanel), a mesma imagem roda como um serviço "Cron"
+  # separado com este comando, agendado (ex: diariamente às 04:00) —
+  # ver README para detalhes. Não roda automaticamente com `docker compose up`.
+  sync:
+    build: ./backend
+    profiles: ["tools"]
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://ifb:ifb@db:5432/ifb
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "app.sync.run"]
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  ifb_db_data:

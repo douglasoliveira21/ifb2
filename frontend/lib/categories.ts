@@ -1,0 +1,12 @@
+export const CATEGORY_LABELS: Record<string, string> = {
+  ECONOMIA: "Economia",
+  EMPREGO_RENDA: "Emprego e renda",
+  SAUDE: "Saúde",
+  EDUCACAO: "Educação",
+  SEGURANCA: "Segurança",
+  MEIO_AMBIENTE: "Meio ambiente",
+  INFRAESTRUTURA: "Infraestrutura",
+  CONTAS_PUBLICAS: "Contas públicas",
+};
+
+export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);

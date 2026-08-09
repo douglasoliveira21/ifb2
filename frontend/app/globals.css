@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root {
+  /* Identidade IFB */
+  --color-yellow: #f5c400;
+  --color-ink: #111111;
+  --color-paper: #ffffff;
+  --color-gray-50: #f6f6f3;
+  --color-gray-100: #ececE7;
+  /* #737373 (valor original da identidade) falha WCAG AA (4.37:1) em texto
+     pequeno sobre --color-gray-50 — escurecido levemente para >=4.5:1 em
+     qualquer fundo do site, mantendo a mesma família de cinza. */
+  --color-gray-500: #656565;
+
+  /* Semânticas — sempre acompanhadas de ícone + texto, nunca só cor */
+  --color-positive: #1f7a3d;
+  --color-negative: #b3261e;
+  --color-neutral: #656565;
+}
+
+@theme inline {
+  --color-yellow: var(--color-yellow);
+  --color-ink: var(--color-ink);
+  --color-paper: var(--color-paper);
+  --color-gray-50: var(--color-gray-50);
+  --color-gray-100: var(--color-gray-100);
+  --color-gray-500: var(--color-gray-500);
+  --color-positive: var(--color-positive);
+  --color-negative: var(--color-negative);
+  --color-neutral: var(--color-neutral);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Números grandes — elemento tipográfico primário do IFB */
+.stat-figure {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+/* Foco visível consistente (WCAG 2.4.7) — mesma cor em qualquer fundo,
+   inclusive nos botões amarelos, onde o azul padrão do navegador contrasta mal. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
