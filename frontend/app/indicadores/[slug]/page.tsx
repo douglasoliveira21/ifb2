@@ -54,6 +54,15 @@ export default async function IndicadorPage({ params }: { params: Promise<Params
             </p>
           </div>
           {summary && <ClassificationBadge classification={summary.classification} />}
+          {summary?.last_value !== null && summary?.last_value !== undefined && (
+            <a
+              href={`/api/share/${slug}`}
+              download
+              className="border border-ink px-3 py-1.5 text-xs font-semibold hover:bg-ink hover:text-paper transition"
+            >
+              Baixar imagem
+            </a>
+          )}
         </div>
         {lastPoint && (
           <p className="mt-2 text-sm text-gray-500">Referente a {formatDate(lastPoint.reference_date)}.</p>
