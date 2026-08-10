@@ -172,6 +172,23 @@ XLSX ou simulação de formulário, não um fetch direto): cobertura vacinal,
 IDEB (INEP), homicídios e saneamento (SNIS/SINISA) — cada uma é um conector
 dedicado para uma iteração futura.
 
+### Indicadores por estado
+
+Três dos indicadores do SIDRA (analfabetismo, esperança de vida, mortalidade
+infantil) também são sincronizados **por UF** — o SIDRA aceita nível
+territorial `n3` retornando as 27 UFs de uma vez (`fetch_sidra_series_by_state`
+em `app/sync/ibge_client.py`). PIB per capita (tabela 6784) não tem quebra
+por estado no SIDRA, só nível Brasil.
+
+Isso soma ao desmatamento (9 estados da Amazônia Legal, via INPE) para dar
+conteúdo de verdade a `/estados/[uf]` e ao comparador Estado × Estado —
+antes só desmatamento tinha dado por UF.
+
+A busca por estado é isolada da mesma forma que os indicadores nacionais:
+se a chamada à API falhar antes de processar qualquer UF, vira um registro
+de erro em `sync_runs` em vez de derrubar o resto da sincronização
+(`app/sync/run.py:sync_by_state`).
+
 O sync é idempotente: rodar mais de uma vez não duplica dados, e qualquer
 mudança em um valor já publicado (revisão da fonte) fica registrada em
 `data_revisions` em vez de sobrescrever silenciosamente.

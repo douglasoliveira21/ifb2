@@ -37,7 +37,12 @@ from app.sync.definitions import (
     IndicatorSpec,
     StaticIndicatorMeta,
 )
-from app.sync.ibge_client import drop_future_years, fetch_sidra_series
+from app.sync.ibge_client import (
+    drop_future_years,
+    drop_future_years_by_state,
+    fetch_sidra_series,
+    fetch_sidra_series_by_state,
+)
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.seed_government_periods import seed as seed_government_periods
 from app.sync.seed_states import seed as seed_states
@@ -125,14 +130,53 @@ def sync_bcb_indicator(spec: IndicatorSpec) -> None:
     sync_indicator(spec, fetch_points)
 
 
-def sync_prodes_states() -> None:
-    by_state = fetch_prodes_by_state()
+def _log_fetch_error(meta: IndicatorMeta, started_at: datetime, exc: Exception) -> None:
+    """Registra um SyncRun de erro quando a busca por-estado falha antes de
+    chegar a processar qualquer UF — sem isso, a exceção nunca apareceria
+    em `sync_runs` e a falha ficaria só no stderr."""
+    db = SessionLocal()
+    try:
+        source = get_or_create_source(db, meta.source)
+        db.add(
+            SyncRun(
+                source_id=source.id,
+                started_at=started_at,
+                finished_at=datetime.now(timezone.utc),
+                status=SyncStatus.error,
+                records_processed=0,
+                error_message=str(exc)[:2000],
+            )
+        )
+        db.commit()
+    finally:
+        db.close()
+    print(f"[{meta.slug}/por-estado] ERRO — {exc}", file=sys.stderr)
+
+
+def sync_by_state(
+    meta: IndicatorMeta, fetch_by_state: Callable[[], dict[str, list[SeriesPoint]]]
+) -> None:
+    """Sincroniza o mesmo indicador para cada estado com dado disponível —
+    usado para as séries que trazem as UFs de uma vez (INPE, SIDRA/IBGE).
+    A busca em si é isolada: se falhar, vira um SyncRun de erro em vez de
+    derrubar o restante da sincronização."""
+    started_at = datetime.now(timezone.utc)
+    try:
+        by_state = fetch_by_state()
+    except Exception as exc:  # noqa: BLE001 — mesma regra: uma fonte não derruba as demais
+        _log_fetch_error(meta, started_at, exc)
+        return
+
     for uf, points in by_state.items():
         sync_indicator(
-            DEFORESTATION_LEGAL_AMAZON,
+            meta,
             fetch_points=lambda points=points: points,
             get_location=lambda db, uf=uf: get_state(db, uf),
         )
+
+
+def sync_prodes_states() -> None:
+    sync_by_state(DEFORESTATION_LEGAL_AMAZON, fetch_prodes_by_state)
 
 
 def refresh_summary_view() -> None:
@@ -149,11 +193,25 @@ def main() -> None:
     sync_indicator(DEFORESTATION_LEGAL_AMAZON, fetch_prodes_legal_amazon)
     sync_prodes_states()
     sync_indicator(ALFABETISMO, lambda: fetch_sidra_series(ALFABETISMO_QUERY))
+    sync_by_state(ALFABETISMO, lambda: fetch_sidra_series_by_state(ALFABETISMO_QUERY))
+
     sync_indicator(ESPERANCA_VIDA, lambda: drop_future_years(fetch_sidra_series(ESPERANCA_VIDA_QUERY)))
+    sync_by_state(
+        ESPERANCA_VIDA,
+        lambda: drop_future_years_by_state(fetch_sidra_series_by_state(ESPERANCA_VIDA_QUERY)),
+    )
+
     sync_indicator(
         MORTALIDADE_INFANTIL, lambda: drop_future_years(fetch_sidra_series(MORTALIDADE_INFANTIL_QUERY))
     )
+    sync_by_state(
+        MORTALIDADE_INFANTIL,
+        lambda: drop_future_years_by_state(fetch_sidra_series_by_state(MORTALIDADE_INFANTIL_QUERY)),
+    )
+
     sync_indicator(PIB_PER_CAPITA, lambda: fetch_sidra_series(PIB_PER_CAPITA_QUERY))
+    # PIB per capita (tabela 6784) não tem quebra por estado no SIDRA.
+
     refresh_summary_view()
     print("Materialized view `indicators` atualizada.")
 

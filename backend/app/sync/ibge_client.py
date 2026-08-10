@@ -29,11 +29,22 @@ RETRY_STATUS_CODES = {429, 500, 502, 503, 504}
 _YEAR_RE = re.compile(r"^(19|20)\d{2}$")
 _NO_DATA_MARKERS = {"..", "...", "-", "X", None, ""}
 
+# Códigos numéricos de UF do IBGE -> sigla, conforme retornados no campo
+# D1C/D1N das respostas do SIDRA quando a consulta é feita em nível n3.
+IBGE_UF_CODES: dict[str, str] = {
+    "11": "RO", "12": "AC", "13": "AM", "14": "RR", "15": "PA", "16": "AP", "17": "TO",
+    "21": "MA", "22": "PI", "23": "CE", "24": "RN", "25": "PB", "26": "PE", "27": "AL",
+    "28": "SE", "29": "BA",
+    "31": "MG", "32": "ES", "33": "RJ", "35": "SP",
+    "41": "PR", "42": "SC", "43": "RS",
+    "50": "MS", "51": "MT", "52": "GO", "53": "DF",
+}
+
 
 @dataclass(frozen=True)
 class SidraQuery:
     """Descreve uma consulta SIDRA: tabela, variável e classificações fixas
-    (ex: sexo=Total, faixa etária=15 anos ou mais) — territ. sempre Brasil."""
+    (ex: sexo=Total, faixa etária=15 anos ou mais)."""
 
     table: int
     variable: int
@@ -42,32 +53,58 @@ class SidraQuery:
     classifications: dict[int, int | str] = field(default_factory=dict)
 
 
-def fetch_sidra_series(query: SidraQuery, *, timeout: float = 30.0) -> list[SeriesPoint]:
-    """Busca uma série anual do SIDRA para o Brasil (nível territorial 1).
-    Ignora linhas marcadas pelo IBGE como sem dado ('..', '-', 'X' etc.) —
-    isso nunca deve virar um zero ou um valor inventado."""
+def _build_url(query: SidraQuery, territorial_level: str, territorial_code: str) -> str:
     path_parts = [
         BASE_URL,
         f"t/{query.table}",
-        "n1/1",
+        f"{territorial_level}/{territorial_code}",
         f"v/{query.variable}",
         "p/all",
     ]
     for classification_code, category_code in query.classifications.items():
         path_parts.append(f"c{classification_code}/{category_code}")
-    url = "/".join(path_parts)
+    return "/".join(path_parts)
 
+
+def _get_rows(url: str, *, timeout: float) -> list[dict]:
     for attempt in range(1, MAX_ATTEMPTS + 1):
         response = httpx.get(url, headers=REQUEST_HEADERS, timeout=timeout)
         if response.status_code in RETRY_STATUS_CODES and attempt < MAX_ATTEMPTS:
             time.sleep(2 * attempt)
             continue
         response.raise_for_status()
-        rows = response.json()
-        break
+        return response.json()[1:]  # primeira linha é o cabeçalho/legenda, não dado
+    raise AssertionError("unreachable")
 
+
+def fetch_sidra_series(query: SidraQuery, *, timeout: float = 30.0) -> list[SeriesPoint]:
+    """Busca uma série anual do SIDRA para o Brasil (nível territorial 1).
+    Ignora linhas marcadas pelo IBGE como sem dado ('..', '-', 'X' etc.) —
+    isso nunca deve virar um zero ou um valor inventado."""
+    rows = _get_rows(_build_url(query, "n1", "1"), timeout=timeout)
+    return _rows_to_points(rows)
+
+
+def fetch_sidra_series_by_state(query: SidraQuery, *, timeout: float = 30.0) -> dict[str, list[SeriesPoint]]:
+    """Busca a mesma série por UF (nível territorial 3, todos os estados de
+    uma vez). Retorna um dict sigla -> série; estados sem código IBGE
+    reconhecido são ignorados (não deveria acontecer, é uma checagem de
+    segurança)."""
+    rows = _get_rows(_build_url(query, "n3", "all"), timeout=timeout)
+
+    by_state: dict[str, list[dict]] = {}
+    for row in rows:
+        uf = IBGE_UF_CODES.get(row.get("D1C", ""))
+        if uf is None:
+            continue
+        by_state.setdefault(uf, []).append(row)
+
+    return {uf: _rows_to_points(state_rows) for uf, state_rows in by_state.items()}
+
+
+def _rows_to_points(rows: list[dict]) -> list[SeriesPoint]:
     points: list[SeriesPoint] = []
-    for row in rows[1:]:  # primeira linha é o cabeçalho/legenda, não dado
+    for row in rows:
         value_raw = row.get("V")
         if value_raw in _NO_DATA_MARKERS:
             continue
@@ -86,6 +123,10 @@ def drop_future_years(points: list[SeriesPoint]) -> list[SeriesPoint]:
     ainda não decorrido como se fosse dado real."""
     current_year = date.today().year
     return [p for p in points if p.reference_date.year <= current_year]
+
+
+def drop_future_years_by_state(by_state: dict[str, list[SeriesPoint]]) -> dict[str, list[SeriesPoint]]:
+    return {uf: drop_future_years(points) for uf, points in by_state.items()}
 
 
 def _extract_year(row: dict) -> int | None:
