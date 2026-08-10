@@ -50,7 +50,7 @@ def _build_ideb_zip() -> bytes:
 def test_fetch_ideb_series_reads_total_row(monkeypatch: pytest.MonkeyPatch) -> None:
     zip_bytes = _build_ideb_zip()
 
-    def fake_get(url: str, headers: dict, timeout: float, follow_redirects: bool) -> httpx.Response:
+    def fake_get(url: str, headers: dict, timeout: float, follow_redirects: bool, verify) -> httpx.Response:
         return httpx.Response(200, content=zip_bytes, request=httpx.Request("GET", url))
 
     monkeypatch.setattr(httpx, "get", fake_get)
@@ -71,7 +71,7 @@ def test_fetch_ideb_series_retries_on_connection_reset_then_succeeds(
     zip_bytes = _build_ideb_zip()
     calls = {"count": 0}
 
-    def fake_get(url: str, headers: dict, timeout: float, follow_redirects: bool) -> httpx.Response:
+    def fake_get(url: str, headers: dict, timeout: float, follow_redirects: bool, verify) -> httpx.Response:
         calls["count"] += 1
         if calls["count"] == 1:
             raise httpx.ConnectError("connection reset by peer", request=httpx.Request("GET", url))
@@ -90,7 +90,7 @@ def test_fetch_ideb_series_retries_on_connection_reset_then_succeeds(
 def test_fetch_ideb_series_missing_sheet_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     zip_bytes = _build_ideb_zip()
 
-    def fake_get(url: str, headers: dict, timeout: float, follow_redirects: bool) -> httpx.Response:
+    def fake_get(url: str, headers: dict, timeout: float, follow_redirects: bool, verify) -> httpx.Response:
         return httpx.Response(200, content=zip_bytes, request=httpx.Request("GET", url))
 
     monkeypatch.setattr(httpx, "get", fake_get)

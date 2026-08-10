@@ -10,15 +10,30 @@ para não quebrar se o INEP inserir/remover colunas em edições futuras.
 A estrutura foi conferida manualmente contra a série histórica oficial
 do IDEB Anos Iniciais (3.8, 4.2, 4.6, 5.0, 5.2, 5.5, 5.8, 5.9, 5.8, 6.0,
 6.3 — 2005 a 2025, incluindo a queda de 2021 por causa da pandemia).
+
+**Sobre o certificado TLS**: `download.inep.gov.br` não envia o
+certificado intermediário ("RNP ICPEdu GR46 OV TLS CA 2025") durante o
+handshake — só o certificado final. Clientes que fazem "AIA chasing"
+(buscam o intermediário automaticamente, como o Windows) conseguem
+validar mesmo assim; o OpenSSL usado pelo Python em containers Linux não
+faz isso, e a conexão falha com `CERTIFICATE_VERIFY_FAILED`. Confirmado
+manualmente com `openssl s_client`. A correção não é desativar a
+verificação do certificado — é fornecer o intermediário que falta:
+`app/sync/certs/rnp_icpedu_gr46_ov_tls_ca_2025.pem` (baixado da própria
+URL "CA Issuers" do certificado do INEP, que termina numa raiz pública da
+GlobalSign já confiável por padrão).
 """
 import functools
 import io
 import re
+import ssl
 import time
 import zipfile
 from dataclasses import dataclass
 from datetime import date
+from pathlib import Path
 
+import certifi
 import httpx
 import openpyxl
 
@@ -29,7 +44,17 @@ REQUEST_HEADERS = {
 }
 MAX_ATTEMPTS = 3
 
+_CERTS_DIR = Path(__file__).parent / "certs"
 _OBSERVADO_RE = re.compile(r"^VL_OBSERVADO_(\d{4})$")
+
+
+@functools.lru_cache(maxsize=1)
+def _ssl_context() -> ssl.SSLContext:
+    """Trust store padrão (certifi) + o intermediário que o INEP não envia."""
+    ctx = ssl.create_default_context(cafile=certifi.where())
+    for cert_path in sorted(_CERTS_DIR.glob("*.pem")):
+        ctx.load_verify_locations(cafile=str(cert_path))
+    return ctx
 
 
 @dataclass(frozen=True)
@@ -100,7 +125,13 @@ def _download_zip(url: str, *, timeout: float) -> bytes:
     last_exc: Exception | None = None
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
-            response = httpx.get(url, headers=REQUEST_HEADERS, timeout=timeout, follow_redirects=True)
+            response = httpx.get(
+                url,
+                headers=REQUEST_HEADERS,
+                timeout=timeout,
+                follow_redirects=True,
+                verify=_ssl_context(),
+            )
             response.raise_for_status()
             return response.content
         except (httpx.TransportError, httpx.HTTPStatusError) as exc:

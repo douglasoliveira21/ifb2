@@ -192,6 +192,17 @@ arquivo novo por edição, então essa URL precisa ser atualizada manualmente no
 código quando sair a próxima edição (normalmente a cada 2 anos). Não há
 quebra por estado nesta planilha (é a divulgação nacional consolidada).
 
+**Certificado TLS incompleto**: `download.inep.gov.br` não envia o
+certificado intermediário durante o handshake (confirmado com
+`openssl s_client -showcerts`) — só clientes que buscam o intermediário
+automaticamente (ex: Windows) conseguem validar a conexão; o OpenSSL usado
+pelo Python em containers Linux falha com `CERTIFICATE_VERIFY_FAILED`. A
+correção **não** é desativar a verificação do certificado: o intermediário
+que falta (`RNP ICPEdu GR46 OV TLS CA 2025`, que termina numa raiz pública
+da GlobalSign) está commitado em
+`app/sync/certs/rnp_icpedu_gr46_ov_tls_ca_2025.pem` e é somado ao trust
+store padrão (`certifi`) em `inep_client.py:_ssl_context`.
+
 Indicadores que ainda dependem de fontes sem API simples (exigem simulação de
 formulário/dashboard, não um fetch direto): cobertura vacinal (DataSUS/PNI),
 homicídios (sem fonte honesta encontrada — Registro Civil do IBGE mistura
