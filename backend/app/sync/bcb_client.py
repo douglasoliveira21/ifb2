@@ -6,12 +6,29 @@ originadas em outras instituições e espelhadas pelo BCB (ex: IPCA/IBGE,
 taxa de desocupação PNAD Contínua/IBGE). A atribuição de fonte de cada
 indicador é definida em `app/sync/definitions.py`, não aqui.
 """
+import time
 from dataclasses import dataclass
 from datetime import date, datetime
 
 import httpx
 
 BASE_URL = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados"
+
+REQUEST_HEADERS = {
+    "Accept": "application/json",
+    "User-Agent": "IFB-Sync/1.0 (+https://github.com/douglasoliveira21/ifb2)",
+}
+MAX_ATTEMPTS = 3
+RETRY_STATUS_CODES = {429, 500, 502, 503, 504}
+
+# Confirmado com a própria API: séries de periodicidade DIÁRIA (ex: Selic,
+# código 432) recusam com 406 qualquer consulta cuja janela (dataInicial→
+# dataFinal, ou o histórico completo sem filtro) passe de 10 anos —
+# "O sistema aceita uma janela de consulta de, no máximo, 10 anos em séries
+# de periodicidade diária". Séries mensais não têm esse limite. Por isso
+# `fetch_series` não serve para séries diárias muito longas — use
+# `fetch_daily_series_chunked`.
+DAILY_SERIES_MAX_WINDOW_YEARS = 10
 
 
 @dataclass(frozen=True)
@@ -20,18 +37,60 @@ class SeriesPoint:
     value: float
 
 
+def _get_with_retry(url: str, params: dict, *, timeout: float) -> list[dict]:
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        response = httpx.get(url, params=params, headers=REQUEST_HEADERS, timeout=timeout)
+        if response.status_code in RETRY_STATUS_CODES and attempt < MAX_ATTEMPTS:
+            time.sleep(2 * attempt)
+            continue
+        response.raise_for_status()
+        return response.json()
+    raise AssertionError("unreachable")  # loop sempre retorna ou levanta
+
+
+def _rows_to_points(rows: list[dict]) -> list[SeriesPoint]:
+    return [
+        SeriesPoint(
+            reference_date=datetime.strptime(row["data"], "%d/%m/%Y").date(),
+            value=float(row["valor"]),
+        )
+        for row in rows
+    ]
+
+
 def fetch_series(series_code: int, *, timeout: float = 30.0) -> list[SeriesPoint]:
-    """Busca a série histórica completa. Levanta exceção em caso de falha —
-    quem chama decide como registrar o erro (ver app/sync/run.py)."""
+    """Busca a série histórica completa. Só funciona para séries mensais (ou
+    séries diárias curtas, <=10 anos) — a API do BCB recusa consultas sem
+    filtro de data em séries diárias longas, ver `DAILY_SERIES_MAX_WINDOW_YEARS`.
+    Levanta exceção em caso de falha — quem chama decide como registrar o
+    erro (ver app/sync/run.py)."""
     url = BASE_URL.format(code=series_code)
-    response = httpx.get(url, params={"formato": "json"}, timeout=timeout)
-    response.raise_for_status()
-    raw = response.json()
+    raw = _get_with_retry(url, {"formato": "json"}, timeout=timeout)
+    return _rows_to_points(raw)
+
+
+def fetch_daily_series_chunked(
+    series_code: int, *, start_year: int = 2000, timeout: float = 30.0
+) -> list[SeriesPoint]:
+    """Busca uma série diária longa (ex: Selic) em blocos de até
+    `DAILY_SERIES_MAX_WINDOW_YEARS` anos, respeitando o limite de janela de
+    consulta da API do BCB para séries diárias, e concatena o resultado."""
+    url = BASE_URL.format(code=series_code)
+    current_year = date.today().year
 
     points: list[SeriesPoint] = []
-    for row in raw:
-        reference_date = datetime.strptime(row["data"], "%d/%m/%Y").date()
-        points.append(SeriesPoint(reference_date=reference_date, value=float(row["valor"])))
+    window_start = start_year
+    while window_start <= current_year:
+        window_end = min(window_start + DAILY_SERIES_MAX_WINDOW_YEARS - 1, current_year)
+        params = {
+            "formato": "json",
+            "dataInicial": f"01/01/{window_start}",
+            "dataFinal": f"31/12/{window_end}",
+        }
+        raw = _get_with_retry(url, params, timeout=timeout)
+        points.extend(_rows_to_points(raw))
+        window_start = window_end + 1
+
     return points
 
 

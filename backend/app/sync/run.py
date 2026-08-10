@@ -16,7 +16,13 @@ from sqlalchemy.orm import Session
 from app.core.db import SessionLocal, engine
 from app.models.location import Location
 from app.models.sync_run import SyncRun, SyncStatus
-from app.sync.bcb_client import SeriesPoint, fetch_series, invert_sign, resample_to_month_end
+from app.sync.bcb_client import (
+    SeriesPoint,
+    fetch_daily_series_chunked,
+    fetch_series,
+    invert_sign,
+    resample_to_month_end,
+)
 from app.sync.definitions import DEFORESTATION_LEGAL_AMAZON, INDICATORS, IndicatorSpec, StaticIndicatorMeta
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.seed_government_periods import seed as seed_government_periods
@@ -90,9 +96,14 @@ def sync_indicator(
 
 def sync_bcb_indicator(spec: IndicatorSpec) -> None:
     def fetch_points() -> list[SeriesPoint]:
-        points = fetch_series(spec.sgs_series_code)
+        # Séries diárias longas (marcadas por resample_monthly) precisam de
+        # busca em blocos — a API do BCB recusa consulta sem filtro de data
+        # em séries diárias com mais de 10 anos de histórico.
         if spec.resample_monthly:
+            points = fetch_daily_series_chunked(spec.sgs_series_code)
             points = resample_to_month_end(points)
+        else:
+            points = fetch_series(spec.sgs_series_code)
         if spec.invert_sign:
             points = invert_sign(points)
         return points

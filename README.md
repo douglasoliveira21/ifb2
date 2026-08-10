@@ -104,6 +104,13 @@ oficiais via API pública, sem scraping:
 | Resultado primário do governo central (12 meses) | Banco Central | SGS/BCB 5783 (sinal invertido — ver abaixo) |
 | Desmatamento — Amazônia Legal | INPE (PRODES) | Arquivo de taxas anuais do TerraBrasilis (soma por período) |
 
+A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
+recusa com 406 qualquer consulta a uma série diária cuja janela passe de
+10 anos — inclusive o histórico completo sem filtro de data. Por isso
+`app/sync/bcb_client.py:fetch_daily_series_chunked` busca em blocos de 10
+anos e concatena o resultado antes de consolidar por mês. Esse limite não
+existe em séries mensais (IPCA, dívida/PIB etc.), só nas diárias.
+
 Cada código de série do SGS/BCB usado aqui foi conferido manualmente contra o
 histórico público conhecido antes de entrar no código — nunca um indicador é
 adicionado com base em um código "chutado". Exemplos do que foi checado:

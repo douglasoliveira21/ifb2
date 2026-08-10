@@ -56,8 +56,11 @@ e crie sua conta de administrador do EasyPanel. Isso é uma instalação única
    - **Nome do serviço**: `db`
    - **Usuário**: `ifb`
    - **Senha**: crie uma senha forte e **anote em algum lugar seguro** —
-     você vai precisar dela daqui a pouco. Exemplo de senha forte:
-     `Xk9$mQ2vLp7#nR4w` (não use exatamente essa, crie a sua).
+     você vai precisar dela daqui a pouco. **Use só letras e números**
+     (nada de `$ # @ % : / espaço`) — esses símbolos quebram a conexão com
+     o banco mais adiante, porque têm significado especial dentro do
+     endereço de conexão. Exemplo: `Xk9mQ2vLp7nR4w` (não use exatamente
+     essa, crie a sua).
    - **Nome do banco**: `ifb`
 4. Clique em **"Create"** e espere o banco subir (fica com uma bolinha
    verde quando estiver pronto).
