@@ -442,3 +442,92 @@ PIB_PER_CAPITA = StaticIndicatorMeta(
     ),
 )
 PIB_PER_CAPITA_QUERY = SidraQuery(table=6784, variable=9812, classifications={})
+
+SOURCE_INEP = SourceSpec(
+    key="inep",
+    name="INEP",
+    url="https://www.gov.br/inep/",
+    description="Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira.",
+)
+
+_IDEB_ZIP_URL = "https://download.inep.gov.br/ideb/resultados/divulgacao_brasil_ideb_2025.zip"
+
+_IDEB_METHODOLOGY_INTRO = (
+    "Fonte: INEP, divulgação de resultados do IDEB (Índice de Desenvolvimento da Educação "
+    "Básica) — planilha oficial `divulgacao_brasil_ideb_2025.zip`, aba \"{sheet}\", linha "
+    "\"Total\" (todas as redes de ensino somadas).\n\n"
+    "**Como é calculado**: o IDEB combina a taxa de aprovação (Censo Escolar) com a média de "
+    "desempenho em português e matemática no SAEB, em uma escala de 0 a 10. Não é uma nota de "
+    "prova isolada — uma rede pode ter nota alta no SAEB e IDEB baixo se a taxa de aprovação for "
+    "ruim (ou vice-versa).\n\n"
+    "**Periodicidade**: o IDEB é apurado apenas em anos ímpares (a cada 2 anos), acompanhando o "
+    "ciclo do Censo Escolar e do SAEB — não há dado para anos pares.\n\n"
+    "**Sem API**: diferente das demais fontes do IFB, o INEP não publica os resultados do IDEB "
+    "em uma API — apenas como planilha para download, uma edição por vez. O IFB baixa e lê essa "
+    "planilha diretamente; a URL é específica da edição 2025 e precisará ser atualizada "
+    "manualmente no código-fonte quando o INEP publicar a próxima edição (normalmente a cada 2 "
+    "anos)."
+)
+
+IDEB_ANOS_INICIAIS = StaticIndicatorMeta(
+    slug="ideb-anos-iniciais",
+    name="IDEB — Anos Iniciais do Ensino Fundamental",
+    category=IndicatorCategory.EDUCACAO,
+    unit="pontos (0–10)",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Índice de Desenvolvimento da Educação Básica (IDEB) para os Anos Iniciais do Ensino "
+        "Fundamental (1º ao 5º ano), somando todas as redes de ensino do Brasil."
+    ),
+    description_how=(
+        "Quanto maior, melhor — combina aprendizado (SAEB) e fluxo escolar (taxa de aprovação). "
+        "Apurado só em anos ímpares; 2021 registrou queda em relação a 2019 por causa do impacto "
+        "da pandemia na aprendizagem."
+    ),
+    update_frequency="a cada 2 anos",
+    source=SOURCE_INEP,
+    methodology="# Metodologia — IDEB, Anos Iniciais do Ensino Fundamental\n\n"
+    + _IDEB_METHODOLOGY_INTRO.format(sheet="Brasil (Anos Iniciais)"),
+)
+
+IDEB_ANOS_FINAIS = StaticIndicatorMeta(
+    slug="ideb-anos-finais",
+    name="IDEB — Anos Finais do Ensino Fundamental",
+    category=IndicatorCategory.EDUCACAO,
+    unit="pontos (0–10)",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Índice de Desenvolvimento da Educação Básica (IDEB) para os Anos Finais do Ensino "
+        "Fundamental (6º ao 9º ano), somando todas as redes de ensino do Brasil."
+    ),
+    description_how=(
+        "Quanto maior, melhor. Historicamente mais baixo e mais estagnado que os Anos Iniciais — "
+        "é o segmento em que o Brasil tem mais dificuldade de avançar."
+    ),
+    update_frequency="a cada 2 anos",
+    source=SOURCE_INEP,
+    methodology="# Metodologia — IDEB, Anos Finais do Ensino Fundamental\n\n"
+    + _IDEB_METHODOLOGY_INTRO.format(sheet="Brasil (Anos Finais)"),
+)
+
+IDEB_ENSINO_MEDIO = StaticIndicatorMeta(
+    slug="ideb-ensino-medio",
+    name="IDEB — Ensino Médio",
+    category=IndicatorCategory.EDUCACAO,
+    unit="pontos (0–10)",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Índice de Desenvolvimento da Educação Básica (IDEB) para o Ensino Médio, somando todas "
+        "as redes de ensino do Brasil."
+    ),
+    description_how=(
+        "Quanto maior, melhor. É o segmento com a nota mais baixa entre as três etapas — o "
+        "Ensino Médio só passou a ter meta e cálculo direto do IDEB a partir de 2017 nesta série "
+        "consolidada."
+    ),
+    update_frequency="a cada 2 anos",
+    source=SOURCE_INEP,
+    methodology="# Metodologia — IDEB, Ensino Médio\n\n" + _IDEB_METHODOLOGY_INTRO.format(sheet="Brasil (EM)"),
+)
+
+IDEB_ZIP_URL = _IDEB_ZIP_URL

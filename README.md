@@ -107,6 +107,9 @@ oficiais via API pública, sem scraping:
 | Esperança de vida ao nascer | IBGE (Projeção da População) | SIDRA tabela 7362, variável 2503 |
 | Mortalidade infantil | IBGE (Projeção da População) | SIDRA tabela 7362, variável 1940 |
 | PIB per capita (valores correntes) | IBGE (Contas Nacionais) | SIDRA tabela 6784, variável 9812 |
+| IDEB — Anos Iniciais do Ens. Fundamental | INEP | Planilha de divulgação, aba "Brasil (Anos Iniciais)" |
+| IDEB — Anos Finais do Ens. Fundamental | INEP | Planilha de divulgação, aba "Brasil (Anos Finais)" |
+| IDEB — Ensino Médio | INEP | Planilha de divulgação, aba "Brasil (EM)" |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -167,10 +170,34 @@ Duas armadilhas reais encontradas e corrigidas:
   qualquer ano ainda não decorrido antes de gravar — nunca um valor
   projetado é apresentado como se fosse observado.
 
-Indicadores que ainda dependem de fontes sem API simples (exigem parser de
-XLSX ou simulação de formulário, não um fetch direto): cobertura vacinal,
-IDEB (INEP), homicídios e saneamento (SNIS/SINISA) — cada uma é um conector
-dedicado para uma iteração futura.
+### IDEB (`app/sync/inep_client.py`)
+
+O INEP não expõe API para o IDEB — só planilha (.xlsx dentro de um .zip),
+uma edição por vez. `app/sync/inep_client.py` baixa o zip da URL de
+divulgação vigente, extrai a planilha e localiza o cabeçalho `VL_OBSERVADO_*`
+dinamicamente (não hardcoda linha/coluna), lendo a linha "Total" (todas as
+redes somadas) de cada aba: Anos Iniciais, Anos Finais e Ensino Médio —
+gravados como três indicadores separados, para não inventar uma média
+composta que a fonte não publica.
+
+Os valores foram conferidos contra a série histórica amplamente conhecida do
+IDEB Anos Iniciais Brasil: 3,8 (2005) → 6,3 (2025), incluindo a queda de 5,9
+para 5,8 em 2021 por causa da pandemia. O IDEB só é apurado em anos ímpares
+(a cada 2 anos, acompanhando o Censo Escolar e o SAEB) — não há dado para
+anos pares, e essa lacuna é mostrada como é, não interpolada.
+
+**Atenção ao manter**: a URL do zip (`IDEB_ZIP_URL` em
+`app/sync/definitions.py`) é específica da edição 2025 — o INEP publica um
+arquivo novo por edição, então essa URL precisa ser atualizada manualmente no
+código quando sair a próxima edição (normalmente a cada 2 anos). Não há
+quebra por estado nesta planilha (é a divulgação nacional consolidada).
+
+Indicadores que ainda dependem de fontes sem API simples (exigem simulação de
+formulário/dashboard, não um fetch direto): cobertura vacinal (DataSUS/PNI),
+homicídios (sem fonte honesta encontrada — Registro Civil do IBGE mistura
+óbitos não naturais de várias causas) e saneamento (SNIS/SINISA, dashboard em
+Power BI) — cada uma exigiria um conector dedicado bem mais complexo, fora do
+escopo desta iteração.
 
 ### Indicadores por estado
 

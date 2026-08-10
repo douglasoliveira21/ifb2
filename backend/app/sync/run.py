@@ -29,6 +29,10 @@ from app.sync.definitions import (
     DEFORESTATION_LEGAL_AMAZON,
     ESPERANCA_VIDA,
     ESPERANCA_VIDA_QUERY,
+    IDEB_ANOS_FINAIS,
+    IDEB_ANOS_INICIAIS,
+    IDEB_ENSINO_MEDIO,
+    IDEB_ZIP_URL,
     INDICATORS,
     MORTALIDADE_INFANTIL,
     MORTALIDADE_INFANTIL_QUERY,
@@ -43,6 +47,7 @@ from app.sync.ibge_client import (
     fetch_sidra_series,
     fetch_sidra_series_by_state,
 )
+from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.seed_government_periods import seed as seed_government_periods
 from app.sync.seed_states import seed as seed_states
@@ -211,6 +216,20 @@ def main() -> None:
 
     sync_indicator(PIB_PER_CAPITA, lambda: fetch_sidra_series(PIB_PER_CAPITA_QUERY))
     # PIB per capita (tabela 6784) não tem quebra por estado no SIDRA.
+
+    sync_indicator(
+        IDEB_ANOS_INICIAIS,
+        lambda: fetch_ideb_series(IdebSheetSpec(IDEB_ZIP_URL, "Brasil (Anos Iniciais)")),
+    )
+    sync_indicator(
+        IDEB_ANOS_FINAIS,
+        lambda: fetch_ideb_series(IdebSheetSpec(IDEB_ZIP_URL, "Brasil (Anos Finais)")),
+    )
+    sync_indicator(
+        IDEB_ENSINO_MEDIO,
+        lambda: fetch_ideb_series(IdebSheetSpec(IDEB_ZIP_URL, "Brasil (EM)")),
+    )
+    # IDEB não tem quebra por estado nesta planilha de divulgação nacional.
 
     refresh_summary_view()
     print("Materialized view `indicators` atualizada.")
