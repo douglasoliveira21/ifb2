@@ -18,6 +18,7 @@ import httpx
 from app.sync.bcb_client import SeriesPoint
 
 BASE_URL = "https://apisidra.ibge.gov.br/values"
+MUNICIPIOS_URL = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios"
 
 REQUEST_HEADERS = {
     "Accept": "application/json",
@@ -140,3 +141,14 @@ def _extract_year(row: dict) -> int | None:
         if key.endswith("N") and isinstance(val, str) and _YEAR_RE.fullmatch(val):
             year = int(val)
     return year
+
+
+def fetch_municipio_codes(*, timeout: float = 60.0) -> list[str]:
+    """Lista os ~5.570 códigos IBGE de município (7 dígitos, string) via a
+    API de Localidades do IBGE — não é a API do SIDRA usada no resto deste
+    módulo, mas é do mesmo órgão. Fonte compartilhada por
+    `seed_municipios.py` e pelos conectores municipais (SICONFI, Tesouro)
+    que precisam enumerar municípios um por um."""
+    response = httpx.get(MUNICIPIOS_URL, headers=REQUEST_HEADERS, timeout=timeout)
+    response.raise_for_status()
+    return [str(item["id"]) for item in response.json()]

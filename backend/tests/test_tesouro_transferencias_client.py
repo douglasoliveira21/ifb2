@@ -4,7 +4,10 @@ import httpx
 import pytest
 
 from app.sync.bcb_client import SeriesPoint
-from app.sync.tesouro_transferencias_client import fetch_transferencias_constitucionais_by_state
+from app.sync.tesouro_transferencias_client import (
+    fetch_transferencias_constitucionais_by_municipio,
+    fetch_transferencias_constitucionais_by_state,
+)
 
 
 def _response(registros: list[dict]) -> dict:
@@ -98,3 +101,46 @@ def test_fetch_transferencias_constitucionais_raises_on_persistent_http_error(
 
     with pytest.raises(httpx.HTTPStatusError):
         fetch_transferencias_constitucionais_by_state(start_year=2023)
+
+
+def _municipio_response(registros: list[dict]) -> dict:
+    return {"registros": registros, "status": "ok", "page": 1, "pageSize": 100000, "next": None}
+
+
+def test_fetch_transferencias_constitucionais_by_municipio_sums_by_codigo_ibge(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_get(url: str, params: dict, headers: dict, timeout: float) -> httpx.Response:
+        request = httpx.Request("GET", url)
+        if params["p_estado"] == 26:  # SP
+            registros = [
+                {"UF": "SP", "ANO": "2023", "TRANSFERENCIA": "FPM", "CO_IBGE": 3550308, "MES": "01", "MUNICIPIO": "São Paulo", "VALOR": 100.0},
+                {"UF": "SP", "ANO": "2023", "TRANSFERENCIA": "FUNDEB", "CO_IBGE": 3550308, "MES": "01", "MUNICIPIO": "São Paulo", "VALOR": 200.0},
+                {"UF": "SP", "ANO": "2023", "TRANSFERENCIA": "FPM", "CO_IBGE": 3509502, "MES": "01", "MUNICIPIO": "Campinas", "VALOR": 50.0},
+            ]
+            return httpx.Response(200, json=_municipio_response(registros), request=request)
+        return httpx.Response(200, json=_municipio_response([]), request=request)
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    by_municipio = fetch_transferencias_constitucionais_by_municipio(year=2023)
+
+    assert by_municipio["3550308"] == [SeriesPoint(reference_date=date(2023, 1, 1), value=300.0)]
+    assert by_municipio["3509502"] == [SeriesPoint(reference_date=date(2023, 1, 1), value=50.0)]
+
+
+def test_fetch_transferencias_constitucionais_by_municipio_defaults_to_last_complete_year(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen_years: list[int] = []
+
+    def fake_get(url: str, params: dict, headers: dict, timeout: float) -> httpx.Response:
+        seen_years.append(params["p_ano"])
+        return httpx.Response(200, json=_municipio_response([]), request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    fetch_transferencias_constitucionais_by_municipio()
+
+    assert len(seen_years) == 27
+    assert all(y == date.today().year - 1 for y in seen_years)

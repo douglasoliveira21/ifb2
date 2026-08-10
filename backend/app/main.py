@@ -5,6 +5,7 @@ from app.api.admin import router as admin_router
 from app.api.compare import router as compare_router
 from app.api.government_periods import router as government_periods_router
 from app.api.indicators import router as indicators_router
+from app.api.municipios import router as municipios_router
 from app.api.rankings import router as rankings_router
 from app.api.states import router as states_router
 from app.api.transparency import router as transparency_router
@@ -28,6 +29,7 @@ app.add_middleware(
 app.include_router(indicators_router, prefix="/api")
 app.include_router(government_periods_router, prefix="/api")
 app.include_router(states_router, prefix="/api")
+app.include_router(municipios_router, prefix="/api")
 app.include_router(compare_router, prefix="/api")
 app.include_router(rankings_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")

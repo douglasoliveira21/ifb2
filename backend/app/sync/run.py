@@ -28,6 +28,7 @@ from app.sync.definitions import (
     ALFABETISMO_QUERY,
     DEFORESTATION_LEGAL_AMAZON,
     DESPESA_COM_PESSOAL_ESTADUAL,
+    DESPESA_COM_PESSOAL_MUNICIPAL,
     DIVIDA_CONSOLIDADA_LIQUIDA_ESTADUAL,
     ESPERANCA_VIDA,
     ESPERANCA_VIDA_QUERY,
@@ -48,6 +49,7 @@ from app.sync.definitions import (
     TAXA_ESCOLARIZACAO_15_A_17_QUERY,
     TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL,
     TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
+    TRANSFERENCIAS_CONSTITUCIONAIS_MUNICIPAL,
     IndicatorSpec,
     StaticIndicatorMeta,
 )
@@ -62,16 +64,22 @@ from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.leitos_sus_client import fetch_leitos_sus_brasil, fetch_leitos_sus_by_state
 from app.sync.seed_government_periods import seed as seed_government_periods
+from app.sync.seed_municipios import seed as seed_municipios
 from app.sync.seed_states import seed as seed_states
 from app.sync.siconfi_client import (
     DESPESA_COM_PESSOAL_RCL,
     DIVIDA_CONSOLIDADA_LIQUIDA_RCL,
+    fetch_rgf_by_municipio,
     fetch_rgf_by_state,
     fetch_rreo_by_state,
 )
-from app.sync.tesouro_transferencias_client import fetch_transferencias_constitucionais_by_state
+from app.sync.tesouro_transferencias_client import (
+    fetch_transferencias_constitucionais_by_municipio,
+    fetch_transferencias_constitucionais_by_state,
+)
 from app.sync.upsert import (
     ensure_methodology,
+    get_municipio,
     get_or_create_brasil,
     get_or_create_indicator_definition,
     get_or_create_source,
@@ -199,6 +207,32 @@ def sync_by_state(
         )
 
 
+def sync_by_municipio(
+    meta: IndicatorMeta, fetch_by_municipio: Callable[[], dict[str, list[SeriesPoint]]]
+) -> None:
+    """Mesmo padrão de `sync_by_state`, para os ~5.570 municípios. A busca
+    HTTP already é paralela dentro de `fetch_by_municipio` (ver
+    `tesouro_transferencias_client.py`/`siconfi_client.py`); a escrita no
+    banco aqui continua sequencial, uma sessão por município — em ~5.570
+    iterações isso é a parte mais lenta do sync municipal (minutos, não
+    segundos), aceitável para um cron diário mas um candidato óbvio a
+    otimizar (upsert em lote) se o volume de indicadores municipais
+    crescer além deste piloto."""
+    started_at = datetime.now(timezone.utc)
+    try:
+        by_municipio = fetch_by_municipio()
+    except Exception as exc:  # noqa: BLE001 — mesma regra: uma fonte não derruba as demais
+        _log_fetch_error(meta, started_at, exc)
+        return
+
+    for codigo, points in by_municipio.items():
+        sync_indicator(
+            meta,
+            fetch_points=lambda points=points: points,
+            get_location=lambda db, codigo=codigo: get_municipio(db, codigo),
+        )
+
+
 def sync_prodes_states() -> None:
     sync_by_state(DEFORESTATION_LEGAL_AMAZON, fetch_prodes_by_state)
 
@@ -211,6 +245,7 @@ def refresh_summary_view() -> None:
 
 def main() -> None:
     seed_states()
+    seed_municipios()
     seed_government_periods()
     for spec in INDICATORS:
         sync_bcb_indicator(spec)
@@ -289,6 +324,18 @@ def main() -> None:
     sync_indicator(TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL, fetch_mvi_rate_brasil)
     sync_by_state(TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL, fetch_mvi_rate_by_state)
     # Fonte não-governamental (FBSP) — ver metodologia do indicador.
+
+    # Piloto de granularidade municipal — seed_municipios() já rodou no
+    # início de main(). Só o último ano completo por indicador (ver
+    # metodologia de cada um) — não histórico completo, dado o volume.
+    sync_by_municipio(
+        TRANSFERENCIAS_CONSTITUCIONAIS_MUNICIPAL,
+        fetch_transferencias_constitucionais_by_municipio,
+    )
+    sync_by_municipio(
+        DESPESA_COM_PESSOAL_MUNICIPAL,
+        lambda: fetch_rgf_by_municipio(DESPESA_COM_PESSOAL_RCL),
+    )
 
     refresh_summary_view()
     print("Materialized view `indicators` atualizada.")

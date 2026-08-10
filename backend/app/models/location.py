@@ -11,6 +11,7 @@ from app.models.common import uuid_pk
 class LocationType(str, enum.Enum):
     country = "country"
     state = "state"
+    municipality = "municipality"
 
 
 class Location(Base):

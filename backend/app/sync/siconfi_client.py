@@ -28,13 +28,14 @@ do Tesouro (FINBRA/SISTN) nesse ano, e não há retroação de dados
 anteriores.
 """
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import date
 
 import httpx
 
 from app.sync.bcb_client import SeriesPoint
-from app.sync.ibge_client import IBGE_UF_CODES
+from app.sync.ibge_client import IBGE_UF_CODES, fetch_municipio_codes
 
 RGF_URL = "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/rgf"
 RREO_URL = "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/rreo"
@@ -200,3 +201,35 @@ def fetch_rreo_by_state(
             by_state[uf] = points
 
     return by_state
+
+
+def fetch_rgf_by_municipio(
+    query: RgfQuery, *, year: int | None = None, timeout: float = 30.0, max_workers: int = 15
+) -> dict[str, list[SeriesPoint]]:
+    """Mesma leitura do RGF, mas para os ~5.570 municípios — um valor
+    anual cada, para um único ano (por padrão o último ano completo).
+
+    **Só um ano, não histórico completo**: diferente do SICONFI por
+    estado (27 requisições cabem numa sync diária sem problema),
+    município não tem endpoint em lote — é uma requisição HTTP por
+    município. Buscar ~10 anos de histórico para 5.570 municípios seria
+    ~55 mil requisições, inviável para uma sync diária. As requisições
+    são feitas em paralelo (`max_workers`, testado estável a 15
+    simultâneas); a escrita no banco continua sequencial via
+    `sync_by_municipio` em `app/sync/run.py`."""
+    target_year = year if year is not None else date.today().year - 1
+    codigos = fetch_municipio_codes()
+
+    by_municipio: dict[str, list[SeriesPoint]] = {}
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_fetch_rgf_state_year, query, int(codigo), target_year, timeout=timeout): codigo
+            for codigo in codigos
+        }
+        for future in as_completed(futures):
+            codigo = futures[future]
+            value = future.result()
+            if value is not None:
+                by_municipio[codigo] = [SeriesPoint(reference_date=date(target_year, 1, 1), value=value)]
+
+    return by_municipio

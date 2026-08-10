@@ -832,3 +832,76 @@ TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL = StaticIndicatorMeta(
         "e 2024."
     ),
 )
+
+# --- Piloto de granularidade municipal (Fase municipal) ---------------------
+#
+# Diferente dos indicadores estaduais (27 UFs, histórico completo desde
+# 2015), os municipais trazem só o último ano completo disponível — o
+# volume de ~5.570 municípios torna inviável buscar anos anteriores numa
+# sync diária (ver docstrings de `fetch_transferencias_constitucionais_by_municipio`
+# em `tesouro_transferencias_client.py` e `fetch_rgf_by_municipio` em
+# `siconfi_client.py`).
+
+TRANSFERENCIAS_CONSTITUCIONAIS_MUNICIPAL = StaticIndicatorMeta(
+    slug="transferencias-constitucionais-municipal",
+    name="Transferências constitucionais recebidas pelo município",
+    category=IndicatorCategory.CONTAS_PUBLICAS,
+    unit="R$",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Total de transferências constitucionais e legais da União recebidas pela prefeitura "
+        "no último ano completo — FPM, FUNDEB, royalties, ITR, IPI-Exportação, Lei Kandir, "
+        "CIDE-Combustíveis e demais repasses obrigatórios previstos em lei."
+    ),
+    description_how=(
+        "O IFB não classifica este indicador como 'melhora' ou 'piora' — reflete o tamanho da "
+        "população e da economia local, não desempenho de gestão. Diferente do indicador "
+        "estadual (que tem série histórica completa desde 2015), o municipal traz só o último "
+        "ano completo disponível — ver metodologia."
+    ),
+    update_frequency="anual",
+    source=SOURCE_TESOURO_TRANSFERENCIAS,
+    methodology=(
+        "# Metodologia — Transferências constitucionais recebidas pelo município\n\n"
+        "Fonte: Secretaria do Tesouro Nacional, API de Transferências Constitucionais "
+        "(`apiapex.tesouro.gov.br`), endpoint `por_estado_municipio`, somando o valor de todas "
+        "as modalidades de transferência por município no ano.\n\n"
+        "**Só o último ano completo, não série histórica**: o endpoint não tem busca em lote "
+        "por município (diferente do endpoint por estado) — uma única consulta por estado já "
+        "retorna todos os seus municípios, mas em nível bem mais granular (ex: São Paulo/2023 "
+        "sozinho soma ~40 mil linhas, uma por município × mês × modalidade). Buscar vários "
+        "anos multiplicaria esse volume proporcionalmente; por ora, o IFB sincroniza só o "
+        "último ano completo (o ano corrente é sempre parcial)."
+    ),
+)
+
+DESPESA_COM_PESSOAL_MUNICIPAL = StaticIndicatorMeta(
+    slug="despesa-com-pessoal-municipal",
+    name="Despesa com pessoal (% da RCL) — município",
+    category=IndicatorCategory.CONTAS_PUBLICAS,
+    unit="% da RCL ajustada",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Despesa Total com Pessoal (DTP) da prefeitura — folha de ativos, inativos e "
+        "pensionistas, líquida de deduções previstas em lei — como percentual da Receita "
+        "Corrente Líquida (RCL) ajustada do município, no último ano completo."
+    ),
+    description_how=(
+        "A Lei de Responsabilidade Fiscal define, para o Poder Executivo municipal, limite "
+        "máximo de 54% da RCL ajustada (diferente do limite estadual, 49%). Ultrapassar o "
+        "limite obriga o governo a reduzir a despesa nos quadrimestres seguintes."
+    ),
+    update_frequency="anual",
+    source=SOURCE_SICONFI,
+    methodology=(
+        "# Metodologia — Despesa com pessoal municipal (% da RCL)\n\n"
+        "Fonte: Tesouro Nacional, SICONFI — Relatório de Gestão Fiscal (RGF), Anexo 01, conta "
+        "\"Despesa Total com Pessoal - DTP\", coluna \"% sobre a RCL Ajustada\", Poder "
+        "Executivo, fechamento do 3º quadrimestre, `id_ente` = código IBGE de 7 dígitos do "
+        "município.\n\n"
+        "**Só o último ano completo**: o SICONFI não tem endpoint em lote por município — é "
+        "uma requisição HTTP por município (~5.570 no total), buscada em paralelo mas ainda "
+        "assim inviável de repetir para cada um dos ~10 anos disponíveis numa sync diária. "
+        "Testado contra São Paulo (capital) em 2023: 29,98% da RCL, dentro do limite de 54%."
+    ),
+)

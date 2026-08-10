@@ -39,6 +39,14 @@ def get_state(db: Session, uf: str) -> Location | None:
     ).scalar_one_or_none()
 
 
+def get_municipio(db: Session, codigo_ibge: str) -> Location | None:
+    """Retorna o município (código IBGE de 7 dígitos) já semeado por
+    `app/sync/seed_municipios.py`. Não cria — mesma regra de `get_state`."""
+    return db.execute(
+        select(Location).where(Location.type == LocationType.municipality, Location.code == codigo_ibge)
+    ).scalar_one_or_none()
+
+
 def get_or_create_indicator_definition(
     db: Session, spec: IndicatorMeta, source: Source
 ) -> IndicatorDefinition:

@@ -15,6 +15,8 @@ import {
   GovernmentPeriod,
   IndicatorDetail,
   IndicatorSummary,
+  MunicipioDetail,
+  MunicipioSummary,
   RankingDetail,
   RankingListItem,
   StateDetail,
@@ -117,6 +119,27 @@ export async function getStateDetail(uf: string): Promise<StateDetailResult> {
   } catch {
     if (isDev) return { detail: getDemoStateDetail(uf), isDemo: true };
     return { detail: null, isDemo: false };
+  }
+}
+
+export async function getMunicipios(uf: string): Promise<MunicipioSummary[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/municipios/${uf}`, { next: { revalidate: 3600 } });
+    if (!res.ok) throw new Error(`API respondeu ${res.status}`);
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function getMunicipioDetail(uf: string, codigo: string): Promise<MunicipioDetail | null> {
+  try {
+    const res = await fetch(`${API_URL}/api/municipios/${uf}/${codigo}`, { next: { revalidate: 3600 } });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`API respondeu ${res.status}`);
+    return res.json();
+  } catch {
+    return null;
   }
 }
 

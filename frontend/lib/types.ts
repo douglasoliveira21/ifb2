@@ -71,6 +71,23 @@ export interface StateDetail {
   indicators: IndicatorSummary[];
 }
 
+export interface MunicipioSummary {
+  code: string;
+  name: string;
+  uf: string;
+  indicators_available: number;
+  melhoraram: number;
+  pioraram: number;
+  last_updated: string | null;
+}
+
+export interface MunicipioDetail {
+  code: string;
+  name: string;
+  uf: string;
+  indicators: IndicatorSummary[];
+}
+
 export interface CompareIndicator {
   slug: string;
   name: string;

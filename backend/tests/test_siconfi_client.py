@@ -8,6 +8,7 @@ from app.sync.siconfi_client import (
     DESPESA_COM_PESSOAL_RCL,
     DIVIDA_CONSOLIDADA_LIQUIDA_RCL,
     RECEITA_TOTAL_REALIZADA,
+    fetch_rgf_by_municipio,
     fetch_rgf_by_state,
     fetch_rreo_by_state,
 )
@@ -165,3 +166,36 @@ def test_fetch_rreo_by_state_skips_states_without_data(monkeypatch: pytest.Monke
     monkeypatch.setattr(httpx, "get", fake_get)
 
     assert fetch_rreo_by_state(RECEITA_TOTAL_REALIZADA, start_year=2023) == {}
+
+
+def test_fetch_rgf_by_municipio_reads_single_year_per_codigo(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "app.sync.siconfi_client.fetch_municipio_codes", lambda: ["3550308", "3509502"]
+    )
+
+    def fake_get(url: str, params: dict, headers: dict, timeout: float) -> httpx.Response:
+        request = httpx.Request("GET", url)
+        if params["id_ente"] == 3550308 and params["an_exercicio"] == 2023:
+            return httpx.Response(200, json=_rgf_response(_pessoal_rows(29.98)), request=request)
+        return httpx.Response(200, json=_rgf_response([]), request=request)
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    by_municipio = fetch_rgf_by_municipio(DESPESA_COM_PESSOAL_RCL, year=2023)
+
+    assert by_municipio == {"3550308": [SeriesPoint(reference_date=date(2023, 1, 1), value=29.98)]}
+
+
+def test_fetch_rgf_by_municipio_defaults_to_last_complete_year(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("app.sync.siconfi_client.fetch_municipio_codes", lambda: ["3550308"])
+    seen_years: list[int] = []
+
+    def fake_get(url: str, params: dict, headers: dict, timeout: float) -> httpx.Response:
+        seen_years.append(params["an_exercicio"])
+        return httpx.Response(200, json=_rgf_response([]), request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    fetch_rgf_by_municipio(DESPESA_COM_PESSOAL_RCL)
+
+    assert seen_years == [date.today().year - 1]

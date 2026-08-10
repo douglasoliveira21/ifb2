@@ -333,6 +333,48 @@ API, e não havia como validar a resposta real nesta sessão. A API do
 Tesouro cobre exatamente o mesmo conceito (transferências obrigatórias por
 estado) sem essa fricção, então foi a escolha final.
 
+### Granularidade municipal (piloto — `/municipios/[uf]`)
+
+Dois indicadores, para os ~5.570 municípios: **transferências
+constitucionais recebidas** (Tesouro, endpoint dedicado
+`/custom/por_estado_municipio`) e **despesa com pessoal, % da RCL**
+(SICONFI, mesmo Anexo 01 do RGF já usado por estado, com `id_ente` = código
+IBGE de 7 dígitos do município). `app/sync/seed_municipios.py` semeia os
+municípios via API de Localidades do IBGE
+(`servicodados.ibge.gov.br/api/v1/localidades/municipios`) — não uma lista
+hardcoded como os 27 estados.
+
+**Diferença fundamental em relação aos indicadores estaduais: só um ano, não
+histórico completo.** Testado ao vivo antes de implementar:
+- Tesouro: uma única consulta de São Paulo/2023 já retorna ~40 mil linhas
+  (645 municípios × 12 meses × ~5 modalidades) — 27 requisições (uma por
+  estado, cada uma trazendo todos os seus municípios de uma vez) cobrem o
+  Brasil inteiro em ~17s. Validado: São Paulo (capital) recebeu R$ 7,01
+  bilhões em 2023.
+- SICONFI não tem endpoint em lote por município — é uma requisição por
+  município (~5.570 no total, buscadas em paralelo, 15 simultâneas testadas
+  estáveis). Buscar vários anos multiplicaria isso proporcionalmente, o que
+  inviabilizaria uma sync diária. Testado: São Paulo (capital) 2023 = 29,98%
+  da RCL em despesa com pessoal, dentro do limite de 54% da LRF para
+  municípios.
+
+Por isso, ambos os indicadores municipais trazem só o último ano completo
+disponível (o ano corrente é sempre parcial) — sem série histórica ainda.
+Isso é uma limitação deliberada do piloto, não um bug: expandir para
+histórico completo exigiria repensar a estratégia de sync (job em segundo
+plano, incremental) em vez do modelo atual (uma função Python síncrona
+rodada sob demanda ou via cron).
+
+A escrita no banco (uma sessão por município) é sequencial e é a parte mais
+lenta do sync municipal — minutos, não segundos, mas aceitável para um cron
+diário. Candidato óbvio a otimizar (upsert em lote) se mais indicadores
+municipais forem adicionados no futuro.
+
+`/municipios/[uf]` lista só os municípios com pelo menos um indicador
+sincronizado (nunca os ~5.570 de uma vez) e tem busca por nome;
+`/municipios/[uf]/[codigo]` é a ficha do município, mesmo layout de
+`/estados/[uf]`.
+
 ### Indicadores por estado
 
 Cinco dos indicadores do SIDRA (analfabetismo, esperança de vida, mortalidade

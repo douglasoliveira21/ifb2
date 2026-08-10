@@ -20,6 +20,7 @@ soma todas as modalidades por estado e ano, sem tentar decompor por tipo
 nesta primeira integração.
 """
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 
 import httpx
@@ -27,6 +28,7 @@ import httpx
 from app.sync.bcb_client import SeriesPoint
 
 BASE_URL = "https://apiapex.tesouro.gov.br/aria/v1/transferencias_constitucionais/custom/por_estados"
+MUNICIPIO_URL = "https://apiapex.tesouro.gov.br/aria/v1/transferencias_constitucionais/custom/por_estado_municipio"
 
 REQUEST_HEADERS = {
     "Accept": "application/json",
@@ -49,10 +51,10 @@ FIRST_AVAILABLE_YEAR = 2015
 _TESOURO_ESTADO_CODES = range(1, 28)
 
 
-def _get_with_retry(params: dict, *, timeout: float) -> list[dict]:
+def _get_with_retry(url: str, params: dict, *, timeout: float) -> list[dict]:
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
-            response = httpx.get(BASE_URL, params=params, headers=REQUEST_HEADERS, timeout=timeout)
+            response = httpx.get(url, params=params, headers=REQUEST_HEADERS, timeout=timeout)
         except httpx.TransportError:
             if attempt < MAX_ATTEMPTS:
                 time.sleep(2 * attempt)
@@ -77,7 +79,7 @@ def fetch_transferencias_constitucionais_by_state(
         "p_estado": ":".join(str(code) for code in _TESOURO_ESTADO_CODES),
         "p_ano": ":".join(str(year) for year in range(start_year, current_year + 1)),
     }
-    rows = _get_with_retry(params, timeout=timeout)
+    rows = _get_with_retry(BASE_URL, params, timeout=timeout)
 
     totals: dict[tuple[str, int], float] = {}
     for row in rows:
@@ -92,3 +94,46 @@ def fetch_transferencias_constitucionais_by_state(
         points.sort(key=lambda p: p.reference_date)
 
     return by_state
+
+
+def _fetch_municipio_rows_for_state(tesouro_estado_code: int, year: int, *, timeout: float) -> list[dict]:
+    params = {"p_estado": tesouro_estado_code, "p_ano": year, "pageSize": 100000}
+    return _get_with_retry(MUNICIPIO_URL, params, timeout=timeout)
+
+
+def fetch_transferencias_constitucionais_by_municipio(
+    *, year: int | None = None, timeout: float = 120.0, max_workers: int = 8
+) -> dict[str, list[SeriesPoint]]:
+    """Soma as transferências constitucionais por município, para um único
+    ano (por padrão o último ano completo — o atual menos 1).
+
+    **Só um ano, não histórico completo**: diferente da série por estado
+    (que traz todos os anos numa única resposta pequena), a granularidade
+    municipal multiplica o volume por ~206x (5.570 municípios vs 27
+    estados) — buscar o histórico completo (2015 a hoje) somaria dezenas
+    de milhões de linhas. Confirmado empiricamente: só São Paulo/2023 já
+    retorna ~40 mil linhas (645 municípios × 12 meses × ~5 modalidades).
+    Um ano é suficiente para o objetivo do piloto (mostrar o repasse mais
+    recente por município) sem tornar o sync inviável.
+
+    As 27 requisições (uma por estado) são feitas em paralelo — a escrita
+    no banco continua sequencial, feita por `sync_by_municipio` em
+    `app/sync/run.py`; só a busca HTTP é concorrente aqui."""
+    target_year = year if year is not None else date.today().year - 1
+
+    totals: dict[str, float] = {}
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_fetch_municipio_rows_for_state, code, target_year, timeout=timeout): code
+            for code in _TESOURO_ESTADO_CODES
+        }
+        for future in as_completed(futures):
+            rows = future.result()
+            for row in rows:
+                codigo_ibge = str(row["CO_IBGE"])
+                totals[codigo_ibge] = totals.get(codigo_ibge, 0.0) + float(row["VALOR"])
+
+    return {
+        codigo_ibge: [SeriesPoint(reference_date=date(target_year, 1, 1), value=total)]
+        for codigo_ibge, total in totals.items()
+    }

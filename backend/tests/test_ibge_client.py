@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from app.sync.bcb_client import SeriesPoint
-from app.sync.ibge_client import SidraQuery, drop_future_years, fetch_sidra_series
+from app.sync.ibge_client import SidraQuery, drop_future_years, fetch_municipio_codes, fetch_sidra_series
 
 SIMPLE_PAYLOAD = [
     {"NC": "Nível Territorial (Código)"},  # linha de cabeçalho, deve ser ignorada
@@ -55,3 +55,19 @@ def test_drop_future_years_keeps_only_past_and_current() -> None:
     filtered = drop_future_years(points)
 
     assert filtered == [SeriesPoint(reference_date=date(2020, 1, 1), value=1.0)]
+
+
+def test_fetch_municipio_codes_returns_string_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = [
+        {"id": 3550308, "nome": "São Paulo"},
+        {"id": 3509502, "nome": "Campinas"},
+    ]
+
+    def fake_get(url: str, headers: dict, timeout: float) -> httpx.Response:
+        return httpx.Response(200, json=payload, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    codes = fetch_municipio_codes()
+
+    assert codes == ["3550308", "3509502"]

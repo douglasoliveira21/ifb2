@@ -1,52 +1,48 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getStateDetail } from "@/lib/api";
+import { getMunicipioDetail } from "@/lib/api";
 import { formatNumber } from "@/lib/format";
 import ClassificationBadge from "@/components/ClassificationBadge";
-import DemoBanner from "@/components/DemoBanner";
 
-type Params = { uf: string };
+type Params = { uf: string; codigo: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { uf } = await params;
-  const { detail } = await getStateDetail(uf);
-  if (!detail) return { title: "Estado não encontrado — Instituto Fiscaliza Brasil" };
+  const { uf, codigo } = await params;
+  const detail = await getMunicipioDetail(uf, codigo);
+  if (!detail) return { title: "Município não encontrado — Instituto Fiscaliza Brasil" };
   return {
     title: `${detail.name} — Instituto Fiscaliza Brasil`,
-    description: `Placar de ${detail.name}: indicadores públicos oficiais, indicador por indicador.`,
+    description: `Indicadores públicos de ${detail.name} (${detail.uf}).`,
   };
 }
 
-export default async function EstadoPage({ params }: { params: Promise<Params> }) {
-  const { uf } = await params;
-  const { detail, isDemo } = await getStateDetail(uf);
+export default async function MunicipioPage({ params }: { params: Promise<Params> }) {
+  const { uf, codigo } = await params;
+  const detail = await getMunicipioDetail(uf, codigo);
 
   if (!detail) notFound();
 
   return (
     <>
-      {isDemo && <DemoBanner />}
-
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-10 sm:pt-16">
-        <Link href="/estados" className="text-sm text-gray-500 hover:text-ink underline underline-offset-2">
-          ← Todos os estados
-        </Link>
-        <p className="mt-4 text-sm font-medium text-gray-500 uppercase tracking-wide">{detail.code}</p>
-        <h1 className="mt-1 text-3xl sm:text-5xl font-extrabold tracking-tight">{detail.name}</h1>
-        <p className="mt-3 text-lg text-gray-500">Placar de {detail.name}</p>
         <Link
-          href={`/municipios/${detail.code.toLowerCase()}`}
-          className="mt-2 inline-block text-sm underline underline-offset-2 hover:text-ink"
+          href={`/municipios/${uf.toLowerCase()}`}
+          className="text-sm text-gray-500 hover:text-ink underline underline-offset-2"
         >
-          Ver municípios deste estado →
+          ← Municípios de {detail.uf}
         </Link>
+        <p className="mt-4 text-sm font-medium text-gray-500 uppercase tracking-wide">{detail.uf}</p>
+        <h1 className="mt-1 text-3xl sm:text-5xl font-extrabold tracking-tight">{detail.name}</h1>
+        <p className="mt-3 text-lg text-gray-500">
+          Indicadores municipais piloto — ano mais recente disponível, sem série histórica.
+        </p>
       </section>
 
       <section className="border-t border-ink mt-10">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
           {detail.indicators.length === 0 ? (
-            <p className="text-gray-500">Dado ainda não disponível para este estado.</p>
+            <p className="text-gray-500">Dado ainda não disponível para este município.</p>
           ) : (
             <div className="divide-y divide-gray-100">
               {detail.indicators.map((indicator) => (
@@ -73,8 +69,8 @@ export default async function EstadoPage({ params }: { params: Promise<Params> }
             </div>
           )}
           <p className="mt-8 text-xs text-gray-500">
-            Nem todo indicador nacional tem série própria por estado ainda — a lista acima mostra
-            apenas os indicadores com dado disponível para {detail.name}.
+            Piloto de granularidade municipal: só transferências constitucionais e despesa com
+            pessoal, um único ano (o mais recente completo) — sem série histórica ainda.
           </p>
         </div>
       </section>
