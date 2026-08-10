@@ -38,14 +38,25 @@ class SeriesPoint:
 
 
 def _get_with_retry(url: str, params: dict, *, timeout: float) -> list[dict]:
+    last_transport_exc: httpx.TransportError | None = None
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        response = httpx.get(url, params=params, headers=REQUEST_HEADERS, timeout=timeout)
+        try:
+            response = httpx.get(url, params=params, headers=REQUEST_HEADERS, timeout=timeout)
+        except httpx.TransportError as exc:
+            # Timeout, conexão resetada etc — falha de rede, não da API em
+            # si. Sem isso, uma única instabilidade de rede derrubava a
+            # série diária inteira (ela faz várias chamadas em sequência).
+            last_transport_exc = exc
+            if attempt < MAX_ATTEMPTS:
+                time.sleep(2 * attempt)
+                continue
+            raise
         if response.status_code in RETRY_STATUS_CODES and attempt < MAX_ATTEMPTS:
             time.sleep(2 * attempt)
             continue
         response.raise_for_status()
         return response.json()
-    raise AssertionError("unreachable")  # loop sempre retorna ou levanta
+    raise last_transport_exc if last_transport_exc else AssertionError("unreachable")
 
 
 def _rows_to_points(rows: list[dict]) -> list[SeriesPoint]:
