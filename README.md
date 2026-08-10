@@ -103,6 +103,10 @@ oficiais via API pública, sem scraping:
 | PIB mensal (valores correntes) | Banco Central | SGS/BCB 4380 |
 | Resultado primário do governo central (12 meses) | Banco Central | SGS/BCB 5783 (sinal invertido — ver abaixo) |
 | Desmatamento — Amazônia Legal | INPE (PRODES) | Arquivo de taxas anuais do TerraBrasilis (soma por período) |
+| Taxa de analfabetismo (15+ anos) | IBGE (PNAD Contínua) | SIDRA tabela 7113, variável 10267 |
+| Esperança de vida ao nascer | IBGE (Projeção da População) | SIDRA tabela 7362, variável 2503 |
+| Mortalidade infantil | IBGE (Projeção da População) | SIDRA tabela 7362, variável 1940 |
+| PIB per capita (valores correntes) | IBGE (Contas Nacionais) | SIDRA tabela 6784, variável 9812 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -140,13 +144,33 @@ primário" (buscando um valor já na convenção usual) e um para "rendimento
 médio" (via SIDRA) tiveram os valores descartados por não baterem com o
 histórico conhecido, e não foram usados.
 
-PIB per capita não tem uma série simples equivalente no SGS/BCB (o Banco
-Central não publica per capita — seria preciso combinar PIB com população,
-outra fonte, e vira um indicador calculado, não um fetch direto). Fica para
-uma iteração futura, junto com os indicadores que ainda dependem de fontes
-sem API simples (DataSUS, INEP para IDEB/alfabetização, SNIS/SINISA):
-mortalidade infantil, cobertura vacinal, expectativa de vida, IDEB,
-alfabetização, homicídios e saneamento — cada uma exige um conector dedicado.
+### API do SIDRA/IBGE (`app/sync/ibge_client.py`)
+
+Diferente do SGS/BCB, cada tabela do SIDRA tem sua própria combinação de
+variável + classificações (sexo, faixa etária...), então cada indicador
+descreve sua consulta via `SidraQuery`. Os códigos foram descobertos
+listando as tabelas de cada pesquisa do IBGE (`sidra.ibge.gov.br/pesquisa/
+.../tabelas`) e confirmados com `desctabapi.aspx?c=<tabela>`, depois
+validados contra números oficiais conhecidos antes de entrar no código —
+mesmo padrão de rigor usado nas séries do BCB:
+- Analfabetismo: 6,7% em 2016 caindo para 4,9% em 2025 — bate com a
+  trajetória de queda amplamente divulgada pelo IBGE.
+- Esperança de vida / mortalidade infantil: 69,83 anos / 29,02‰ em 2000,
+  batendo com os números históricos oficiais.
+- PIB per capita: R$ 51.693,92 em 2023, o valor exato divulgado pelo IBGE.
+
+Duas armadilhas reais encontradas e corrigidas:
+- A tabela de projeção populacional (7362) tem **dois** campos "Ano" na
+  resposta — um fixo/irrelevante e outro que varia de verdade por linha.
+  `_extract_year` pega o último, não o primeiro (ver comentário no código).
+- Essa mesma tabela projeta até 2060. `drop_future_years` descarta
+  qualquer ano ainda não decorrido antes de gravar — nunca um valor
+  projetado é apresentado como se fosse observado.
+
+Indicadores que ainda dependem de fontes sem API simples (exigem parser de
+XLSX ou simulação de formulário, não um fetch direto): cobertura vacinal,
+IDEB (INEP), homicídios e saneamento (SNIS/SINISA) — cada uma é um conector
+dedicado para uma iteração futura.
 
 O sync é idempotente: rodar mais de uma vez não duplica dados, e qualquer
 mudança em um valor já publicado (revisão da fonte) fica registrada em

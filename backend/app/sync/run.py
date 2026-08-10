@@ -23,7 +23,21 @@ from app.sync.bcb_client import (
     invert_sign,
     resample_to_month_end,
 )
-from app.sync.definitions import DEFORESTATION_LEGAL_AMAZON, INDICATORS, IndicatorSpec, StaticIndicatorMeta
+from app.sync.definitions import (
+    ALFABETISMO,
+    ALFABETISMO_QUERY,
+    DEFORESTATION_LEGAL_AMAZON,
+    ESPERANCA_VIDA,
+    ESPERANCA_VIDA_QUERY,
+    INDICATORS,
+    MORTALIDADE_INFANTIL,
+    MORTALIDADE_INFANTIL_QUERY,
+    PIB_PER_CAPITA,
+    PIB_PER_CAPITA_QUERY,
+    IndicatorSpec,
+    StaticIndicatorMeta,
+)
+from app.sync.ibge_client import drop_future_years, fetch_sidra_series
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.seed_government_periods import seed as seed_government_periods
 from app.sync.seed_states import seed as seed_states
@@ -134,6 +148,12 @@ def main() -> None:
         sync_bcb_indicator(spec)
     sync_indicator(DEFORESTATION_LEGAL_AMAZON, fetch_prodes_legal_amazon)
     sync_prodes_states()
+    sync_indicator(ALFABETISMO, lambda: fetch_sidra_series(ALFABETISMO_QUERY))
+    sync_indicator(ESPERANCA_VIDA, lambda: drop_future_years(fetch_sidra_series(ESPERANCA_VIDA_QUERY)))
+    sync_indicator(
+        MORTALIDADE_INFANTIL, lambda: drop_future_years(fetch_sidra_series(MORTALIDADE_INFANTIL_QUERY))
+    )
+    sync_indicator(PIB_PER_CAPITA, lambda: fetch_sidra_series(PIB_PER_CAPITA_QUERY))
     refresh_summary_view()
     print("Materialized view `indicators` atualizada.")
 

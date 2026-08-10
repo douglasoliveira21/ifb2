@@ -37,7 +37,8 @@
       "Bash(npx next *)",
       "Bash(npm install *)",
       "Bash(npx playwright *)",
-      "Bash(grep -rohE 'href=\\\\{?[`\"]\\\\/[a-zA-Z0-9/$\\\\{\\\\}._-]*' app components)"
+      "Bash(grep -rohE 'href=\\\\{?[`\"]\\\\/[a-zA-Z0-9/$\\\\{\\\\}._-]*' app components)",
+      "WebFetch(domain:sidra.ibge.gov.br)"
     ]
   }
 }

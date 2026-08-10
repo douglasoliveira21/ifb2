@@ -7,6 +7,7 @@ SGS do BCB), como normalizá-lo, e os metadados que alimentam
 from dataclasses import dataclass
 
 from app.models.indicator_definition import IndicatorCategory, IndicatorPolarity
+from app.sync.ibge_client import SidraQuery
 
 
 @dataclass(frozen=True)
@@ -325,3 +326,119 @@ DEFORESTATION_LEGAL_AMAZON = StaticIndicatorMeta(
         "período 08/2020–07/2021 soma 13.038 km², o valor amplamente noticiado à época)."
     ),
 )
+
+ALFABETISMO = StaticIndicatorMeta(
+    slug="taxa-analfabetismo",
+    name="Taxa de analfabetismo (15 anos ou mais)",
+    category=IndicatorCategory.EDUCACAO,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual de pessoas de 15 anos ou mais de idade que não sabem ler e escrever um "
+        "bilhete simples, segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "Quanto menor, menor a proporção de adultos analfabetos. A série tem uma lacuna em "
+        "2020–2021 porque a PNAD Contínua não coletou esse módulo durante a pandemia."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de analfabetismo\n\n"
+        "Fonte: IBGE, PNAD Contínua — tabela SIDRA 7113, variável 10267 (\"Taxa de "
+        "analfabetismo das pessoas de 15 anos ou mais de idade\"), categoria Total (sexo) e "
+        "15 anos ou mais (faixa etária).\n\n"
+        "Não há levantamento para 2020 e 2021 — a pesquisa suspendeu esse módulo específico "
+        "durante a pandemia. O IFB mostra a série como ela é, com a lacuna, em vez de "
+        "interpolar um valor que a fonte não produziu."
+    ),
+)
+ALFABETISMO_QUERY = SidraQuery(table=7113, variable=10267, classifications={2: 6794, 58: 2795})
+
+ESPERANCA_VIDA = StaticIndicatorMeta(
+    slug="esperanca-de-vida",
+    name="Esperança de vida ao nascer",
+    category=IndicatorCategory.SAUDE,
+    unit="anos",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Número médio de anos que uma pessoa nascida em determinado ano viveria, se as condições "
+        "de mortalidade daquele ano se mantivessem constantes ao longo de toda a vida dela."
+    ),
+    description_how=(
+        "Quanto maior, melhor — reflete avanços em saúde, saneamento e condições de vida "
+        "acumulados ao longo de décadas, não uma política de um único ano."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Esperança de vida ao nascer\n\n"
+        "Fonte: IBGE, Projeção da População do Brasil — tabela SIDRA 7362, variável 2503, "
+        "categoria Total (sexo).\n\n"
+        "**Importante**: este número vem do modelo oficial de projeção demográfica do IBGE, não "
+        "de uma contagem direta de óbitos a cada ano — é a referência padrão usada oficialmente "
+        "no Brasil para esperança de vida, inclusive para anos recentes, porque estimar esse "
+        "indicador a partir de registro civil bruto tem defasagem de vários anos. O IFB sincroniza "
+        "apenas os anos já decorridos: o modelo do IBGE projeta até 2060, mas mostrar um ano "
+        "futuro como se fosse um valor observado violaria o princípio de nunca apresentar dado "
+        "que não é real."
+    ),
+)
+ESPERANCA_VIDA_QUERY = SidraQuery(table=7362, variable=2503, classifications={2: 6794, 1933: "all"})
+
+MORTALIDADE_INFANTIL = StaticIndicatorMeta(
+    slug="mortalidade-infantil",
+    name="Mortalidade infantil",
+    category=IndicatorCategory.SAUDE,
+    unit="por mil nascidos vivos",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Número estimado de óbitos de crianças menores de 1 ano de idade para cada mil nascidos "
+        "vivos, em determinado ano."
+    ),
+    description_how="Quanto menor, melhor.",
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Mortalidade infantil\n\n"
+        "Fonte: IBGE, Projeção da População do Brasil — tabela SIDRA 7362, variável 1940, "
+        "categoria Total (sexo).\n\n"
+        "**Importante**: assim como a esperança de vida (mesma tabela), este número vem do "
+        "modelo oficial de projeção demográfica do IBGE — a referência padrão usada oficialmente "
+        "no Brasil, inclusive para anos recentes, já que a apuração direta pelo registro civil "
+        "tem defasagem de vários anos. O IFB sincroniza apenas os anos já decorridos, nunca um "
+        "ano projetado como se fosse observado."
+    ),
+)
+MORTALIDADE_INFANTIL_QUERY = SidraQuery(table=7362, variable=1940, classifications={2: 6794, 1933: "all"})
+
+PIB_PER_CAPITA = StaticIndicatorMeta(
+    slug="pib-per-capita",
+    name="PIB per capita (valores correntes)",
+    category=IndicatorCategory.ECONOMIA,
+    unit="R$",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Produto Interno Bruto dividido pela população residente estimada, em reais correntes "
+        "(sem ajuste pela inflação) — quanto a economia produziu, em média, por habitante."
+    ),
+    description_how=(
+        "Por estar em valores correntes, parte do crescimento observado ao longo dos anos "
+        "reflete apenas a inflação acumulada, não necessariamente mais produção ou renda real "
+        "por pessoa. É também uma média — não mostra como a renda é distribuída entre as "
+        "pessoas."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — PIB per capita (valores correntes)\n\n"
+        "Fonte: IBGE, Sistema de Contas Nacionais (Contas Nacionais Anuais) — tabela SIDRA 6784, "
+        "variável 9812 (\"PIB per capita - valores correntes\").\n\n"
+        "Esta é a referência oficial e definitiva de PIB per capita do Brasil, calculada pelo "
+        "IBGE dividindo o PIB anual pela população residente estimada para o mesmo ano. Como as "
+        "Contas Nacionais Anuais têm um processo de fechamento mais longo que os indicadores "
+        "mensais, o ano mais recente disponível costuma ficar de um a dois anos atrás do ano "
+        "corrente."
+    ),
+)
+PIB_PER_CAPITA_QUERY = SidraQuery(table=6784, variable=9812, classifications={})
