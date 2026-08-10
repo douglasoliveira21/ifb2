@@ -73,13 +73,15 @@ export async function getIndicatorDetail(slug: string): Promise<IndicatorDetailR
   }
 }
 
-export async function getGovernmentPeriods(): Promise<GovernmentPeriod[]> {
+export async function getGovernmentPeriods(locationCode: string = "BR"): Promise<GovernmentPeriod[]> {
   try {
-    const res = await fetch(`${API_URL}/api/government-periods`, { next: { revalidate: 86400 } });
+    const res = await fetch(`${API_URL}/api/government-periods?location=${locationCode}`, {
+      next: { revalidate: 86400 },
+    });
     if (!res.ok) throw new Error(`API respondeu ${res.status}`);
     return res.json();
   } catch {
-    if (isDev) return DEMO_GOVERNMENT_PERIODS;
+    if (isDev) return DEMO_GOVERNMENT_PERIODS.filter((p) => p.location_code === locationCode.toUpperCase());
     return [];
   }
 }
@@ -122,9 +124,11 @@ export interface CompareIndicatorsResult {
   isDemo: boolean;
 }
 
-export async function getCompareIndicators(): Promise<CompareIndicatorsResult> {
+export async function getCompareIndicators(locationCode: string = "BR"): Promise<CompareIndicatorsResult> {
   try {
-    const res = await fetch(`${API_URL}/api/compare/indicators`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API_URL}/api/compare/indicators?location=${locationCode}`, {
+      next: { revalidate: 3600 },
+    });
     if (!res.ok) throw new Error(`API respondeu ${res.status}`);
     return { indicators: await res.json(), isDemo: false };
   } catch {

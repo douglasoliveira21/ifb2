@@ -4,6 +4,7 @@ import MobileNav from "@/components/MobileNav";
 const NAV_LINKS = [
   { href: "/brasil/linha-do-tempo", label: "Brasil" },
   { href: "/estados", label: "Estados" },
+  { href: "/governo", label: "Governo" },
   { href: "/comparar", label: "Comparar" },
   { href: "/indicadores", label: "Indicadores" },
   { href: "/metodologia", label: "Metodologia" },

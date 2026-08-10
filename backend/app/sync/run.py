@@ -210,8 +210,8 @@ def refresh_summary_view() -> None:
 
 
 def main() -> None:
-    seed_government_periods()
     seed_states()
+    seed_government_periods()
     for spec in INDICATORS:
         sync_bcb_indicator(spec)
     sync_indicator(DEFORESTATION_LEGAL_AMAZON, fetch_prodes_legal_amazon)

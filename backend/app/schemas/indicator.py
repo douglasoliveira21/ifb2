@@ -49,8 +49,10 @@ class IndicatorDetailOut(BaseModel):
 
 
 class GovernmentPeriodOut(BaseModel):
+    id: UUID
     level: str
     holder_name: str
+    location_code: str
     start_date: date
     end_date: date | None
 

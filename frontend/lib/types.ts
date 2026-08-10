@@ -48,8 +48,10 @@ export interface IndicatorDetail {
 }
 
 export interface GovernmentPeriod {
+  id: string;
   level: string;
   holder_name: string;
+  location_code: string;
   start_date: string;
   end_date: string | null;
 }

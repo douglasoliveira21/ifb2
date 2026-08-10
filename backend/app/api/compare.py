@@ -13,12 +13,16 @@ router = APIRouter(prefix="/compare", tags=["compare"])
 
 
 @router.get("/indicators", response_model=list[CompareIndicatorOut])
-def compare_indicators(db: Session = Depends(get_db)) -> list[CompareIndicatorOut]:
-    """Histórico completo de todos os indicadores nacionais habilitados —
-    usado pelo comparador de períodos, que calcula os valores de qualquer
-    intervalo diretamente no frontend a partir da série completa."""
-    country = db.execute(select(Location).where(Location.type == LocationType.country)).scalar_one_or_none()
-    if country is None:
+def compare_indicators(location: str = "BR", db: Session = Depends(get_db)) -> list[CompareIndicatorOut]:
+    """Histórico completo dos indicadores habilitados de uma localização —
+    `BR` (padrão, nacional) ou a sigla de um estado. Usado pelo comparador
+    de períodos e pela Ficha por Governante, que calculam os valores de
+    qualquer intervalo diretamente no frontend a partir da série completa."""
+    code = location.upper()
+    loc_type = LocationType.country if code == "BR" else LocationType.state
+
+    loc = db.execute(select(Location).where(Location.type == loc_type, Location.code == code)).scalar_one_or_none()
+    if loc is None:
         return []
 
     definitions = db.execute(
@@ -31,7 +35,7 @@ def compare_indicators(db: Session = Depends(get_db)) -> list[CompareIndicatorOu
             select(IndicatorValue)
             .where(
                 IndicatorValue.indicator_id == definition.id,
-                IndicatorValue.location_id == country.id,
+                IndicatorValue.location_id == loc.id,
                 IndicatorValue.is_revised == False,  # noqa: E712
             )
             .order_by(IndicatorValue.reference_date)

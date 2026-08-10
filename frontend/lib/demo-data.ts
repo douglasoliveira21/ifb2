@@ -26,15 +26,15 @@ import {
 export const DEMO_UPDATED_AT = "2026-08-01";
 
 export const DEMO_GOVERNMENT_PERIODS: GovernmentPeriod[] = [
-  { level: "federal", holder_name: "Fernando Henrique Cardoso", start_date: "1995-01-01", end_date: "1999-01-01" },
-  { level: "federal", holder_name: "Fernando Henrique Cardoso", start_date: "1999-01-01", end_date: "2003-01-01" },
-  { level: "federal", holder_name: "Luiz Inácio Lula da Silva", start_date: "2003-01-01", end_date: "2007-01-01" },
-  { level: "federal", holder_name: "Luiz Inácio Lula da Silva", start_date: "2007-01-01", end_date: "2011-01-01" },
-  { level: "federal", holder_name: "Dilma Rousseff", start_date: "2011-01-01", end_date: "2015-01-01" },
-  { level: "federal", holder_name: "Dilma Rousseff", start_date: "2015-01-01", end_date: "2016-08-31" },
-  { level: "federal", holder_name: "Michel Temer", start_date: "2016-08-31", end_date: "2019-01-01" },
-  { level: "federal", holder_name: "Jair Bolsonaro", start_date: "2019-01-01", end_date: "2023-01-01" },
-  { level: "federal", holder_name: "Luiz Inácio Lula da Silva", start_date: "2023-01-01", end_date: null },
+  { id: "demo-1", level: "federal", holder_name: "Fernando Henrique Cardoso", location_code: "BR", start_date: "1995-01-01", end_date: "1999-01-01" },
+  { id: "demo-2", level: "federal", holder_name: "Fernando Henrique Cardoso", location_code: "BR", start_date: "1999-01-01", end_date: "2003-01-01" },
+  { id: "demo-3", level: "federal", holder_name: "Luiz Inácio Lula da Silva", location_code: "BR", start_date: "2003-01-01", end_date: "2007-01-01" },
+  { id: "demo-4", level: "federal", holder_name: "Luiz Inácio Lula da Silva", location_code: "BR", start_date: "2007-01-01", end_date: "2011-01-01" },
+  { id: "demo-5", level: "federal", holder_name: "Dilma Rousseff", location_code: "BR", start_date: "2011-01-01", end_date: "2015-01-01" },
+  { id: "demo-6", level: "federal", holder_name: "Dilma Rousseff", location_code: "BR", start_date: "2015-01-01", end_date: "2016-08-31" },
+  { id: "demo-7", level: "federal", holder_name: "Michel Temer", location_code: "BR", start_date: "2016-08-31", end_date: "2019-01-01" },
+  { id: "demo-8", level: "federal", holder_name: "Jair Bolsonaro", location_code: "BR", start_date: "2019-01-01", end_date: "2023-01-01" },
+  { id: "demo-9", level: "federal", holder_name: "Luiz Inácio Lula da Silva", location_code: "BR", start_date: "2023-01-01", end_date: null },
 ];
 
 function monthlyDemoSeries(
