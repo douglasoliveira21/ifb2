@@ -1,7 +1,8 @@
+import threading
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -165,15 +166,39 @@ def list_sync_runs(db: Session = Depends(get_db)) -> list[AdminSyncRunOut]:
     ]
 
 
-@router.post("/sync", status_code=202)
-def trigger_sync() -> dict[str, str]:
-    """Roda a sincronização completa agora, de forma síncrona. Aceitável
-    para o volume atual de fontes (segundos); se o número de indicadores
-    crescer muito, isso deve virar um job em background."""
-    from app.sync.run import main as run_sync  # import local: evita custo de import em todo request
+_sync_lock = threading.Lock()
+_sync_running = False
 
-    run_sync()
-    return {"status": "concluído"}
+
+def _run_sync_and_release() -> None:
+    global _sync_running
+    try:
+        from app.sync.run import main as run_sync  # import local: evita custo de import em todo request
+
+        run_sync()
+    finally:
+        with _sync_lock:
+            _sync_running = False
+
+
+@router.post("/sync", status_code=202)
+def trigger_sync(background_tasks: BackgroundTasks) -> dict[str, str]:
+    """Dispara a sincronização completa em segundo plano e retorna na hora.
+
+    Com os indicadores municipais (Fase 4), a sync completa passou a levar
+    de 10 a 20 minutos — rodar isso de forma síncrona dentro da requisição
+    estourava o timeout do navegador/proxy antes de terminar, fazendo o
+    botão parecer travado mesmo com a sync completando corretamente no
+    servidor. Acompanhe o progresso em /admin/sincronizacoes: cada fonte
+    grava seu próprio `SyncRun` assim que termina, não só no final."""
+    global _sync_running
+    with _sync_lock:
+        if _sync_running:
+            raise HTTPException(status_code=409, detail="Uma sincronização já está em andamento.")
+        _sync_running = True
+
+    background_tasks.add_task(_run_sync_and_release)
+    return {"status": "iniciado"}
 
 
 @router.get("/corrections", response_model=list[CorrectionOut])

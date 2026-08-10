@@ -20,8 +20,10 @@ export default async function AdminSincronizacoesPage() {
         </form>
       </div>
       <p className="mt-2 text-sm text-gray-500">
-        Roda todos os conectores agora, de forma síncrona (leva alguns segundos). Cada fonte é
-        isolada — a falha de uma não impede as demais.
+        Dispara todos os conectores em segundo plano — com os indicadores municipais, a
+        sincronização completa leva de 10 a 20 minutos. Cada fonte é isolada e grava seu próprio
+        registro assim que termina, então atualize esta página periodicamente para acompanhar o
+        progresso (não precisa esperar o fim para ver os primeiros resultados).
       </p>
 
       <div className="mt-6 overflow-x-auto">
