@@ -36,6 +36,7 @@ from app.sync.definitions import (
     IDEB_ENSINO_MEDIO,
     IDEB_ZIP_URL,
     INDICATORS,
+    LEITOS_SUS_ESTADUAL,
     MORTALIDADE_INFANTIL,
     MORTALIDADE_INFANTIL_QUERY,
     PIB_PER_CAPITA,
@@ -45,10 +46,12 @@ from app.sync.definitions import (
     TAXA_ESCOLARIZACAO_6_A_14_QUERY,
     TAXA_ESCOLARIZACAO_15_A_17,
     TAXA_ESCOLARIZACAO_15_A_17_QUERY,
+    TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL,
     TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
     IndicatorSpec,
     StaticIndicatorMeta,
 )
+from app.sync.fbsp_client import fetch_mvi_rate_brasil, fetch_mvi_rate_by_state
 from app.sync.ibge_client import (
     drop_future_years,
     drop_future_years_by_state,
@@ -57,6 +60,7 @@ from app.sync.ibge_client import (
 )
 from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
+from app.sync.leitos_sus_client import fetch_leitos_sus_brasil, fetch_leitos_sus_by_state
 from app.sync.seed_government_periods import seed as seed_government_periods
 from app.sync.seed_states import seed as seed_states
 from app.sync.siconfi_client import (
@@ -278,6 +282,13 @@ def main() -> None:
         fetch_transferencias_constitucionais_by_state,
     )
     sync_by_state(RECEITA_TOTAL_REALIZADA_ESTADUAL, fetch_rreo_by_state)
+
+    sync_indicator(LEITOS_SUS_ESTADUAL, fetch_leitos_sus_brasil)
+    sync_by_state(LEITOS_SUS_ESTADUAL, fetch_leitos_sus_by_state)
+
+    sync_indicator(TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL, fetch_mvi_rate_brasil)
+    sync_by_state(TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL, fetch_mvi_rate_by_state)
+    # Fonte não-governamental (FBSP) — ver metodologia do indicador.
 
     refresh_summary_view()
     print("Materialized view `indicators` atualizada.")

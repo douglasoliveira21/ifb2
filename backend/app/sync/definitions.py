@@ -735,3 +735,100 @@ TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL = StaticIndicatorMeta(
         "referência é o ano de competência do repasse, não a data de pagamento."
     ),
 )
+
+SOURCE_CNES = SourceSpec(
+    key="cnes",
+    name="Ministério da Saúde (CNES)",
+    url="https://dadosabertos.saude.gov.br/dataset/hospitais-e-leitos",
+    description="Cadastro Nacional de Estabelecimentos de Saúde, Ministério da Saúde.",
+)
+
+LEITOS_SUS_ESTADUAL = StaticIndicatorMeta(
+    slug="leitos-sus-estadual",
+    name="Leitos SUS",
+    category=IndicatorCategory.SAUDE,
+    unit="leitos",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Número total de leitos hospitalares disponíveis para o SUS (Sistema Único de Saúde) "
+        "no estado, somando todos os estabelecimentos cadastrados no CNES."
+    ),
+    description_how=(
+        "Quanto maior, mais capacidade de internação disponível pelo SUS — mas o número bruto "
+        "não leva em conta o tamanho da população do estado; para comparar estados de tamanhos "
+        "diferentes, o ideal é olhar também a população de cada um. Não inclui leitos "
+        "exclusivamente privados (fora do SUS)."
+    ),
+    update_frequency="anual",
+    source=SOURCE_CNES,
+    methodology=(
+        "# Metodologia — Leitos SUS por estado\n\n"
+        "Fonte: Ministério da Saúde, Cadastro Nacional de Estabelecimentos de Saúde (CNES) — "
+        "arquivo anual `Leitos_AAAA.csv`, publicado em "
+        "https://dadosabertos.saude.gov.br/dataset/hospitais-e-leitos. O IFB soma a coluna "
+        "`LEITOS_SUS` de todos os estabelecimentos de cada estado, no último mês disponível de "
+        "cada arquivo (normalmente dezembro; arquivos do ano corrente podem ter só os meses já "
+        "publicados, dado o atraso normal do CNES).\n\n"
+        "**Por que não a API do Ministério da Saúde**: a API pública de dados abertos do "
+        "Ministério da Saúde (`apidadosabertos.saude.gov.br`) tem um filtro por UF que retorna "
+        "erro 500 de forma consistente, e sua paginação não termina de forma sensata "
+        "(testado até 5 milhões de registros implícitos, quando o Brasil tem cerca de 7 mil "
+        "hospitais) — por isso o IFB usa os arquivos CSV estáticos publicados no mesmo portal, "
+        "mais estáveis, em vez de depender dessa API."
+    ),
+)
+
+SOURCE_FBSP = SourceSpec(
+    key="fbsp",
+    name="Fórum Brasileiro de Segurança Pública (FBSP)",
+    url="https://forumseguranca.org.br/",
+    description=(
+        "Associação civil sem fins lucrativos que consolida e audita anualmente os dados de "
+        "segurança pública enviados pelas Secretarias estaduais ao Sinesp. NÃO é um órgão do "
+        "governo federal — é a única fonte não-governamental usada pelo IFB, adotada porque o "
+        "sistema oficial (Sinesp/MJSP) não tem, hoje, um canal de acesso programático "
+        "funcional (ver metodologia do indicador)."
+    ),
+)
+
+TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL = StaticIndicatorMeta(
+    slug="taxa-mortes-violentas-intencionais-estadual",
+    name="Taxa de Mortes Violentas Intencionais (MVI)",
+    category=IndicatorCategory.SEGURANCA,
+    unit="por 100 mil habitantes",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Soma de homicídio doloso, latrocínio (roubo seguido de morte), lesão corporal seguida "
+        "de morte e mortes decorrentes de intervenção policial, por 100 mil habitantes — o "
+        "indicador mais abrangente de violência letal intencional usado no Brasil, definido "
+        "pelo Fórum Brasileiro de Segurança Pública."
+    ),
+    description_how=(
+        "Quanto menor, melhor. É uma taxa (por 100 mil habitantes), não um número absoluto — "
+        "permite comparar estados de tamanhos diferentes diretamente."
+    ),
+    update_frequency="anual",
+    source=SOURCE_FBSP,
+    methodology=(
+        "# Metodologia — Taxa de Mortes Violentas Intencionais (MVI) por estado\n\n"
+        "**Fonte não-governamental — leia com atenção**: este é o único indicador do IFB que "
+        "não vem de um órgão público. Os números são declarados pelas Secretarias de Segurança "
+        "Pública de cada estado ao Sinesp (Sistema Nacional de Estatísticas de Segurança "
+        "Pública, Ministério da Justiça e Segurança Pública), mas o IFB os obtém já "
+        "consolidados e auditados na planilha pública do Anuário Brasileiro de Segurança "
+        "Pública (Fórum Brasileiro de Segurança Pública — FBSP), tabela \"Mortes violentas "
+        "intencionais\", coluna \"Taxa (por 100 mil habitantes)\".\n\n"
+        "**Por que não a fonte oficial diretamente**: o sistema do Ministério da Justiça e "
+        "Segurança Pública para consulta desses dados (`dados.mj.gov.br`) está com o domínio "
+        "fora do ar (não resolve mais por DNS). O portal que o substituiu "
+        "(`dados.gov.br`) expõe os metadados do conjunto de dados sem exigir login, mas o "
+        "download de qualquer arquivo exige autenticação — testado e confirmado (erro 401 "
+        "mesmo navegando sem bloqueio de conteúdo). Até que uma dessas fontes primárias volte "
+        "a funcionar, o IFB usa o FBSP, mantendo a fonte real sempre visível (nunca "
+        "apresentada como \"dado oficial do governo\").\n\n"
+        "**Sem série histórica automática**: o FBSP publica uma planilha por edição anual do "
+        "Anuário, sem API — cada edição nova exige atualizar manualmente a URL no código "
+        "(mesmo padrão já usado para o IDEB/INEP). A edição vigente (2025) traz os anos 2023 "
+        "e 2024."
+    ),
+)

@@ -116,6 +116,8 @@ oficiais via API pública, sem scraping:
 | Taxa de escolarização (6 a 14 anos) | IBGE (PNAD Contínua) | SIDRA tabela 7138, variável 10276 |
 | Taxa de escolarização (15 a 17 anos) | IBGE (PNAD Contínua) | SIDRA tabela 7138, variável 10276 |
 | Receita total realizada, por estado | Tesouro Nacional (SICONFI) | RREO, Anexo 01, fechamento do 6º bimestre |
+| Leitos SUS, Brasil e por estado | Ministério da Saúde (CNES) | Arquivo anual `Leitos_AAAA.csv`, soma de `LEITOS_SUS` no último mês publicado |
+| Taxa de Mortes Violentas Intencionais (MVI), Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota abaixo) | Planilha do Anuário Brasileiro de Segurança Pública, tabela "Mortes violentas intencionais" |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -209,29 +211,64 @@ da GlobalSign) está commitado em
 `app/sync/certs/rnp_icpedu_gr46_ov_tls_ca_2025.pem` e é somado ao trust
 store padrão (`certifi`) em `inep_client.py:_ssl_context`.
 
-Indicadores que ainda dependem de fontes sem API simples (exigem simulação de
-formulário/dashboard, não um fetch direto): cobertura vacinal (DataSUS/PNI),
-homicídios (sem fonte honesta encontrada — Registro Civil do IBGE mistura
-óbitos não naturais de várias causas) e saneamento (SNIS/SINISA, dashboard em
-Power BI) — cada uma exigiria um conector dedicado bem mais complexo, fora do
-escopo desta iteração.
+Indicadores que ainda dependem de fontes sem caminho de acesso viável hoje:
+cobertura vacinal (DataSUS/PNI, mesma limitação da API DEMAS abaixo) e
+**saneamento** — SNIS/SINISA. O único recurso encontrado no portal oficial
+(`dadosabertos.cidades.gov.br`, CKAN) para a série histórica do SNIS é um
+link para o "Aplicativo Série Histórica do SNIS"
+(`app4.mdr.gov.br/serieHistorica/`), cujo domínio não resolve mais por DNS
+(`NXDOMAIN`, confirmado) — não há CSV/API alternativo publicado no mesmo
+portal. Continua fora do escopo até esse sistema (ou um substituto) voltar
+a funcionar.
 
-**Setor Saúde investigado e descartado por ora**: antes de integrar dados de
-saúde, testamos ao vivo as três fontes mais promissoras e nenhuma passou no
-mesmo padrão de confiabilidade aplicado às demais integrações. Leitos SUS
-(API DEMAS/CNES, `apidadosabertos.saude.gov.br/assistencia-a-saude/hospitais-e-leitos`)
-tem o filtro `uf` retornando erro 500 de forma consistente, e a paginação por
-`offset` não termina de forma sensata (testado até offset=5000 × limit=1000,
-sempre devolvendo página cheia — implicaria milhões de hospitais, o que não
-existe). O Portal de Dados Abertos do SUS (`dadosabertos.saude.gov.br`)
-retornou erro 500 no site inteiro durante o teste. SIOPS (gasto em saúde por
-estado) não tem API JSON, só um sistema de consulta em formulário PHP antigo
-(`siops.datasus.gov.br`). A tabela SIDRA 216 (leitos por habitante, Pesquisa
-de Assistência Médico-Sanitária/IBGE) existe e é estável, mas os dados param
-em 2005 — a pesquisa foi descontinuada, não serve para avaliar gestão atual.
-Antes de retomar este setor, vale testar novamente se o DEMAS/CNES
-estabilizou, ou buscar um dataset CSV estático (como o padrão já usado para
-o IDEB) em vez de depender da API ao vivo.
+### Saúde — Leitos SUS (`app/sync/leitos_sus_client.py`)
+
+A API "DEMAS" do Ministério da Saúde
+(`apidadosabertos.saude.gov.br/assistencia-a-saude/hospitais-e-leitos`) se
+mostrou instável em testes ao vivo: o filtro `uf` retorna erro 500 de forma
+consistente, e a paginação por `offset` não termina de forma sensata
+(testado até offset=5000 × limit=1000, sempre devolvendo página cheia —
+implicaria milhões de hospitais, o que não existe). Em vez de depender
+dessa API, o IFB usa os arquivos CSV estáticos e estáveis publicados no
+mesmo portal (`dadosabertos.saude.gov.br/dataset/hospitais-e-leitos`,
+hospedados em S3), um arquivo por ano — mesmo padrão de "baixar arquivo em
+vez de API ao vivo" já usado para o IDEB. Cada arquivo traz uma linha por
+estabelecimento hospitalar por mês de competência; o IFB soma `LEITOS_SUS`
+por estado no último mês disponível de cada arquivo (normalmente dezembro).
+
+Testado contra dezembro/2023: total Brasil = 344.555 leitos SUS, SP como
+maior estado (61.529) — mesma ordem de grandeza dos números de leitos SUS
+divulgados pelo Ministério da Saúde/CNES. SIOPS (gasto em saúde por estado)
+continua fora do escopo — não tem API JSON, só um sistema de consulta em
+formulário PHP antigo (`siops.datasus.gov.br`).
+
+### Segurança pública — Taxa de Mortes Violentas Intencionais (`app/sync/fbsp_client.py`)
+
+**Única fonte não-governamental do IFB.** O sistema oficial para consulta
+desses dados (SINESP, Ministério da Justiça e Segurança Pública) não tem
+hoje um canal de acesso programático funcional: o domínio
+`dados.mj.gov.br`, para onde apontam os links de download dos recursos, não
+resolve mais por DNS (confirmado — `NXDOMAIN`, inclusive via DNS público do
+Google); o portal que o substituiu (`dados.gov.br`) expõe os metadados do
+dataset sem autenticação, mas o download de qualquer arquivo exige login
+(confirmado: 401 mesmo inspecionando a chamada de rede em uma sessão de
+browser real, sem estar logado).
+
+Diante disso, o IFB usa a planilha pública do **Anuário Brasileiro de
+Segurança Pública**, do Fórum Brasileiro de Segurança Pública (FBSP) — uma
+associação civil de pesquisa, não um órgão do governo. O FBSP consolida e
+audita os mesmos dados que os estados enviam ao Sinesp; não são números
+inventados pelo FBSP, mas o IFB deixa isso explícito em toda a interface
+(fonte exibida como "Fórum Brasileiro de Segurança Pública (FBSP)", nunca
+como dado oficial do governo) — ver a metodologia do indicador para o
+texto completo do aviso. A leitura usa a tabela "Mortes violentas
+intencionais" (T01) da planilha da edição vigente (2025, dados 2023-2024),
+somando homicídio doloso, latrocínio, lesão corporal seguida de morte e
+mortes por intervenção policial — testado contra a taxa nacional (Brasil
+2024 = 20,76 por 100 mil habitantes) e contra extremos conhecidos (SP entre
+os mais baixos, Bahia entre os mais altos), batendo com o que é amplamente
+divulgado. Como o IDEB, a URL da planilha é específica da edição e precisa
+ser atualizada manualmente a cada novo Anuário (normalmente anual).
 
 ### Contas públicas por estado (`app/sync/siconfi_client.py`, `app/sync/tesouro_transferencias_client.py`)
 
