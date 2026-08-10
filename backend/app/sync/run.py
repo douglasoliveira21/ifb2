@@ -243,10 +243,21 @@ def refresh_summary_view() -> None:
         conn.commit()
 
 
+def _run_seed(name: str, seed_fn: Callable[[], None]) -> None:
+    """Roda um seed isolado — se falhar (ex: migration ainda não aplicada
+    no banco), loga e segue para os indicadores em vez de derrubar a sync
+    inteira. Diferente dos indicadores (que isolam falha por SyncRun), os
+    seeds não têm tabela própria de log — por enquanto só stderr."""
+    try:
+        seed_fn()
+    except Exception as exc:  # noqa: BLE001 — mesma regra: uma falha não pode travar tudo
+        print(f"[seed:{name}] ERRO — {exc}", file=sys.stderr)
+
+
 def main() -> None:
-    seed_states()
-    seed_municipios()
-    seed_government_periods()
+    _run_seed("states", seed_states)
+    _run_seed("municipios", seed_municipios)
+    _run_seed("government_periods", seed_government_periods)
     for spec in INDICATORS:
         sync_bcb_indicator(spec)
     sync_indicator(DEFORESTATION_LEGAL_AMAZON, fetch_prodes_legal_amazon)
