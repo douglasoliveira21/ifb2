@@ -17,6 +17,7 @@ const ADMIN_LINKS = [
   { href: "/admin/indicadores", label: "Indicadores" },
   { href: "/admin/sincronizacoes", label: "Sincronizações" },
   { href: "/admin/correcoes", label: "Correções" },
+  { href: "/admin/frases-verificadas", label: "Frases Verificadas" },
   { href: "/admin/metodologias", label: "Metodologias" },
   { href: "/admin/fontes", label: "Fontes" },
 ];

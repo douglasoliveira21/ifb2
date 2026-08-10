@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.schemas.verified_claim import VerifiedClaimOut
+
 
 class AdminIndicatorOut(BaseModel):
     slug: str
@@ -62,3 +64,27 @@ class CorrectionOut(BaseModel):
     reason: str
     changed_by: str
     changed_at: datetime
+
+
+class VerifiedClaimIn(BaseModel):
+    quote: str
+    speaker_name: str
+    speaker_role: str | None = None
+    claim_date: date | None = None
+    source_url: str | None = None
+    indicator_slug: str | None = None
+    verdict: str
+    explanation: str
+
+
+__all__ = [
+    "AdminIndicatorOut",
+    "AdminIndicatorValueOut",
+    "AdminSourceOut",
+    "AdminSyncRunOut",
+    "CorrectionIn",
+    "CorrectionOut",
+    "ToggleIndicatorIn",
+    "VerifiedClaimIn",
+    "VerifiedClaimOut",
+]

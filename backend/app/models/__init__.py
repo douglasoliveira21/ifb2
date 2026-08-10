@@ -6,6 +6,7 @@ from app.models.indicator_value import IndicatorValue
 from app.models.location import Location
 from app.models.source import Source
 from app.models.sync_run import SyncRun
+from app.models.verified_claim import VerifiedClaim
 
 __all__ = [
     "DataRevision",
@@ -16,4 +17,5 @@ __all__ = [
     "Location",
     "Source",
     "SyncRun",
+    "VerifiedClaim",
 ]

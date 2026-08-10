@@ -20,6 +20,7 @@ import {
   StateDetail,
   StateSummary,
   Transparency,
+  VerifiedClaim,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -183,5 +184,15 @@ export async function getTransparency(): Promise<TransparencyResult> {
   } catch {
     if (isDev) return { transparency: DEMO_TRANSPARENCY, isDemo: true };
     return { transparency: null, isDemo: false };
+  }
+}
+
+export async function getVerifiedClaims(): Promise<VerifiedClaim[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/verified-claims`, { next: { revalidate: 600 } });
+    if (!res.ok) throw new Error(`API respondeu ${res.status}`);
+    return res.json();
+  } catch {
+    return [];
   }
 }

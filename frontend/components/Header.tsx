@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { href: "/estados", label: "Estados" },
   { href: "/governo", label: "Governo" },
   { href: "/comparar", label: "Comparar" },
+  { href: "/frases-verificadas", label: "Frases Verificadas" },
   { href: "/indicadores", label: "Indicadores" },
   { href: "/metodologia", label: "Metodologia" },
 ];

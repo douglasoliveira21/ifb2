@@ -159,6 +159,26 @@ export interface Correction {
   changed_at: string;
 }
 
+export type ClaimVerdict =
+  | "CONFIRMADO"
+  | "PARCIALMENTE_CONFIRMADO"
+  | "DISTORCIDO"
+  | "FALSO"
+  | "INCONCLUSIVO";
+
+export interface VerifiedClaim {
+  id: string;
+  quote: string;
+  speaker_name: string;
+  speaker_role: string | null;
+  claim_date: string | null;
+  source_url: string | null;
+  indicator_slug: string | null;
+  verdict: ClaimVerdict;
+  explanation: string;
+  created_at: string;
+}
+
 export interface TransparencySource {
   name: string;
   url: string;

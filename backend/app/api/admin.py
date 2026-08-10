@@ -14,6 +14,7 @@ from app.models.indicator_value import IndicatorValue
 from app.models.location import Location
 from app.models.source import Source
 from app.models.sync_run import SyncRun
+from app.models.verified_claim import ClaimVerdict, VerifiedClaim
 from app.schemas.admin import (
     AdminIndicatorOut,
     AdminIndicatorValueOut,
@@ -22,7 +23,9 @@ from app.schemas.admin import (
     CorrectionIn,
     CorrectionOut,
     ToggleIndicatorIn,
+    VerifiedClaimIn,
 )
+from app.schemas.verified_claim import VerifiedClaimOut
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
@@ -250,3 +253,89 @@ def create_correction(
         changed_by=revision.changed_by,
         changed_at=revision.changed_at,
     )
+
+
+def _resolve_indicator_id(db: Session, slug: str | None) -> UUID | None:
+    if not slug:
+        return None
+    definition = db.execute(
+        select(IndicatorDefinition).where(IndicatorDefinition.slug == slug)
+    ).scalar_one_or_none()
+    if definition is None:
+        raise HTTPException(status_code=422, detail=f"Indicador '{slug}' não encontrado")
+    return definition.id
+
+
+def _verified_claim_out(db: Session, claim: VerifiedClaim) -> VerifiedClaimOut:
+    slug = None
+    if claim.indicator_id is not None:
+        slug = db.execute(
+            select(IndicatorDefinition.slug).where(IndicatorDefinition.id == claim.indicator_id)
+        ).scalar_one_or_none()
+    return VerifiedClaimOut(
+        id=claim.id,
+        quote=claim.quote,
+        speaker_name=claim.speaker_name,
+        speaker_role=claim.speaker_role,
+        claim_date=claim.claim_date,
+        source_url=claim.source_url,
+        indicator_slug=slug,
+        verdict=claim.verdict.value,
+        explanation=claim.explanation,
+        created_at=claim.created_at,
+    )
+
+
+@router.get("/verified-claims", response_model=list[VerifiedClaimOut])
+def list_admin_verified_claims(db: Session = Depends(get_db)) -> list[VerifiedClaimOut]:
+    rows = db.execute(select(VerifiedClaim).order_by(VerifiedClaim.created_at.desc())).scalars().all()
+    return [_verified_claim_out(db, claim) for claim in rows]
+
+
+@router.post("/verified-claims", response_model=VerifiedClaimOut, status_code=201)
+def create_verified_claim(payload: VerifiedClaimIn, db: Session = Depends(get_db)) -> VerifiedClaimOut:
+    try:
+        verdict = ClaimVerdict(payload.verdict)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"Veredito inválido: {payload.verdict}") from exc
+
+    claim = VerifiedClaim(
+        quote=payload.quote.strip(),
+        speaker_name=payload.speaker_name.strip(),
+        speaker_role=payload.speaker_role.strip() if payload.speaker_role else None,
+        claim_date=payload.claim_date,
+        source_url=payload.source_url.strip() if payload.source_url else None,
+        indicator_id=_resolve_indicator_id(db, payload.indicator_slug),
+        verdict=verdict,
+        explanation=payload.explanation.strip(),
+    )
+    db.add(claim)
+    db.commit()
+    db.refresh(claim)
+    return _verified_claim_out(db, claim)
+
+
+@router.put("/verified-claims/{claim_id}", response_model=VerifiedClaimOut)
+def update_verified_claim(
+    claim_id: UUID, payload: VerifiedClaimIn, db: Session = Depends(get_db)
+) -> VerifiedClaimOut:
+    claim = db.execute(select(VerifiedClaim).where(VerifiedClaim.id == claim_id)).scalar_one_or_none()
+    if claim is None:
+        raise HTTPException(status_code=404, detail="Frase verificada não encontrada")
+
+    try:
+        verdict = ClaimVerdict(payload.verdict)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"Veredito inválido: {payload.verdict}") from exc
+
+    claim.quote = payload.quote.strip()
+    claim.speaker_name = payload.speaker_name.strip()
+    claim.speaker_role = payload.speaker_role.strip() if payload.speaker_role else None
+    claim.claim_date = payload.claim_date
+    claim.source_url = payload.source_url.strip() if payload.source_url else None
+    claim.indicator_id = _resolve_indicator_id(db, payload.indicator_slug)
+    claim.verdict = verdict
+    claim.explanation = payload.explanation.strip()
+    db.commit()
+    db.refresh(claim)
+    return _verified_claim_out(db, claim)

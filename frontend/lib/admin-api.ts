@@ -11,6 +11,7 @@ import {
   AdminSource,
   AdminSyncRun,
   Correction,
+  VerifiedClaim,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -76,4 +77,27 @@ export async function createAdminCorrection(payload: {
 
 export async function getAdminSources(): Promise<AdminSource[]> {
   return (await adminFetch("/sources")).json();
+}
+
+export interface VerifiedClaimPayload {
+  quote: string;
+  speaker_name: string;
+  speaker_role: string | null;
+  claim_date: string | null;
+  source_url: string | null;
+  indicator_slug: string | null;
+  verdict: string;
+  explanation: string;
+}
+
+export async function getAdminVerifiedClaims(): Promise<VerifiedClaim[]> {
+  return (await adminFetch("/verified-claims")).json();
+}
+
+export async function createAdminVerifiedClaim(payload: VerifiedClaimPayload): Promise<void> {
+  await adminFetch("/verified-claims", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export async function updateAdminVerifiedClaim(id: string, payload: VerifiedClaimPayload): Promise<void> {
+  await adminFetch(`/verified-claims/${id}`, { method: "PUT", body: JSON.stringify(payload) });
 }

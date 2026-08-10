@@ -8,6 +8,7 @@ from app.api.indicators import router as indicators_router
 from app.api.rankings import router as rankings_router
 from app.api.states import router as states_router
 from app.api.transparency import router as transparency_router
+from app.api.verified_claims import router as verified_claims_router
 from app.core.config import get_settings
 from app.core.security_headers import add_security_headers
 
@@ -31,6 +32,7 @@ app.include_router(compare_router, prefix="/api")
 app.include_router(rankings_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(transparency_router, prefix="/api")
+app.include_router(verified_claims_router, prefix="/api")
 
 
 @app.get("/health")
