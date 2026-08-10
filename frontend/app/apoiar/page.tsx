@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import QRCode from "qrcode";
 import CopyPixKey from "@/components/CopyPixKey";
 
 export const metadata: Metadata = {
@@ -6,7 +7,14 @@ export const metadata: Metadata = {
   description: "Como apoiar o IFB a continuar publicando indicadores públicos, verificáveis e sem viés.",
 };
 
-const PIX_KEY = "124.096.496-02";
+const PIX_KEY = "65212b5c-4fb8-48ad-a729-2664ab13d6bb";
+const PIX_TITULAR = "Douglas Souza de Oliveira";
+const PIX_CIDADE = "Contagem/MG";
+// BR Code (EMV) gerado pelo banco — usado literalmente, sem recalcular
+// nenhum campo, para não arriscar um checksum (CRC16) incorreto que
+// invalidaria o QR em bancos mais rigorosos na validação.
+const PIX_COPIA_E_COLA =
+  "00020126580014BR.GOV.BCB.PIX013665212b5c-4fb8-48ad-a729-2664ab13d6bb5204000053039865802BR5925DOUGLAS SOUZA DE OLIVEIRA6008CONTAGEM62070503***6304329A";
 
 const PLANS = [
   {
@@ -29,7 +37,13 @@ const PLANS = [
   },
 ];
 
-export default function ApoiarPage() {
+export default async function ApoiarPage() {
+  const qrSvg = await QRCode.toString(PIX_COPIA_E_COLA, {
+    type: "svg",
+    margin: 1,
+    color: { dark: "#111111", light: "#ffffff" },
+  });
+
   return (
     <>
       <section className="mx-auto max-w-3xl px-4 sm:px-6 pt-10 sm:pt-16 pb-6">
@@ -84,10 +98,32 @@ export default function ApoiarPage() {
           <h2 className="text-xl font-bold">Doar via Pix</h2>
           <p className="mt-2 text-sm text-gray-500 leading-relaxed">
             Qualquer valor, avulso ou recorrente (você mesmo escolhe a frequência no app do seu
-            banco). Chave Pix do tipo CPF, titular Instituto Fiscaliza Brasil, Banco Bradesco.
+            banco). Titular {PIX_TITULAR}, {PIX_CIDADE}.
           </p>
-          <div className="mt-6 border border-ink p-6">
-            <CopyPixKey pixKey={PIX_KEY} label="Chave Pix (CPF)" />
+
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-6 sm:gap-8 items-start">
+            <div
+              className="w-40 h-40 border border-ink p-2 shrink-0 mx-auto sm:mx-0"
+              // SVG gerado a partir do mesmo texto "copia e cola" abaixo — o
+              // pacote `qrcode` só cuida da codificação/renderização, o
+              // conteúdo em si já é o BR Code validado pelo banco.
+              dangerouslySetInnerHTML={{ __html: qrSvg }}
+            />
+
+            <div className="space-y-6 w-full">
+              <div className="border border-ink p-6">
+                <CopyPixKey pixKey={PIX_KEY} label="Chave Pix (aleatória)" />
+              </div>
+              <div className="border border-ink p-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Pix Copia e Cola
+                </p>
+                <p className="mt-1 text-xs text-gray-500 break-all font-mono">{PIX_COPIA_E_COLA}</p>
+                <div className="mt-3">
+                  <CopyPixKey pixKey={PIX_COPIA_E_COLA} showValue={false} buttonLabel="Copiar Pix Copia e Cola" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

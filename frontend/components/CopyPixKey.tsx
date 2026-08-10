@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 
-export default function CopyPixKey({ pixKey, label }: { pixKey: string; label: string }) {
+export default function CopyPixKey({
+  pixKey,
+  label,
+  showValue = true,
+  buttonLabel = "Copiar chave",
+}: {
+  pixKey: string;
+  label?: string;
+  showValue?: boolean;
+  buttonLabel?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -18,16 +28,18 @@ export default function CopyPixKey({ pixKey, label }: { pixKey: string; label: s
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
-        <p className="stat-figure text-2xl font-bold mt-1">{pixKey}</p>
-      </div>
+      {showValue && (
+        <div>
+          {label && <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>}
+          <p className="stat-figure text-2xl font-bold mt-1">{pixKey}</p>
+        </div>
+      )}
       <button
         type="button"
         onClick={handleCopy}
-        className="shrink-0 border border-ink px-4 py-2 text-sm font-semibold hover:bg-ink hover:text-paper transition sm:mt-4"
+        className="shrink-0 border border-ink px-4 py-2 text-sm font-semibold hover:bg-ink hover:text-paper transition"
       >
-        {copied ? "Copiado ✓" : "Copiar chave"}
+        {copied ? "Copiado ✓" : buttonLabel}
       </button>
     </div>
   );
