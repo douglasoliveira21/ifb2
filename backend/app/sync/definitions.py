@@ -531,3 +531,207 @@ IDEB_ENSINO_MEDIO = StaticIndicatorMeta(
 )
 
 IDEB_ZIP_URL = _IDEB_ZIP_URL
+
+SOURCE_SICONFI = SourceSpec(
+    key="siconfi",
+    name="Tesouro Nacional (SICONFI)",
+    url="https://siconfi.tesouro.gov.br/",
+    description=(
+        "Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro, mantido pela "
+        "Secretaria do Tesouro Nacional."
+    ),
+)
+
+SOURCE_TESOURO_TRANSFERENCIAS = SourceSpec(
+    key="tesouro-transferencias-constitucionais",
+    name="Tesouro Nacional — Transferências Constitucionais",
+    url="https://www.tesourotransparente.gov.br/ckan/dataset/api-de-transferencias-constitucionais",
+    description=(
+        "Secretaria do Tesouro Nacional — API de Transferências Constitucionais e Legais da "
+        "União a estados e municípios."
+    ),
+)
+
+_RGF_METHODOLOGY_NOTE = (
+    "**Sobre a apuração**: o Relatório de Gestão Fiscal (RGF) é declarado pelo próprio ente "
+    "federativo ao Tesouro Nacional a cada quadrimestre, conforme exigido pela Lei de "
+    "Responsabilidade Fiscal (LRF). O IFB sincroniza sempre o fechamento do 3º quadrimestre "
+    "(valor de todo o exercício) para o Poder Executivo estadual. Não há dado disponível no "
+    "SICONFI para exercícios anteriores a 2015."
+)
+
+DIVIDA_CONSOLIDADA_LIQUIDA_ESTADUAL = StaticIndicatorMeta(
+    slug="divida-consolidada-liquida-estadual",
+    name="Dívida consolidada líquida (% da RCL)",
+    category=IndicatorCategory.CONTAS_PUBLICAS,
+    unit="% da RCL ajustada",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Dívida Consolidada Líquida (DCL) do governo estadual — dívida consolidada menos "
+        "disponibilidade de caixa e outros haveres financeiros — como percentual da Receita "
+        "Corrente Líquida (RCL) ajustada do estado."
+    ),
+    description_how=(
+        "A Lei de Responsabilidade Fiscal define um limite de 200% da RCL ajustada para "
+        "estados. Quanto menor o percentual, menor o peso da dívida líquida em relação à "
+        "arrecadação do estado. Estados que renegociaram dívidas antigas com a União nos anos "
+        "1990 (como SP, RJ e MG) tendem a ter percentuais estruturalmente mais altos, "
+        "independentemente da gestão fiscal recente."
+    ),
+    update_frequency="anual",
+    source=SOURCE_SICONFI,
+    methodology=(
+        "# Metodologia — Dívida consolidada líquida estadual (% da RCL)\n\n"
+        "Fonte: Tesouro Nacional, SICONFI — Relatório de Gestão Fiscal (RGF), Anexo 02 "
+        "(Demonstrativo da Dívida Consolidada Líquida), conta \"% da DCL sobre a RCL Ajustada\", "
+        "coluna do fechamento do 3º quadrimestre.\n\n" + _RGF_METHODOLOGY_NOTE
+    ),
+)
+
+DESPESA_COM_PESSOAL_ESTADUAL = StaticIndicatorMeta(
+    slug="despesa-com-pessoal-estadual",
+    name="Despesa com pessoal (% da RCL)",
+    category=IndicatorCategory.CONTAS_PUBLICAS,
+    unit="% da RCL ajustada",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Despesa Total com Pessoal (DTP) do Poder Executivo estadual — folha de ativos, "
+        "inativos e pensionistas, líquida de deduções previstas em lei — como percentual da "
+        "Receita Corrente Líquida (RCL) ajustada do estado."
+    ),
+    description_how=(
+        "A Lei de Responsabilidade Fiscal define, para o Poder Executivo estadual, limite "
+        "máximo de 49% da RCL ajustada, limite prudencial de 46,55% (95% do máximo) e limite de "
+        "alerta de 44,1% (90% do máximo). Ultrapassar o limite máximo obriga o governo a "
+        "reduzir a despesa nos quadrimestres seguintes, sob pena de sanções previstas em lei."
+    ),
+    update_frequency="anual",
+    source=SOURCE_SICONFI,
+    methodology=(
+        "# Metodologia — Despesa com pessoal estadual (% da RCL)\n\n"
+        "Fonte: Tesouro Nacional, SICONFI — Relatório de Gestão Fiscal (RGF), Anexo 01 "
+        "(Demonstrativo da Despesa com Pessoal), conta \"Despesa Total com Pessoal - DTP\", "
+        "coluna \"% sobre a RCL Ajustada\", Poder Executivo, fechamento do 3º quadrimestre.\n\n"
+        + _RGF_METHODOLOGY_NOTE
+    ),
+)
+
+_TAXA_ESCOLARIZACAO_METHODOLOGY = (
+    "Fonte: IBGE, PNAD Contínua — tabela SIDRA 7138, variável 10276 (\"Taxa de "
+    "escolarização\"), categoria Total (sexo), grupo de idade \"{faixa}\".\n\n"
+    "Mede o percentual de pessoas nessa faixa etária que frequentava escola ou creche na "
+    "semana de referência da pesquisa, independentemente da série/ano cursado. Disponível por "
+    "Brasil e por UF."
+)
+
+TAXA_ESCOLARIZACAO_6_A_14 = StaticIndicatorMeta(
+    slug="taxa-escolarizacao-6-14",
+    name="Taxa de escolarização (6 a 14 anos)",
+    category=IndicatorCategory.EDUCACAO,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de crianças e adolescentes de 6 a 14 anos (idade do Ensino Fundamental "
+        "obrigatório) que frequentavam escola ou creche na semana de referência da pesquisa."
+    ),
+    description_how=(
+        "Quanto maior, melhor — no Brasil este indicador já está perto da universalização "
+        "(acima de 97% em quase todos os estados), então diferenças pequenas entre estados "
+        "ainda são relevantes."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology="# Metodologia — Taxa de escolarização (6 a 14 anos)\n\n"
+    + _TAXA_ESCOLARIZACAO_METHODOLOGY.format(faixa="6 a 14 anos"),
+)
+TAXA_ESCOLARIZACAO_6_A_14_QUERY = SidraQuery(table=7138, variable=10276, classifications={2: 6794, 58: 31615})
+
+TAXA_ESCOLARIZACAO_15_A_17 = StaticIndicatorMeta(
+    slug="taxa-escolarizacao-15-17",
+    name="Taxa de escolarização (15 a 17 anos)",
+    category=IndicatorCategory.EDUCACAO,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de adolescentes de 15 a 17 anos (idade do Ensino Médio) que frequentavam "
+        "escola ou creche na semana de referência da pesquisa."
+    ),
+    description_how=(
+        "Quanto maior, melhor. É consistentemente mais baixo que a taxa de 6 a 14 anos em todo "
+        "o Brasil — reflete a evasão escolar que se concentra na transição para o Ensino Médio, "
+        "e varia mais entre estados do que a escolarização no Ensino Fundamental."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology="# Metodologia — Taxa de escolarização (15 a 17 anos)\n\n"
+    + _TAXA_ESCOLARIZACAO_METHODOLOGY.format(faixa="15 a 17 anos"),
+)
+TAXA_ESCOLARIZACAO_15_A_17_QUERY = SidraQuery(table=7138, variable=10276, classifications={2: 6794, 58: 2792})
+
+RECEITA_TOTAL_REALIZADA_ESTADUAL = StaticIndicatorMeta(
+    slug="receita-total-realizada-estadual",
+    name="Receita total realizada",
+    category=IndicatorCategory.CONTAS_PUBLICAS,
+    unit="R$",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Total de receitas efetivamente arrecadadas pelo governo estadual em um ano — impostos, "
+        "taxas, transferências recebidas e demais receitas orçamentárias, exceto operações "
+        "intra-orçamentárias."
+    ),
+    description_how=(
+        "O IFB não classifica este indicador como 'melhora' ou 'piora': um valor mais alto "
+        "reflete o tamanho do orçamento do estado (população, atividade econômica, "
+        "transferências recebidas), não necessariamente melhor gestão. Serve principalmente "
+        "como referência de escala para comparar outros números de contas públicas do mesmo "
+        "estado (ex: quanto a dívida ou a despesa com pessoal representam frente ao "
+        "orçamento total)."
+    ),
+    update_frequency="anual",
+    source=SOURCE_SICONFI,
+    methodology=(
+        "# Metodologia — Receita total realizada estadual\n\n"
+        "Fonte: Tesouro Nacional, SICONFI — Relatório Resumido da Execução Orçamentária (RREO), "
+        "Anexo 01 (Balanço Orçamentário), conta \"TOTAL DAS RECEITAS\", coluna \"Até o "
+        "Bimestre\" (acumulado no ano), fechamento do 6º bimestre.\n\n"
+        "**Sobre a apuração**: o RREO é declarado pelo próprio ente federativo ao Tesouro "
+        "Nacional a cada bimestre, conforme exigido pela Lei de Responsabilidade Fiscal (LRF). "
+        "O IFB sincroniza sempre o fechamento do 6º bimestre (valor acumulado de todo o "
+        "exercício), consolidado para o governo estadual como um todo (não separado por "
+        "poder). Não há dado disponível no SICONFI para exercícios anteriores a 2015."
+    ),
+)
+
+TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL = StaticIndicatorMeta(
+    slug="transferencias-constitucionais-estadual",
+    name="Transferências constitucionais recebidas pelo estado",
+    category=IndicatorCategory.CONTAS_PUBLICAS,
+    unit="R$",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Total de transferências constitucionais e legais da União recebidas pelo governo "
+        "estadual em um ano — soma do Fundo de Participação dos Estados (FPE), FUNDEB, "
+        "royalties (petróleo, Itaipu, recursos hídricos e minerais), IPI-Exportação, Lei "
+        "Kandir, CIDE-Combustíveis e demais repasses obrigatórios previstos em lei."
+    ),
+    description_how=(
+        "O IFB não classifica este indicador como 'melhora' ou 'piora': um valor mais alto "
+        "pode refletir mais população, mais atividade econômica (royalties, IPI-Exportação) ou "
+        "mudanças no critério de partilha entre exercícios — não é, isoladamente, uma medida de "
+        "desempenho de gestão estadual. Estados com economia menos diversificada tendem a "
+        "depender proporcionalmente mais dessas transferências do que estados com arrecadação "
+        "própria maior."
+    ),
+    update_frequency="anual",
+    source=SOURCE_TESOURO_TRANSFERENCIAS,
+    methodology=(
+        "# Metodologia — Transferências constitucionais recebidas pelo estado\n\n"
+        "Fonte: Secretaria do Tesouro Nacional, API de Transferências Constitucionais "
+        "(`apiapex.tesouro.gov.br`), endpoint `por_estados`, somando o valor de todas as "
+        "modalidades de transferência (FPE, FUNDEB, royalties, IPI-Exportação, Lei Kandir, "
+        "CIDE-Combustíveis, IOF-Ouro e demais listadas pelo Tesouro) por estado e ano.\n\n"
+        "Não inclui convênios, emendas parlamentares nem outras transferências discricionárias "
+        "— apenas repasses obrigatórios previstos na Constituição ou em lei específica. O ano de "
+        "referência é o ano de competência do repasse, não a data de pagamento."
+    ),
+)

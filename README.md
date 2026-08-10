@@ -110,6 +110,12 @@ oficiais via API pública, sem scraping:
 | IDEB — Anos Iniciais do Ens. Fundamental | INEP | Planilha de divulgação, aba "Brasil (Anos Iniciais)" |
 | IDEB — Anos Finais do Ens. Fundamental | INEP | Planilha de divulgação, aba "Brasil (Anos Finais)" |
 | IDEB — Ensino Médio | INEP | Planilha de divulgação, aba "Brasil (EM)" |
+| Dívida consolidada líquida (% da RCL), por estado | Tesouro Nacional (SICONFI) | RGF, Anexo 02, fechamento do 3º quadrimestre |
+| Despesa com pessoal (% da RCL), por estado | Tesouro Nacional (SICONFI) | RGF, Anexo 01, fechamento do 3º quadrimestre |
+| Transferências constitucionais recebidas pelo estado | Tesouro Nacional | API de Transferências Constitucionais, somada por UF/ano |
+| Taxa de escolarização (6 a 14 anos) | IBGE (PNAD Contínua) | SIDRA tabela 7138, variável 10276 |
+| Taxa de escolarização (15 a 17 anos) | IBGE (PNAD Contínua) | SIDRA tabela 7138, variável 10276 |
+| Receita total realizada, por estado | Tesouro Nacional (SICONFI) | RREO, Anexo 01, fechamento do 6º bimestre |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -210,17 +216,106 @@ homicídios (sem fonte honesta encontrada — Registro Civil do IBGE mistura
 Power BI) — cada uma exigiria um conector dedicado bem mais complexo, fora do
 escopo desta iteração.
 
+**Setor Saúde investigado e descartado por ora**: antes de integrar dados de
+saúde, testamos ao vivo as três fontes mais promissoras e nenhuma passou no
+mesmo padrão de confiabilidade aplicado às demais integrações. Leitos SUS
+(API DEMAS/CNES, `apidadosabertos.saude.gov.br/assistencia-a-saude/hospitais-e-leitos`)
+tem o filtro `uf` retornando erro 500 de forma consistente, e a paginação por
+`offset` não termina de forma sensata (testado até offset=5000 × limit=1000,
+sempre devolvendo página cheia — implicaria milhões de hospitais, o que não
+existe). O Portal de Dados Abertos do SUS (`dadosabertos.saude.gov.br`)
+retornou erro 500 no site inteiro durante o teste. SIOPS (gasto em saúde por
+estado) não tem API JSON, só um sistema de consulta em formulário PHP antigo
+(`siops.datasus.gov.br`). A tabela SIDRA 216 (leitos por habitante, Pesquisa
+de Assistência Médico-Sanitária/IBGE) existe e é estável, mas os dados param
+em 2005 — a pesquisa foi descontinuada, não serve para avaliar gestão atual.
+Antes de retomar este setor, vale testar novamente se o DEMAS/CNES
+estabilizou, ou buscar um dataset CSV estático (como o padrão já usado para
+o IDEB) em vez de depender da API ao vivo.
+
+### Contas públicas por estado (`app/sync/siconfi_client.py`, `app/sync/tesouro_transferencias_client.py`)
+
+Dívida consolidada líquida, despesa com pessoal (ambas como % da Receita
+Corrente Líquida — RCL — ajustada) e receita total realizada vêm do
+**SICONFI** (Tesouro Nacional) — API pública sem autenticação, mas sem
+documentação completa dos parâmetros de consulta publicada pelo Tesouro. Os
+parâmetros usados
+(`id_ente`, `in_periodicidade`, `co_tipo_demonstrativo`, `no_anexo`,
+`co_poder`) e os nomes de conta/coluna (`cod_conta`, `coluna`) foram
+descobertos e confirmados empiricamente contra a API real: para São Paulo
+(id_ente=35) em 2023, a % da DCL sobre a RCL ajustada retornada foi 127,92%
+e a % de despesa com pessoal foi 42,33% — ambos consistentes com números de
+dívida estadual de SP amplamente noticiados (o estado carrega uma das
+maiores relações dívida/RCL do país, herdada da renegociação de dívida com
+a União nos anos 1990). O RGF é declarado por estado a cada quadrimestre; o
+IFB sincroniza sempre o fechamento do 3º quadrimestre (ano completo) como o
+valor anual. Não há dado no SICONFI para exercícios anteriores a 2015
+(testado e confirmado: consultas para 2010–2014 sempre retornam 0
+registros).
+
+A API do SICONFI tem um bug de codificação de caracteres conhecido — o
+texto de `coluna` chega com acentos/símbolos corrompidos mesmo com
+`Content-Type: application/json; charset=utf-8` declarado. `siconfi_client.py`
+contorna isso comparando só os trechos ASCII estáveis da coluna (ex: `"o 3"`
++ `"Quadrimestre"` no RGF, `"(c)"` + `"Bimestre"` no RREO) em vez do texto
+completo.
+
+A receita total realizada usa o **RREO** (Relatório Resumido da Execução
+Orçamentária) em vez do RGF — mesmo host e mesmo padrão de retry, mas
+endpoint (`/rreo`), períodos (6 bimestres, não 3 quadrimestres) e nomes de
+conta diferentes. Testado contra São Paulo em 2023: R$ 326,7 bilhões de
+receita total realizada, na mesma ordem de grandeza do orçamento estadual
+de SP amplamente divulgado na imprensa. Diferente do RGF, o RREO não é
+filtrado por `co_poder` — o valor já vem consolidado para o governo
+estadual inteiro.
+
+**Transferências constitucionais recebidas pelo estado** vem da **API de
+Transferências Constitucionais do Tesouro Nacional** — FPE, FUNDEB,
+royalties (petróleo, Itaipu, recursos hídricos/minerais), IPI-Exportação,
+Lei Kandir, CIDE-Combustíveis, IOF-Ouro e demais repasses obrigatórios
+previstos em lei (não inclui convênios nem emendas parlamentares). API
+pública **sem autenticação**, confirmada ao vivo: uma única requisição com
+`p_estado` e `p_ano` listando todos os 27 estados e todos os anos (valores
+separados por `:`) retorna ~23 mil linhas (estado × ano × mês × tipo de
+transferência), que o IFB soma por estado e ano.
+
+Esta API não tem documentação pública indexada por buscador nem um
+`swagger.json` acessível diretamente por URL — a única forma de descobrir a
+URL real (`https://apiapex.tesouro.gov.br/aria/`) e os parâmetros de
+consulta foi carregar a página de visualização do Tesouro
+(`sisweb.tesouro.gov.br/apex/f?p=10250:7:...`) em um browser e capturar a
+chamada de rede que busca a especificação OpenAPI embutida na própria
+página. Essa especificação avisa "para solicitar acesso, entrar em contato
+com desenvolvimento@tesouro.gov.br", mas na prática a API responde sem
+qualquer chave — o aviso provavelmente se refere a um nível de acesso mais
+amplo (dados por município) do que o usado aqui.
+
+Antes de escolher esta fonte, também testamos o Portal da Transparência
+(CGU) para o mesmo indicador, mas descartamos: exige cadastro de chave de
+API, e não havia como validar a resposta real nesta sessão. A API do
+Tesouro cobre exatamente o mesmo conceito (transferências obrigatórias por
+estado) sem essa fricção, então foi a escolha final.
+
 ### Indicadores por estado
 
-Três dos indicadores do SIDRA (analfabetismo, esperança de vida, mortalidade
-infantil) também são sincronizados **por UF** — o SIDRA aceita nível
-territorial `n3` retornando as 27 UFs de uma vez (`fetch_sidra_series_by_state`
-em `app/sync/ibge_client.py`). PIB per capita (tabela 6784) não tem quebra
-por estado no SIDRA, só nível Brasil.
+Cinco dos indicadores do SIDRA (analfabetismo, esperança de vida, mortalidade
+infantil, e as duas taxas de escolarização) também são sincronizados **por
+UF** — o SIDRA aceita nível territorial `n3` retornando as 27 UFs de uma vez
+(`fetch_sidra_series_by_state` em `app/sync/ibge_client.py`). PIB per capita
+(tabela 6784) não tem quebra por estado no SIDRA, só nível Brasil.
 
-Isso soma ao desmatamento (9 estados da Amazônia Legal, via INPE) para dar
-conteúdo de verdade a `/estados/[uf]` e ao comparador Estado × Estado —
-antes só desmatamento tinha dado por UF.
+As taxas de escolarização (tabela 7138, variável 10276) mostram a
+universalização quase completa do Ensino Fundamental (6 a 14 anos: acima de
+97% em praticamente todos os estados) contra uma queda visível na idade do
+Ensino Médio (15 a 17 anos: entre ~89% e ~95% conforme o estado, 2025) — os
+dois indicadores juntos evidenciam onde a evasão escolar se concentra,
+estado a estado.
+
+Isso soma ao desmatamento (9 estados da Amazônia Legal, via INPE) e aos três
+indicadores de contas públicas por estado (dívida consolidada líquida,
+despesa com pessoal — ambos via SICONFI — e transferências constitucionais,
+via API do Tesouro Nacional, todos para os 27 estados) para dar conteúdo de
+verdade a `/estados/[uf]` e ao comparador Estado × Estado.
 
 A busca por estado é isolada da mesma forma que os indicadores nacionais:
 se a chamada à API falhar antes de processar qualquer UF, vira um registro

@@ -27,6 +27,8 @@ from app.sync.definitions import (
     ALFABETISMO,
     ALFABETISMO_QUERY,
     DEFORESTATION_LEGAL_AMAZON,
+    DESPESA_COM_PESSOAL_ESTADUAL,
+    DIVIDA_CONSOLIDADA_LIQUIDA_ESTADUAL,
     ESPERANCA_VIDA,
     ESPERANCA_VIDA_QUERY,
     IDEB_ANOS_FINAIS,
@@ -38,6 +40,12 @@ from app.sync.definitions import (
     MORTALIDADE_INFANTIL_QUERY,
     PIB_PER_CAPITA,
     PIB_PER_CAPITA_QUERY,
+    RECEITA_TOTAL_REALIZADA_ESTADUAL,
+    TAXA_ESCOLARIZACAO_6_A_14,
+    TAXA_ESCOLARIZACAO_6_A_14_QUERY,
+    TAXA_ESCOLARIZACAO_15_A_17,
+    TAXA_ESCOLARIZACAO_15_A_17_QUERY,
+    TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
     IndicatorSpec,
     StaticIndicatorMeta,
 )
@@ -51,6 +59,13 @@ from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.seed_government_periods import seed as seed_government_periods
 from app.sync.seed_states import seed as seed_states
+from app.sync.siconfi_client import (
+    DESPESA_COM_PESSOAL_RCL,
+    DIVIDA_CONSOLIDADA_LIQUIDA_RCL,
+    fetch_rgf_by_state,
+    fetch_rreo_by_state,
+)
+from app.sync.tesouro_transferencias_client import fetch_transferencias_constitucionais_by_state
 from app.sync.upsert import (
     ensure_methodology,
     get_or_create_brasil,
@@ -218,6 +233,22 @@ def main() -> None:
     # PIB per capita (tabela 6784) não tem quebra por estado no SIDRA.
 
     sync_indicator(
+        TAXA_ESCOLARIZACAO_6_A_14, lambda: fetch_sidra_series(TAXA_ESCOLARIZACAO_6_A_14_QUERY)
+    )
+    sync_by_state(
+        TAXA_ESCOLARIZACAO_6_A_14,
+        lambda: fetch_sidra_series_by_state(TAXA_ESCOLARIZACAO_6_A_14_QUERY),
+    )
+
+    sync_indicator(
+        TAXA_ESCOLARIZACAO_15_A_17, lambda: fetch_sidra_series(TAXA_ESCOLARIZACAO_15_A_17_QUERY)
+    )
+    sync_by_state(
+        TAXA_ESCOLARIZACAO_15_A_17,
+        lambda: fetch_sidra_series_by_state(TAXA_ESCOLARIZACAO_15_A_17_QUERY),
+    )
+
+    sync_indicator(
         IDEB_ANOS_INICIAIS,
         lambda: fetch_ideb_series(IdebSheetSpec(IDEB_ZIP_URL, "Brasil (Anos Iniciais)")),
     )
@@ -230,6 +261,23 @@ def main() -> None:
         lambda: fetch_ideb_series(IdebSheetSpec(IDEB_ZIP_URL, "Brasil (EM)")),
     )
     # IDEB não tem quebra por estado nesta planilha de divulgação nacional.
+
+    sync_by_state(
+        DIVIDA_CONSOLIDADA_LIQUIDA_ESTADUAL,
+        lambda: fetch_rgf_by_state(DIVIDA_CONSOLIDADA_LIQUIDA_RCL),
+    )
+    sync_by_state(
+        DESPESA_COM_PESSOAL_ESTADUAL,
+        lambda: fetch_rgf_by_state(DESPESA_COM_PESSOAL_RCL),
+    )
+    # Ambos só têm dado por estado (RGF é declarado por ente federativo) —
+    # não existe uma agregação "Brasil" oficial para dívida/pessoal estadual.
+
+    sync_by_state(
+        TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
+        fetch_transferencias_constitucionais_by_state,
+    )
+    sync_by_state(RECEITA_TOTAL_REALIZADA_ESTADUAL, fetch_rreo_by_state)
 
     refresh_summary_view()
     print("Materialized view `indicators` atualizada.")
