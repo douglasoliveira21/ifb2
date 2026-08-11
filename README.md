@@ -104,6 +104,7 @@ oficiais via API pública, sem scraping:
 | Resultado primário do governo central (12 meses) | Banco Central | SGS/BCB 5783 (sinal invertido — ver abaixo) |
 | Desmatamento — Amazônia Legal | INPE (PRODES) | Arquivo de taxas anuais do TerraBrasilis (soma por período) |
 | Área sob alerta de desmatamento — Cerrado (DETER), Brasil e por estado | INPE (DETER) | `file-delivery/download/deter-cerrado-nb/monthly`, soma mensal por ano |
+| Execução orçamentária da União (valor pago), Brasil | Ministério do Planejamento e Orçamento (SIOP) | Endpoint SPARQL público, soma de `loa:valorPago` por exercício |
 | Taxa de analfabetismo (15+ anos) | IBGE (PNAD Contínua) | SIDRA tabela 7113, variável 10267 |
 | Esperança de vida ao nascer | IBGE (Projeção da População) | SIDRA tabela 7362, variável 2503 |
 | Mortalidade infantil | IBGE (Projeção da População) | SIDRA tabela 7362, variável 1940 |
@@ -372,6 +373,32 @@ período 2023-2024 (8.174 km², amplamente noticiada), com a diferença
 esperada entre os dois sistemas (ano civil vs. ano agrícola
 ago-jul, e metodologias diferentes).
 
+### Transparência e controle — Execução orçamentária da União (`app/sync/siop_client.py`)
+
+**4ª rodada de correção.** A conclusão anterior — Portal da
+Transparência exige login pessoal gov.br, sem chave pública
+compartilhada — continua correta, mas o erro foi tratar o Portal da
+Transparência como a *única* fonte possível para esse setor. A
+sugestão foi ir atrás da fonte originária de cada tipo de dado em vez
+do agregador: para execução orçamentária, isso é o **SIOP** (Sistema
+Integrado de Planejamento e Orçamento), mantido pelo próprio Ministério
+do Planejamento — não um portal de transparência terceirizado, a fonte
+primária do Executivo federal.
+
+O SIOP publica os dados de execução orçamentária como RDF público, sem
+login, num endpoint SPARQL padrão (Virtuoso) em
+`www1.siop.planejamento.gov.br/sparql/`. Cada exercício tem um grafo
+nomeado próprio (`http://orcamento.dados.gov.br/{ano}/`), usando o
+vocabulário LOA (`http://vocab.e.gov.br/2013/09/loa#`) — o IFB soma a
+propriedade `loa:valorPago` de todos os itens de despesa
+(`loa:ItemDespesa`) de cada exercício.
+
+Validado ao vivo contra a trajetória amplamente conhecida do orçamento
+federal: R$ 2,71 tri em 2019, salto para R$ 3,54 tri em 2020 (gastos
+emergenciais da pandemia, amplamente noticiado), subindo de forma
+consistente e monotônica até R$ 5,05 tri em 2025 — a mesma tendência e
+ordem de grandeza divulgada pela imprensa econômica ano a ano.
+
 ### Setores reinvestigados sem indicador novo (2ª rodada de correção)
 
 Depois de corrigir Justiça, Gestão pública, Comércio exterior e
@@ -397,12 +424,6 @@ documentados do que antes:
   bloqueou (403) as tentativas de acesso direto para confirmar pela
   fonte primária. Fica como pendência real, não como "não existe" —
   não tive como confirmar nem descartar com confiança.
-- **Transparência e controle**: confirmado que a API do Portal da
-  Transparência não tem uma chave pública compartilhada como a do
-  DataJud (CNJ) — a única forma de obter uma chave é logar com conta
-  gov.br pessoal (CPF + autenticação de dois fatores) e receber o token
-  por e-mail. Isso está fora do que o IFB pode fazer de forma
-  automatizada sem uma credencial pessoal do usuário.
 - **Pessoas com deficiência**: o Censo 2022 e a PNS 2019 têm dados
   sobre deficiência, mas em anos e metodologias diferentes entre si (e
   diferentes da PNAD Contínua usada no resto do projeto) — não formam

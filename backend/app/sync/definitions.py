@@ -2338,3 +2338,53 @@ AREA_ALERTA_DESMATAMENTO_CERRADO = StaticIndicatorMeta(
         "desmatamento do Cerrado\", só como um indicador de tendência baseado em alertas."
     ),
 )
+
+SOURCE_SIOP = SourceSpec(
+    key="siop",
+    name="Ministério do Planejamento e Orçamento (SIOP)",
+    url="https://www1.siop.planejamento.gov.br/siopdoc/doku.php/acesso_publico:dados_abertos",
+    description=(
+        "Sistema Integrado de Planejamento e Orçamento do Governo Federal (SIOP) — dados "
+        "abertos de execução orçamentária da União, publicados em RDF/SPARQL."
+    ),
+)
+
+EXECUCAO_ORCAMENTARIA_UNIAO = StaticIndicatorMeta(
+    slug="execucao-orcamentaria-uniao",
+    name="Execução orçamentária da União (valor pago)",
+    category=IndicatorCategory.TRANSPARENCIA_CONTROLE,
+    unit="R$",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Soma de tudo que foi efetivamente pago pelo governo federal no exercício, somando o "
+        "valor pago de cada item de despesa do Orçamento Geral da União — inclui despesas "
+        "correntes, investimentos, transferências a estados e municípios, e serviço da dívida."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — é o tamanho do gasto federal executado, não "
+        "uma medida de qualidade ou eficiência do gasto. Cresce naturalmente com a inflação e "
+        "com o tamanho da economia; para avaliar se o gasto está crescendo ou encolhendo em "
+        "termos reais, é preciso descontar a inflação do período, o que este indicador não "
+        "faz."
+    ),
+    update_frequency="anual",
+    source=SOURCE_SIOP,
+    methodology=(
+        "# Metodologia — Execução orçamentária da União (valor pago)\n\n"
+        "Fonte: SIOP (Sistema Integrado de Planejamento e Orçamento do Governo Federal), "
+        "endpoint SPARQL público (`www1.siop.planejamento.gov.br/sparql/`) — dados publicados "
+        "em RDF pelo próprio Ministério do Planejamento e Orçamento, sem autenticação.\n\n"
+        "O IFB soma a propriedade `valorPago` (vocabulário LOA, "
+        "`http://vocab.e.gov.br/2013/09/loa#`) de todos os itens de despesa "
+        "(`loa:ItemDespesa`) do grafo de cada exercício "
+        "(`http://orcamento.dados.gov.br/{ano}/`).\n\n"
+        "**Por que o SIOP, e não o Portal da Transparência**: o Portal da Transparência exige "
+        "um token pessoal (login gov.br com CPF do usuário) para qualquer chamada à API — o "
+        "IFB não usa fontes que dependem de credencial pessoal. O SIOP publica os mesmos "
+        "dados de execução orçamentária, sem login, como dado aberto direto da fonte "
+        "primária (o próprio Executivo federal, responsável pelo SIOP).\n\n"
+        "Validado contra a trajetória amplamente conhecida do orçamento federal: salto de "
+        "R$ 2,71 tri (2019) para R$ 3,54 tri (2020, gastos emergenciais da pandemia), subindo "
+        "de forma consistente até R$ 4,65 tri (2024)."
+    ),
+)

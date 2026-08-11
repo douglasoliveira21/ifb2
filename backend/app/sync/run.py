@@ -53,6 +53,7 @@ from app.sync.definitions import (
     ESCOLARIDADE_AVANCADA_QUERY,
     ESPERANCA_VIDA,
     ESPERANCA_VIDA_QUERY,
+    EXECUCAO_ORCAMENTARIA_UNIAO,
     EXPORTACOES_TOTAIS,
     HOMICIDIO_DOLOSO_ESTADUAL,
     IDEB_ANOS_FINAIS,
@@ -159,6 +160,7 @@ from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
 from app.sync.deter_client import fetch_area_desmatada_brasil, fetch_area_desmatada_by_state
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.leitos_sus_client import fetch_leitos_sus_brasil, fetch_leitos_sus_by_state
+from app.sync.siop_client import fetch_execucao_orcamentaria_uniao
 from app.sync.sinesp_vde_client import (
     fetch_homicidio_doloso_brasil,
     fetch_homicidio_doloso_by_state,
@@ -624,6 +626,13 @@ def main() -> None:
         IMPORTACOES_TOTAIS,
         lambda: fetch_comex_totals_by_state("import", start_year=2015, end_year=_last_complete_year),
     )
+
+    sync_indicator(
+        EXECUCAO_ORCAMENTARIA_UNIAO,
+        lambda: fetch_execucao_orcamentaria_uniao(start_year=2019),
+    )
+    # Só nível Brasil — é o orçamento consolidado da União, não faz
+    # sentido uma quebra por estado.
 
     refresh_summary_view()
     print("Materialized view `indicators` atualizada.")
