@@ -53,6 +53,7 @@ from app.sync.definitions import (
     ESPERANCA_VIDA,
     ESPERANCA_VIDA_QUERY,
     EXPORTACOES_TOTAIS,
+    HOMICIDIO_DOLOSO_ESTADUAL,
     IDEB_ANOS_FINAIS,
     IDEB_ANOS_INICIAIS,
     IDEB_ENSINO_MEDIO,
@@ -156,6 +157,10 @@ from app.sync.ibge_client import (
 from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.leitos_sus_client import fetch_leitos_sus_brasil, fetch_leitos_sus_by_state
+from app.sync.sinesp_vde_client import (
+    fetch_homicidio_doloso_brasil,
+    fetch_homicidio_doloso_by_state,
+)
 from app.sync.seed_government_periods import seed as seed_government_periods
 from app.sync.seed_municipios import seed as seed_municipios
 from app.sync.seed_states import seed as seed_states
@@ -546,6 +551,13 @@ def main() -> None:
     sync_indicator(TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL, fetch_mvi_rate_brasil)
     sync_by_state(TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL, fetch_mvi_rate_by_state)
     # Fonte não-governamental (FBSP) — ver metodologia do indicador.
+
+    sync_indicator(
+        HOMICIDIO_DOLOSO_ESTADUAL, lambda: fetch_homicidio_doloso_brasil(start_year=2019)
+    )
+    sync_by_state(
+        HOMICIDIO_DOLOSO_ESTADUAL, lambda: fetch_homicidio_doloso_by_state(start_year=2019)
+    )
 
     # Piloto de granularidade municipal — seed_municipios() já rodou no
     # início de main(). Só o último ano completo por indicador (ver

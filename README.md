@@ -118,6 +118,7 @@ oficiais via API pública, sem scraping:
 | Receita total realizada, por estado | Tesouro Nacional (SICONFI) | RREO, Anexo 01, fechamento do 6º bimestre |
 | Leitos SUS, Brasil e por estado | Ministério da Saúde (CNES) | Arquivo anual `Leitos_AAAA.csv`, soma de `LEITOS_SUS` no último mês publicado |
 | Taxa de Mortes Violentas Intencionais (MVI), Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota abaixo) | Planilha do Anuário Brasileiro de Segurança Pública, tabela "Mortes violentas intencionais" |
+| Homicídio doloso, Brasil e por estado | Ministério da Justiça e Segurança Pública (Sinesp VDE) | Arquivo anual `bancovde-AAAA.xlsx`, soma de `total_vitima` onde `evento = "Homicídio doloso"` |
 | População residente estimada, Brasil e por estado | IBGE | SIDRA tabela 6579, variável 9324 |
 | Nascimentos, óbitos, taxas de crescimento/natalidade/mortalidade/fecundidade, índice de envelhecimento — Brasil e por estado | IBGE (Projeção da População) | SIDRA tabela 7360, variáveis 10600/10601/10605/10606/10607/2493/10612 |
 | PIB (valores correntes), Crescimento do PIB (variação real), Deflator do PIB | IBGE (Contas Nacionais) | SIDRA tabela 6784, variáveis 9808/9810/9811 |
@@ -305,6 +306,89 @@ mortes por intervenção policial — testado contra a taxa nacional (Brasil
 os mais baixos, Bahia entre os mais altos), batendo com o que é amplamente
 divulgado. Como o IDEB, a URL da planilha é específica da edição e precisa
 ser atualizada manualmente a cada novo Anuário (normalmente anual).
+
+### Segurança pública — Homicídio doloso (`app/sync/sinesp_vde_client.py`)
+
+**Correção**: a nota acima ("SINESP não tem canal de acesso
+programático funcional") estava incompleta — `dados.mj.gov.br` de fato
+não resolve por DNS, mas os arquivos oficiais do Sinesp VDE (Validador
+de Dados Estatísticos) também são publicados diretamente no domínio
+`www.gov.br` (que funciona normalmente), um `.xlsx` por ano
+(2015–2026), em
+`/mj/pt-br/.../estatistica/download/dnsp-base-de-dados/bancovde-AAAA.xlsx`.
+O erro foi não ter procurado esse caminho alternativo antes de concluir
+que a fonte estava inacessível.
+
+O arquivo exige cabeçalho de navegador (`User-Agent`) para não levar
+403 — não é autenticação, é checagem anti-bot básica; sem isso, toda
+chamada falha. Cada arquivo anual traz um registro por
+UF/município/tipo de ocorrência/mês (~765 mil linhas em 2024); o IFB
+soma o campo `total_vitima` das linhas com `evento = "Homicídio
+doloso"`, por UF e por ano — mesmo padrão "baixar arquivo estático por
+ano" já usado para Leitos SUS e IDEB.
+
+Complementa (não substitui) a Taxa de Mortes Violentas Intencionais já
+existente (FBSP, não-governamental, soma 4 categorias): este indicador
+é só "Homicídio doloso" isolado, direto da fonte oficial do governo
+federal.
+
+Validado ao vivo contra números amplamente divulgados: Brasil somou
+39.228 homicídios dolosos em 2019 e 35.136 em 2024 — ambos na mesma
+ordem de grandeza dos totais anuais publicados pelo Anuário Brasileiro
+de Segurança Pública para esses anos; por estado, Bahia lidera em 2024
+(4.207), consistente com a Bahia estar entre os estados com as taxas
+de homicídio mais altas do país nos últimos anos, amplamente noticiado.
+
+### Setores reinvestigados sem indicador novo (2ª rodada de correção)
+
+Depois de corrigir Justiça, Gestão pública, Comércio exterior e
+Segurança pública (achados errados em rodadas anteriores), os 5 setores
+abaixo foram reinvestigados com o mesmo rigor. Nenhum resultou em
+indicador novo desta vez, mas por motivos mais específicos e melhor
+documentados do que antes:
+
+- **Compras públicas**: o PNCP (Portal Nacional de Contratações
+  Públicas, `pncp.gov.br/api/consulta`) é uma API real, pública, sem
+  chave — isso corrige a alegação anterior de que só existiam
+  estatísticas de uso da API do compras.gov.br. O problema é outro: o
+  endpoint de contratações não tem nenhum agregado pronto, só registros
+  individuais paginados (50 por página) — uma única semana, de um único
+  código de modalidade de contratação, já tem 724 registros. Somar o
+  valor total de compras públicas do país exigiria paginar centenas de
+  milhares de registros por ano, através de ~13 códigos de modalidade —
+  mesma categoria de problema do SIM (mortalidade), grande demais para
+  a arquitetura leve do projeto sem uma reformulação maior.
+- **Meio ambiente (PRODES Cerrado)**: o bug do dashboard foi
+  reproduzido de novo e confirmado (a página do Cerrado ainda carrega o
+  arquivo de dados da Amazônia). Mas desta vez fui além: descobri que o
+  dado real do Cerrado existe num serviço WFS oficial do INPE
+  (`geoserver/ows`, camada `prodes-cerrado-nb:yearly_deforestation`) —
+  um serviço geoespacial padrão, não o dashboard com bug. O problema:
+  são mais de 2,3 milhões de polígonos de desmatamento (um por cena de
+  satélite), sem nenhuma agregação disponível no servidor (o serviço
+  WPS, que faria a soma do lado do INPE, está desabilitado nesta
+  instância) — somar a área por estado/ano exigiria baixar e processar
+  todos os polígonos localmente, de novo na mesma categoria de peso do
+  SIM.
+- **Ciência e tecnologia**: procurei "PINTEC Semestral" especificamente
+  (nome sugerido) no catálogo do SIDRA e não encontrei nenhuma tabela
+  com esse nome ou período mais recente que 2017; o site do IBGE
+  bloqueou (403) as tentativas de acesso direto para confirmar pela
+  fonte primária. Fica como pendência real, não como "não existe" —
+  não tive como confirmar nem descartar com confiança.
+- **Transparência e controle**: confirmado que a API do Portal da
+  Transparência não tem uma chave pública compartilhada como a do
+  DataJud (CNJ) — a única forma de obter uma chave é logar com conta
+  gov.br pessoal (CPF + autenticação de dois fatores) e receber o token
+  por e-mail. Isso está fora do que o IFB pode fazer de forma
+  automatizada sem uma credencial pessoal do usuário.
+- **Pessoas com deficiência**: o Censo 2022 e a PNS 2019 têm dados
+  sobre deficiência, mas em anos e metodologias diferentes entre si (e
+  diferentes da PNAD Contínua usada no resto do projeto) — não formam
+  uma série comparável ano a ano sem uma reformulação de como o IFB
+  trata indicadores de fonte não-contínua. Combinar os dois sem deixar
+  isso claro seria enganoso; documentar essa combinação corretamente
+  fica como trabalho futuro.
 
 ### Contas públicas por estado (`app/sync/siconfi_client.py`, `app/sync/tesouro_transferencias_client.py`)
 

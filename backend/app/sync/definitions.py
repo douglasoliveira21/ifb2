@@ -2250,3 +2250,52 @@ IMPORTACOES_TOTAIS = StaticIndicatorMeta(
         "`flow: \"import\"` e métrica `metricFOB`, valor FOB em dólares americanos."
     ),
 )
+
+SOURCE_MJSP = SourceSpec(
+    key="mjsp-sinesp-vde",
+    name="Ministério da Justiça e Segurança Pública (Sinesp VDE)",
+    url=(
+        "https://www.gov.br/mj/pt-br/assuntos/sua-seguranca/seguranca-publica/estatistica/"
+        "dados-nacionais-1"
+    ),
+    description=(
+        "Ministério da Justiça e Segurança Pública — Base de Dados Nacional de Segurança "
+        "Pública (Sinesp VDE), consolidada a partir de dados declarados pelos gestores "
+        "estaduais de segurança pública."
+    ),
+)
+
+HOMICIDIO_DOLOSO_ESTADUAL = StaticIndicatorMeta(
+    slug="homicidio-doloso-estadual",
+    name="Homicídio doloso",
+    category=IndicatorCategory.SEGURANCA,
+    unit="ocorrências",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Número de vítimas de homicídio doloso (morte intencional, sem incluir latrocínio, "
+        "lesão corporal seguida de morte ou mortes decorrentes de intervenção de agente do "
+        "Estado, que são categorias separadas nesta mesma base) registradas no ano."
+    ),
+    description_how=(
+        "Quanto menor, menos mortes violentas intencionais no período. É uma contagem "
+        "absoluta, então estados mais populosos tendem a ter números maiores — compare "
+        "sempre relativizando pelo tamanho do estado, não em valor absoluto."
+    ),
+    update_frequency="anual",
+    source=SOURCE_MJSP,
+    methodology=(
+        "# Metodologia — Homicídio doloso\n\n"
+        "Fonte: Ministério da Justiça e Segurança Pública, Base de Dados Nacional de "
+        "Segurança Pública (Sinesp VDE — Validador de Dados Estatísticos). O IFB baixa o "
+        "arquivo anual publicado pelo MJSP (um arquivo `.xlsx` por ano, com um registro por "
+        "UF/município/tipo de ocorrência/mês) e soma o campo `total_vitima` das linhas com "
+        "`evento = \"Homicídio doloso\"`, por UF e por ano.\n\n"
+        "Os dados são declarados pelos próprios gestores estaduais de segurança pública ao "
+        "MJSP, que os consolida nacionalmente — não é um dado apurado diretamente pelo IFB "
+        "nem pelo governo federal. Diferente da Taxa de Mortes Violentas Intencionais "
+        "(indicador `taxa-mortes-violentas-intencionais-estadual`, fonte não-governamental "
+        "FBSP, que soma homicídio doloso + latrocínio + lesão corporal seguida de morte), "
+        "este indicador conta só a categoria \"Homicídio doloso\" isoladamente, direto da "
+        "fonte oficial do governo federal."
+    ),
+)
