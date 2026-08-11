@@ -1920,3 +1920,39 @@ PRODUCAO_INDUSTRIAL = StaticIndicatorMeta(
     ),
 )
 PRODUCAO_INDUSTRIAL_QUERY = SidraQuery(table=8888, variable=11602, classifications={544: 129314})
+
+DOMICILIOS_BOLSA_FAMILIA = StaticIndicatorMeta(
+    slug="domicilios-bolsa-familia",
+    name="Domicílios que recebem Bolsa Família",
+    category=IndicatorCategory.ASSISTENCIA_SOCIAL,
+    unit="mil domicílios",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Número de domicílios em que algum morador recebeu rendimento do Programa Bolsa "
+        "Família (ou seu antecessor/sucessor sob outro nome, conforme vigente no ano), "
+        "segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — uma alta pode significar tanto expansão "
+        "deliberada do programa (mais famílias cobertas) quanto mais famílias em situação de "
+        "pobreza que passaram a ter direito ao benefício, dependendo do contexto econômico e "
+        "de regras de elegibilidade do período. É uma contagem absoluta (não uma taxa), então "
+        "estados mais populosos tendem a ter números maiores mesmo com cobertura "
+        "proporcionalmente menor — compare sempre relativizando pelo tamanho do estado."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Domicílios que recebem Bolsa Família\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 7449, variável 10790 (\"Domicílios "
+        "em que algum morador do domicílio recebeu rendimento do Programa Bolsa Família\"), "
+        "classificação 1032 (\"Posse ou acesso a bens ou serviços\"), categoria 49236 "
+        "(\"Total\").\n\n"
+        "É a contagem de domicílios (a pergunta da PNAD Contínua usa o nome do programa "
+        "vigente na data da entrevista), não o número de pessoas nem de famílias cadastradas "
+        "no CadÚnico — pode diferir dos números oficiais do Ministério do Desenvolvimento e "
+        "Assistência Social, que usa a folha de pagamento administrativa do programa como "
+        "fonte, não uma pesquisa amostral."
+    ),
+)
+DOMICILIOS_BOLSA_FAMILIA_QUERY = SidraQuery(table=7449, variable=10790, classifications={1032: 49236})

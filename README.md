@@ -144,6 +144,7 @@ oficiais via API pública, sem scraping:
 | Domicílios com acesso à internet, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7307, variável 9784 |
 | Valor da produção agrícola, Brasil e por estado (desde 1994) | IBGE (Produção Agrícola Municipal) | SIDRA tabela 5457, variável 215 |
 | Produção industrial (variação interanual), Brasil e estados com cobertura da amostra | IBGE (PIM-PF) | SIDRA tabela 8888, variável 11602 |
+| Domicílios que recebem Bolsa Família, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7449, variável 10790 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -705,6 +706,30 @@ mostra só os que têm dado, sem inventar valor para o resto.
 Validado ao vivo: variações mensais entre -0,7% e +4,4% nos últimos
 meses, na faixa normal de volatilidade da produção industrial
 brasileira amplamente reportada pela imprensa econômica.
+
+### Assistência social (`IndicatorCategory.ASSISTENCIA_SOCIAL`, migration 0009)
+
+Comércio exterior e Ciência e tecnologia ficaram sem indicador novo
+nesta sessão (fontes bloqueadas ou congeladas — ver notas acima).
+Assistência social teve uma saída: **Domicílios que recebem Bolsa
+Família**, tabela SIDRA 7449, Brasil e por estado, reaproveitando 100%
+o cliente já existente.
+
+Achadinho no caminho: a variável "óbvia" da mesma tabela (percentual de
+domicílios, var 10792) retorna 100% em todos os anos quando combinada
+com a categoria "Total" da classificação de posse de bens — não é o
+percentual da população brasileira que recebe o benefício, é uma
+armadilha de combinação de classificações da própria tabela do IBGE.
+Usei a contagem absoluta (var 10790) em vez disso, que bate com números
+conhecidos.
+
+Validado ao vivo: contagem subindo de 6,1 milhões de domicílios (2021)
+para 14,4 milhões (2024) — consistente com a expansão do programa
+amplamente noticiada a partir de 2023; por estado, o Maranhão tem uma
+contagem absoluta próxima à de São Paulo (920 mil x 1,34 milhão) apesar
+de ter menos de um sexto da população de SP — confirma a cobertura
+proporcionalmente muito maior nos estados mais pobres, padrão já
+conhecido do programa.
 
 ### Indicadores por estado
 

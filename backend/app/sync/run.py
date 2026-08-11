@@ -34,6 +34,8 @@ from app.sync.definitions import (
     DOMICILIOS_AGUA_REDE_GERAL_QUERY,
     DOMICILIOS_ALUGADOS,
     DOMICILIOS_ALUGADOS_QUERY,
+    DOMICILIOS_BOLSA_FAMILIA,
+    DOMICILIOS_BOLSA_FAMILIA_QUERY,
     DOMICILIOS_COM_INTERNET,
     DOMICILIOS_COM_INTERNET_QUERY,
     DOMICILIOS_ENERGIA_ELETRICA,
@@ -429,6 +431,7 @@ def main() -> None:
         (DOMICILIOS_LIXO_COLETADO, DOMICILIOS_LIXO_COLETADO_QUERY),
         (DOMICILIOS_ENERGIA_ELETRICA, DOMICILIOS_ENERGIA_ELETRICA_QUERY),
         (DOMICILIOS_COM_INTERNET, DOMICILIOS_COM_INTERNET_QUERY),
+        (DOMICILIOS_BOLSA_FAMILIA, DOMICILIOS_BOLSA_FAMILIA_QUERY),
     ]:
         sync_indicator(meta, lambda query=query: drop_future_years(fetch_sidra_series(query)))
         sync_by_state(meta, lambda query=query: drop_future_years_by_state(fetch_sidra_series_by_state(query)))

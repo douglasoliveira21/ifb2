@@ -12,6 +12,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   SANEAMENTO: "Saneamento",
   AGRICULTURA: "Agricultura",
   INDUSTRIA: "Indústria",
+  ASSISTENCIA_SOCIAL: "Assistência social",
 };
 
 export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
