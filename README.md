@@ -131,6 +131,7 @@ oficiais via API pública, sem scraping:
 | Rendimento médio mensal real (média anual), Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 4660, variável 5933 |
 | Taxa de informalidade, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 4708, variável 12466 |
 | Índice de Gini da renda domiciliar per capita, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7435, variável 10681 |
+| Dívida líquida do setor público (% do PIB) | Banco Central | SGS/BCB 4513 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -503,6 +504,29 @@ número recorrente na cobertura do tema; Índice de Gini caindo de 0,543
 (2021) para ~0,51 (2025), na mesma direção da queda de desigualdade
 reportada pelo IBGE no período; por estado, SP com desocupação mais
 baixa que MA, batendo com o padrão regional conhecido.
+
+### Finanças públicas (complemento)
+
+O projeto já cobria bastante desse setor (dívida bruta/PIB, resultado
+primário, dívida estadual, receita/despesa estadual e municipal via
+SICONFI, transferências constitucionais). Faltava a **dívida líquida do
+setor público (% do PIB)** — série SGS/BCB 4513, complementar à dívida
+bruta já integrada (`divida-pib`, série 13762): a líquida desconta os
+ativos financeiros do setor público (reservas internacionais etc.), a
+bruta não.
+
+Validado ao vivo contra um número amplamente noticiado: a série fecha
+2020 em 61,3% do PIB, exatamente o valor divulgado na época como o
+salto da dívida líquida por causa dos gastos emergenciais da pandemia;
+e 2013 em ~30-32%, o piso histórico da série também batendo com a
+cobertura da época.
+
+Ficou de fora (sem fonte com API estável encontrada nesta rodada):
+**carga tributária bruta** — a Receita Federal publica em relatório
+anual (PDF), não em API; e **resultado nominal do setor público** —
+não localizei um código SGS confirmável com o mesmo rigor dos demais
+antes do prazo desta rodada. Retomar quando houver uma fonte com o
+mesmo nível de confiança já exigido no resto do projeto.
 
 ### Indicadores por estado
 

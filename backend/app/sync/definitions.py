@@ -351,6 +351,38 @@ INDICATORS: list[IndicatorSpec] = [
             "nesta série; revisões de valores já publicados ficam registradas em `data_revisions`."
         ),
     ),
+    IndicatorSpec(
+        slug="divida-liquida-setor-publico",
+        name="Dívida líquida do setor público (% do PIB)",
+        category=IndicatorCategory.CONTAS_PUBLICAS,
+        unit="% do PIB",
+        polarity=IndicatorPolarity.lower_is_better,
+        description_what=(
+            "Percentual que a dívida líquida do setor público (União, estados, municípios e "
+            "Banco Central) representa em relação ao PIB — diferente da dívida bruta por "
+            "descontar os ativos financeiros do setor público (reservas internacionais, "
+            "créditos, aplicações), não só as obrigações."
+        ),
+        description_how=(
+            "É um indicador complementar à dívida bruta (indicador `divida-pib`): a dívida "
+            "líquida é sempre menor porque desconta os ativos do setor público, mas segue a "
+            "mesma direção de leitura — quanto menor, mais espaço fiscal o país tem."
+        ),
+        update_frequency="mensal",
+        source=SOURCE_BCB,
+        sgs_series_code=4513,
+        resample_monthly=False,
+        methodology=(
+            "# Metodologia — Dívida líquida do setor público (% do PIB)\n\n"
+            "Fonte: Banco Central do Brasil, Estatísticas Fiscais. O IFB coleta a série "
+            "temporal 4513 do SGS/BCB.\n\n"
+            "Diferente da dívida bruta do governo geral (indicador `divida-pib`, série 13762), "
+            "esta série cobre o setor público consolidado (incluindo o Banco Central) e desconta "
+            "os ativos financeiros do setor público — por isso é sempre um número menor que a "
+            "dívida bruta. Validado contra o valor amplamente noticiado de fechamento de 2020 "
+            "(61,3% do PIB, alta puxada pelos gastos emergenciais da pandemia)."
+        ),
+    ),
 ]
 
 DEFORESTATION_LEGAL_AMAZON = StaticIndicatorMeta(
