@@ -46,6 +46,8 @@ from app.sync.definitions import (
     MORTALIDADE_INFANTIL_QUERY,
     NIVEL_OCUPACAO,
     NIVEL_OCUPACAO_QUERY,
+    OBITOS_CAUSAS_NAO_NATURAIS,
+    OBITOS_CAUSAS_NAO_NATURAIS_QUERY,
     CRESCIMENTO_PIB,
     CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA,
     CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA_QUERY,
@@ -365,6 +367,14 @@ def main() -> None:
     ]:
         sync_indicator(meta, lambda query=query: drop_future_years(fetch_sidra_series(query)))
         sync_by_state(meta, lambda query=query: drop_future_years_by_state(fetch_sidra_series_by_state(query)))
+
+    sync_indicator(
+        OBITOS_CAUSAS_NAO_NATURAIS, lambda: drop_future_years(fetch_sidra_series(OBITOS_CAUSAS_NAO_NATURAIS_QUERY))
+    )
+    sync_by_state(
+        OBITOS_CAUSAS_NAO_NATURAIS,
+        lambda: drop_future_years_by_state(fetch_sidra_series_by_state(OBITOS_CAUSAS_NAO_NATURAIS_QUERY)),
+    )
 
     sync_indicator(
         TAXA_ESCOLARIZACAO_6_A_14, lambda: fetch_sidra_series(TAXA_ESCOLARIZACAO_6_A_14_QUERY)

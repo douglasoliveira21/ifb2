@@ -1566,3 +1566,40 @@ INDICE_GINI_RENDA = StaticIndicatorMeta(
     ),
 )
 INDICE_GINI_RENDA_QUERY = SidraQuery(table=7435, variable=10681, classifications={})
+
+OBITOS_CAUSAS_NAO_NATURAIS = StaticIndicatorMeta(
+    slug="obitos-causas-nao-naturais",
+    name="Óbitos por causas não naturais",
+    category=IndicatorCategory.SAUDE,
+    unit="óbitos",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Número de óbitos registrados no ano cuja causa foi classificada como 'não natural' "
+        "no registro civil — inclui acidentes (de trânsito, de trabalho, entre outros), "
+        "suicídios e homicídios, mas não abre o total por tipo de causa."
+    ),
+    description_how=(
+        "É uma contagem absoluta (não uma taxa), então cresce naturalmente com a população — "
+        "compare sempre proporcionalmente ao tamanho do estado antes de comparar estados "
+        "diferentes. Não deve ser confundido com a Taxa de Mortes Violentas Intencionais "
+        "(indicador `taxa-mortes-violentas-intencionais-estadual`), que é mais específica "
+        "(só homicídios/latrocínios/lesão corporal seguida de morte) e vem de uma fonte "
+        "diferente (Fórum Brasileiro de Segurança Pública, não-governamental)."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Óbitos por causas não naturais\n\n"
+        "Fonte: IBGE, Estatísticas do Registro Civil — tabela SIDRA 2681, variável 343, "
+        "classificação 1836 (\"Natureza do óbito\"), categoria 99818 (\"Não natural\"). Conta "
+        "óbitos registrados no ano cuja causa básica foi classificada como não natural pelo "
+        "cartório de registro civil, a partir da declaração de óbito.\n\n"
+        "É um número diferente do que apuram sistemas de vigilância epidemiológica como o SIM "
+        "(Sistema de Informação sobre Mortalidade) do Ministério da Saúde — o Registro Civil "
+        "conta o evento registrado em cartório, sem detalhar o tipo específico de causa "
+        "não natural (acidente, suicídio, homicídio etc. aparecem juntos nesta categoria)."
+    ),
+)
+OBITOS_CAUSAS_NAO_NATURAIS_QUERY = SidraQuery(
+    table=2681, variable=343, classifications={1836: 99818, 244: 0, 2: 0, 260: 0, 257: 0}
+)

@@ -132,6 +132,7 @@ oficiais via API pública, sem scraping:
 | Taxa de informalidade, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 4708, variável 12466 |
 | Índice de Gini da renda domiciliar per capita, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7435, variável 10681 |
 | Dívida líquida do setor público (% do PIB) | Banco Central | SGS/BCB 4513 |
+| Óbitos por causas não naturais, Brasil e por estado | IBGE (Estatísticas do Registro Civil) | SIDRA tabela 2681, variável 343, classificação 1836 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -527,6 +528,32 @@ anual (PDF), não em API; e **resultado nominal do setor público** —
 não localizei um código SGS confirmável com o mesmo rigor dos demais
 antes do prazo desta rodada. Retomar quando houver uma fonte com o
 mesmo nível de confiança já exigido no resto do projeto.
+
+### Saúde (complemento)
+
+O setor já tinha esperança de vida, mortalidade infantil e leitos SUS.
+Fontes específicas do Ministério da Saúde continuam problemáticas: a API
+"DEMAS" (`apidadosabertos.saude.gov.br`) segue instável (mesmo problema
+documentado para o CNES), e o catálogo de dados abertos
+(`dadosabertos.saude.gov.br`) não expõe mais uma API CKAN estável no
+mesmo padrão usado para achar os CSVs de Leitos SUS — não localizei uma
+fonte nova e confiável do Ministério da Saúde nesta rodada.
+
+Em vez disso, adicionei **óbitos por causas não naturais** (acidentes,
+suicídios e homicídios agregados, sem abertura por tipo) — tabela SIDRA
+2681 do IBGE, Estatísticas do Registro Civil, reaproveitando 100% o
+cliente já existente, com quebra por estado. É uma contagem absoluta de
+registros em cartório (não uma taxa nem um dado de vigilância
+epidemiológica como o SIM do Ministério da Saúde), mas é uma fonte
+100% oficial e estável, complementar à Taxa de Mortes Violentas
+Intencionais já existente (essa sim vinda do FBSP, não-governamental, e
+mais específica — só homicídios/latrocínios).
+
+Validado ao vivo: ~100 mil óbitos não naturais registrados por ano no
+Brasil entre 2020 e 2024, ordem de grandeza compatível com os totais de
+acidentes + violência amplamente reportados no país; por estado, SP
+concentra a maior contagem absoluta (~21 mil/ano), esperado por ser o
+estado mais populoso.
 
 ### Indicadores por estado
 
