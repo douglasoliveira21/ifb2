@@ -29,6 +29,7 @@ class IndicatorCategory(str, enum.Enum):
     DESENVOLVIMENTO_REGIONAL = "DESENVOLVIMENTO_REGIONAL"
     JUSTICA = "JUSTICA"
     GESTAO_PUBLICA = "GESTAO_PUBLICA"
+    COMERCIO_EXTERIOR = "COMERCIO_EXTERIOR"
 
 
 class IndicatorPolarity(str, enum.Enum):

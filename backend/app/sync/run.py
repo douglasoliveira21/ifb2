@@ -52,10 +52,12 @@ from app.sync.definitions import (
     ESCOLARIDADE_AVANCADA_QUERY,
     ESPERANCA_VIDA,
     ESPERANCA_VIDA_QUERY,
+    EXPORTACOES_TOTAIS,
     IDEB_ANOS_FINAIS,
     IDEB_ANOS_INICIAIS,
     IDEB_ENSINO_MEDIO,
     IDEB_ZIP_URL,
+    IMPORTACOES_TOTAIS,
     INDICATORS,
     INDICE_ENVELHECIMENTO,
     INDICE_ENVELHECIMENTO_QUERY,
@@ -135,6 +137,8 @@ from app.sync.definitions import (
     IndicatorSpec,
     StaticIndicatorMeta,
 )
+from app.sync.comexstat_client import fetch_totals_brasil as fetch_comex_totals_brasil
+from app.sync.comexstat_client import fetch_totals_by_state as fetch_comex_totals_by_state
 from app.sync.datajud_client import (
     fetch_processos_ajuizados_series_brasil,
     fetch_processos_ajuizados_series_by_state,
@@ -586,6 +590,23 @@ def main() -> None:
     sync_by_state(
         PROCESSOS_AJUIZADOS_ESTADUAL,
         lambda: fetch_processos_ajuizados_series_by_state(start_year=2019, end_year=_last_complete_year),
+    )
+
+    sync_indicator(
+        EXPORTACOES_TOTAIS,
+        lambda: fetch_comex_totals_brasil("export", start_year=2015, end_year=_last_complete_year),
+    )
+    sync_by_state(
+        EXPORTACOES_TOTAIS,
+        lambda: fetch_comex_totals_by_state("export", start_year=2015, end_year=_last_complete_year),
+    )
+    sync_indicator(
+        IMPORTACOES_TOTAIS,
+        lambda: fetch_comex_totals_brasil("import", start_year=2015, end_year=_last_complete_year),
+    )
+    sync_by_state(
+        IMPORTACOES_TOTAIS,
+        lambda: fetch_comex_totals_by_state("import", start_year=2015, end_year=_last_complete_year),
     )
 
     refresh_summary_view()

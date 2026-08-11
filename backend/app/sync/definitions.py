@@ -2188,3 +2188,65 @@ DESPESA_SAUDE_ESTADUAL = StaticIndicatorMeta(
         "de despesas liquidadas até o bimestre).\n\n" + _RREO_FUNCAO_METHODOLOGY_NOTE
     ),
 )
+
+SOURCE_COMEXSTAT = SourceSpec(
+    key="comexstat",
+    name="Ministério do Desenvolvimento, Indústria, Comércio e Serviços (Comex Stat)",
+    url="https://comexstat.mdic.gov.br/",
+    description=(
+        "Comex Stat — estatísticas oficiais de comércio exterior brasileiro (exportações e "
+        "importações), mantidas pelo MDIC."
+    ),
+)
+
+EXPORTACOES_TOTAIS = StaticIndicatorMeta(
+    slug="exportacoes-totais",
+    name="Exportações totais",
+    category=IndicatorCategory.COMERCIO_EXTERIOR,
+    unit="US$ FOB",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Valor total das exportações brasileiras no ano, em dólares FOB (preço da mercadoria "
+        "posta a bordo do transporte, sem frete nem seguro internacional)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora isolada — varia com o volume exportado, mas "
+        "também com o preço internacional das commodities (boa parte da pauta exportadora "
+        "brasileira), que o governo não controla diretamente. Compare sempre com as "
+        "importações do mesmo período para entender o saldo comercial."
+    ),
+    update_frequency="anual",
+    source=SOURCE_COMEXSTAT,
+    methodology=(
+        "# Metodologia — Exportações totais\n\n"
+        "Fonte: MDIC, Comex Stat — API pública (`api-comexstat.mdic.gov.br`), consulta com "
+        "`flow: \"export\"` e métrica `metricFOB`, valor FOB em dólares americanos.\n\n"
+        "A API não exige chave de acesso, mas tem um limite de requisições agressivo (a "
+        "própria API retorna a mensagem de limite excedido) — o IFB espaça as chamadas do "
+        "sync para respeitar esse limite."
+    ),
+)
+
+IMPORTACOES_TOTAIS = StaticIndicatorMeta(
+    slug="importacoes-totais",
+    name="Importações totais",
+    category=IndicatorCategory.COMERCIO_EXTERIOR,
+    unit="US$ FOB",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Valor total das importações brasileiras no ano, em dólares FOB (preço da mercadoria "
+        "posta a bordo do transporte, sem frete nem seguro internacional)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora isolada — um aumento pode refletir tanto maior "
+        "atividade econômica interna (mais insumos e bens de capital importados) quanto "
+        "pressão cambial desfavorável. Compare sempre com as exportações do mesmo período."
+    ),
+    update_frequency="anual",
+    source=SOURCE_COMEXSTAT,
+    methodology=(
+        "# Metodologia — Importações totais\n\n"
+        "Fonte: MDIC, Comex Stat — API pública (`api-comexstat.mdic.gov.br`), consulta com "
+        "`flow: \"import\"` e métrica `metricFOB`, valor FOB em dólares americanos."
+    ),
+)

@@ -152,6 +152,8 @@ oficiais via API pública, sem scraping:
 | Processos ajuizados na Justiça estadual, Brasil e por estado | CNJ (DataJud) | API Pública do DataJud, agregação de contagem por `dataAjuizamento`, somada dos 27 TJs |
 | Despesa com Educação (% do total de despesas), por estado | Tesouro Nacional (SICONFI) | RREO-Anexo 02, conta "Educação", coluna "% (d/total d)" |
 | Despesa com Saúde (% do total de despesas), por estado | Tesouro Nacional (SICONFI) | RREO-Anexo 02, conta "Saúde", coluna "% (d/total d)" |
+| Exportações totais, Brasil e por estado | MDIC (Comex Stat) | API pública, `flow: "export"`, métrica FOB |
+| Importações totais, Brasil e por estado | MDIC (Comex Stat) | API pública, `flow: "import"`, métrica FOB |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -714,10 +716,41 @@ Validado ao vivo: variações mensais entre -0,7% e +4,4% nos últimos
 meses, na faixa normal de volatilidade da produção industrial
 brasileira amplamente reportada pela imprensa econômica.
 
+### Comércio exterior (`IndicatorCategory.COMERCIO_EXTERIOR`, migration 0016)
+
+**Correção**: esta sessão tinha descartado Comércio exterior alegando
+"rate-limit persistente" na API do Comex Stat — a API realmente tem um
+limite agressivo (mais de uma chamada a cada ~10-15s já dispara 429),
+mas não é permanente: bastou esperar e tentar de novo para funcionar.
+O erro foi desistir cedo demais, não a fonte estar de fato bloqueada.
+
+Novo cliente `app/sync/comexstat_client.py`: **Exportações totais** e
+**Importações totais**, Brasil e por estado, via a API pública do
+Comex Stat/MDIC (`api-comexstat.mdic.gov.br`), sem chave de acesso. A
+API já devolve o valor agregado pronto (não é preciso somar nada do
+lado do IFB) — uma única chamada com `details: ["state"]` traz todos
+os anos e todos os estados de uma vez, o que mantém o número de
+chamadas baixo apesar do rate limit severo. `_post_with_retry` trata
+429 como retry normal, com espera de ~12s entre tentativas.
+
+Validado ao vivo contra números amplamente noticiados: exportações de
+2023 = US$ 339,7 bilhões (recorde histórico bastante divulgado à
+época) e superávit comercial de 2023 (339,7 − 240,8 = US$ 98,9
+bilhões) bate com o superávit recorde de ~US$ 98,8 bilhões reportado
+pela imprensa econômica no início de 2024; por estado, São Paulo lidera
+as exportações de 2024 com US$ 71,4 bilhões, consistente com ser a
+maior economia exportadora do país.
+
+Também descartado nesta sessão, mas por motivo diferente: o serviço de
+download em lote do MDIC (`balanca.economia.gov.br`) existe e está
+atualizado (confirmado indiretamente, via ferramenta de busca externa
+que conseguiu ler a página — o link e a data de atualização são reais),
+mas esse domínio específico continua inacessível por conexão direta a
+partir deste ambiente (timeout de conexão, não erro HTTP) — a API do
+Comex Stat acima serviu como alternativa funcional para o mesmo dado.
+
 ### Assistência social (`IndicatorCategory.ASSISTENCIA_SOCIAL`, migration 0009)
 
-Comércio exterior e Ciência e tecnologia ficaram sem indicador novo
-nesta sessão (fontes bloqueadas ou congeladas — ver notas acima).
 Assistência social teve uma saída: **Domicílios que recebem Bolsa
 Família**, tabela SIDRA 7449, Brasil e por estado, reaproveitando 100%
 o cliente já existente.
