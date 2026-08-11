@@ -83,13 +83,31 @@ class RreoQuery:
     """Descreve qual conta e coluna ler dentro de um anexo do RREO. O
     Anexo 01 (Balanço Orçamentário) traz colunas de previsão e execução
     por bimestre; o IFB sempre lê "Até o Bimestre (c)" do 6º bimestre —
-    o valor acumulado no ano inteiro (fechamento do exercício)."""
+    o valor acumulado no ano inteiro (fechamento do exercício).
+
+    O Anexo 02 (Despesas por Função/Subfunção) é diferente: `cod_conta`
+    é o mesmo para toda linha ("RREO2TotalDespesas"), e é o campo
+    `conta` (o nome da função, ex: "Educação", "Saúde") que distingue
+    cada linha — por isso o filtro opcional `conta`. A coluna também
+    muda: em vez do padrão "Até o Bimestre (c)" do Anexo 01, o IFB usa
+    a coluna pronta "% (d/total d)" (percentual da função sobre o total
+    de despesas liquidadas até o bimestre) — daí o `coluna` explícito,
+    que substitui o filtro padrão de bimestre quando informado."""
 
     no_anexo: str
     cod_conta: str
+    conta: str | None = None
+    coluna: str | None = None
 
 
 RECEITA_TOTAL_REALIZADA = RreoQuery(no_anexo="RREO-Anexo 01", cod_conta="TotalReceitas")
+
+DESPESA_EDUCACAO_PERCENTUAL = RreoQuery(
+    no_anexo="RREO-Anexo 02", cod_conta="RREO2TotalDespesas", conta="Educação", coluna="% (d/total d)"
+)
+DESPESA_SAUDE_PERCENTUAL = RreoQuery(
+    no_anexo="RREO-Anexo 02", cod_conta="RREO2TotalDespesas", conta="Saúde", coluna="% (d/total d)"
+)
 
 
 def _row_matches_column_rgf(query: RgfQuery, coluna: str) -> bool:
@@ -98,7 +116,9 @@ def _row_matches_column_rgf(query: RgfQuery, coluna: str) -> bool:
     return coluna == query.column_marker
 
 
-def _row_matches_column_rreo(coluna: str) -> bool:
+def _row_matches_column_rreo(query: RreoQuery, coluna: str) -> bool:
+    if query.coluna is not None:
+        return coluna == query.coluna
     # Mesmo bug de codificação do RGF (ver docstring do módulo) — "(c)" e
     # "Bimestre" sobrevivem intactos e distinguem "Até o Bimestre (c)"
     # (acumulado no ano) de "No Bimestre (b)" (só aquele bimestre).
@@ -172,7 +192,11 @@ def _fetch_rreo_state_year(query: RreoQuery, cod_ibge_uf: int, year: int, *, tim
     }
     rows = _get_with_retry(RREO_URL, params, timeout=timeout)
     for row in rows:
-        if row.get("cod_conta") == query.cod_conta and _row_matches_column_rreo(row.get("coluna", "")):
+        if (
+            row.get("cod_conta") == query.cod_conta
+            and (query.conta is None or row.get("conta") == query.conta)
+            and _row_matches_column_rreo(query, row.get("coluna", ""))
+        ):
             return float(row["valor"])
     return None
 

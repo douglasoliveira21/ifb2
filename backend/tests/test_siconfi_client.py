@@ -6,6 +6,8 @@ import pytest
 from app.sync.bcb_client import SeriesPoint
 from app.sync.siconfi_client import (
     DESPESA_COM_PESSOAL_RCL,
+    DESPESA_EDUCACAO_PERCENTUAL,
+    DESPESA_SAUDE_PERCENTUAL,
     DIVIDA_CONSOLIDADA_LIQUIDA_RCL,
     RECEITA_TOTAL_REALIZADA,
     fetch_rgf_by_municipio,
@@ -166,6 +168,45 @@ def test_fetch_rreo_by_state_skips_states_without_data(monkeypatch: pytest.Monke
     monkeypatch.setattr(httpx, "get", fake_get)
 
     assert fetch_rreo_by_state(RECEITA_TOTAL_REALIZADA, start_year=2023) == {}
+
+
+def _despesa_por_funcao_rows() -> list[dict]:
+    # Anexo 02: cod_conta é igual em toda linha ("RREO2TotalDespesas") —
+    # é o campo `conta` (nome da função) que distingue cada uma.
+    return [
+        {"cod_conta": "RREO2TotalDespesas", "conta": "Educação", "coluna": "% (d/total d)", "valor": 18.39},
+        {"cod_conta": "RREO2TotalDespesas", "conta": "Saúde", "coluna": "% (d/total d)", "valor": 10.82},
+        {
+            "cod_conta": "RREO2TotalDespesas",
+            "conta": "Educação",
+            "coluna": "DESPESAS LIQUIDADAS ATÉ O BIMESTRE (d)",
+            "valor": 999_999.0,
+        },
+    ]
+
+
+def test_fetch_rreo_by_state_reads_despesa_por_funcao_filtering_by_conta(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Anexo 02 (despesa por função) não distingue por `cod_conta` — é o
+    campo `conta` (o nome da função) que importa, e a coluna usada é a
+    percentual pronta, não o padrão 'Até o Bimestre (c)' dos outros
+    anexos."""
+
+    def fake_get(url: str, params: dict, headers: dict, timeout: float) -> httpx.Response:
+        if params["id_ente"] == 35 and params["an_exercicio"] == 2024:
+            payload = _rreo_response(_despesa_por_funcao_rows())
+        else:
+            payload = _rreo_response([])
+        return httpx.Response(200, json=payload, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    educacao = fetch_rreo_by_state(DESPESA_EDUCACAO_PERCENTUAL, start_year=2024)
+    saude = fetch_rreo_by_state(DESPESA_SAUDE_PERCENTUAL, start_year=2024)
+
+    assert educacao == {"SP": [SeriesPoint(reference_date=date(2024, 1, 1), value=18.39)]}
+    assert saude == {"SP": [SeriesPoint(reference_date=date(2024, 1, 1), value=10.82)]}
 
 
 def test_fetch_rgf_by_municipio_reads_single_year_per_codigo(monkeypatch: pytest.MonkeyPatch) -> None:

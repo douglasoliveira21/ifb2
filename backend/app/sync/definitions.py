@@ -2123,3 +2123,68 @@ PROCESSOS_AJUIZADOS_ESTADUAL = StaticIndicatorMeta(
         "agregadas aqui nesta primeira versão do indicador."
     ),
 )
+
+_RREO_FUNCAO_METHODOLOGY_NOTE = (
+    "**Sobre a apuração**: o Relatório Resumido de Execução Orçamentária (RREO) é declarado "
+    "pelo próprio ente ao Tesouro Nacional a cada bimestre, conforme exigido pela Lei de "
+    "Responsabilidade Fiscal (LRF). O IFB sincroniza sempre o fechamento do 6º bimestre (valor "
+    "acumulado no exercício inteiro). Não há dado disponível no SICONFI para exercícios "
+    "anteriores a 2015."
+)
+
+DESPESA_EDUCACAO_ESTADUAL = StaticIndicatorMeta(
+    slug="despesa-educacao-estadual",
+    name="Despesa com Educação (% do total de despesas)",
+    category=IndicatorCategory.GESTAO_PUBLICA,
+    unit="% do total de despesas liquidadas",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Percentual do total de despesas liquidadas pelo governo estadual no ano que foi "
+        "destinado à função Educação (inclui ensino básico, médio, superior, profissional e "
+        "encargos gerais da área)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — é uma medida de prioridade orçamentária, não "
+        "de qualidade do gasto. A Constituição exige um piso mínimo de investimento em "
+        "educação sobre a receita de impostos (não sobre o total de despesas, que é a base "
+        "usada aqui), então este percentual não deve ser comparado diretamente com esse piso "
+        "constitucional."
+    ),
+    update_frequency="anual",
+    source=SOURCE_SICONFI,
+    methodology=(
+        "# Metodologia — Despesa com Educação (% do total de despesas)\n\n"
+        "Fonte: Tesouro Nacional, SICONFI — Relatório Resumido de Execução Orçamentária "
+        "(RREO), Anexo 02 (Demonstrativo das Despesas por Função/Subfunção), conta "
+        "\"Educação\", coluna \"% (d/total d)\" (percentual das despesas liquidadas na função "
+        "sobre o total de despesas liquidadas até o bimestre).\n\n" + _RREO_FUNCAO_METHODOLOGY_NOTE
+    ),
+)
+
+DESPESA_SAUDE_ESTADUAL = StaticIndicatorMeta(
+    slug="despesa-saude-estadual",
+    name="Despesa com Saúde (% do total de despesas)",
+    category=IndicatorCategory.GESTAO_PUBLICA,
+    unit="% do total de despesas liquidadas",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Percentual do total de despesas liquidadas pelo governo estadual no ano que foi "
+        "destinado à função Saúde (atenção básica, assistência hospitalar e ambulatorial, "
+        "vigilância sanitária e epidemiológica, entre outras)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — é uma medida de prioridade orçamentária, não "
+        "de qualidade do gasto. A Constituição exige um piso mínimo de investimento em saúde "
+        "sobre a receita de impostos (não sobre o total de despesas, que é a base usada aqui), "
+        "então este percentual não deve ser comparado diretamente com esse piso constitucional."
+    ),
+    update_frequency="anual",
+    source=SOURCE_SICONFI,
+    methodology=(
+        "# Metodologia — Despesa com Saúde (% do total de despesas)\n\n"
+        "Fonte: Tesouro Nacional, SICONFI — Relatório Resumido de Execução Orçamentária "
+        "(RREO), Anexo 02 (Demonstrativo das Despesas por Função/Subfunção), conta \"Saúde\", "
+        "coluna \"% (d/total d)\" (percentual das despesas liquidadas na função sobre o total "
+        "de despesas liquidadas até o bimestre).\n\n" + _RREO_FUNCAO_METHODOLOGY_NOTE
+    ),
+)

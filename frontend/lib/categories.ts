@@ -18,6 +18,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   IDOSOS: "Idosos",
   DESENVOLVIMENTO_REGIONAL: "Desenvolvimento regional",
   JUSTICA: "Justiça",
+  GESTAO_PUBLICA: "Gestão pública",
 };
 
 export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);

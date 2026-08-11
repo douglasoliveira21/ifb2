@@ -150,6 +150,8 @@ oficiais via API pública, sem scraping:
 | Razão de dependência de idosos, Brasil e por estado | IBGE (Projeção da População) | SIDRA tabela 7360, variável 10611 |
 | Índice de Gini da distribuição do PIB municipal, Brasil e por estado | IBGE (PIB dos Municípios) | SIDRA tabela 5939, variável 529 |
 | Processos ajuizados na Justiça estadual, Brasil e por estado | CNJ (DataJud) | API Pública do DataJud, agregação de contagem por `dataAjuizamento`, somada dos 27 TJs |
+| Despesa com Educação (% do total de despesas), por estado | Tesouro Nacional (SICONFI) | RREO-Anexo 02, conta "Educação", coluna "% (d/total d)" |
+| Despesa com Saúde (% do total de despesas), por estado | Tesouro Nacional (SICONFI) | RREO-Anexo 02, conta "Saúde", coluna "% (d/total d)" |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -736,13 +738,37 @@ de ter menos de um sexto da população de SP — confirma a cobertura
 proporcionalmente muito maior nos estados mais pobres, padrão já
 conhecido do programa.
 
+### Gestão pública (`IndicatorCategory.GESTAO_PUBLICA`, migration 0015)
+
+**Correção**: esta sessão tinha descartado Gestão pública dizendo que
+o SICONFI "não expôs a quebra de despesas por função" — errado. O erro
+foi meu, não da fonte: no RREO-Anexo 02 (despesa por função), o campo
+`cod_conta` é igual em toda linha ("RREO2TotalDespesas"); é o campo
+`conta` (o nome da função, "Educação", "Saúde" etc.) que diferencia
+cada uma — eu só tinha checado `cod_conta`, nunca olhei `conta`.
+Corrigido depois que o usuário questionou a alegação.
+
+Dois indicadores novos, por estado: **Despesa com Educação (% do total
+de despesas)** e **Despesa com Saúde (% do total de despesas)** —
+ambos via SICONFI/RREO-Anexo 02, coluna pronta "% (d/total d)". Exigiu
+estender `siconfi_client.py`: `RreoQuery` ganhou os campos opcionais
+`conta` (filtra pelo nome da função, não pelo `cod_conta`) e `coluna`
+(usa a coluna percentual pronta em vez do padrão "Até o Bimestre (c)"
+dos outros indicadores RREO já existentes) — mudança retrocompatível,
+os indicadores antigos (receita total) continuam funcionando sem
+alteração.
+
+Validado ao vivo: SP com 18,39% do orçamento em Educação e 10,82% em
+Saúde (2024) — mesma ordem de grandeza dos pisos constitucionais de
+investimento nessas áreas (que usam uma base de cálculo diferente,
+receita de impostos, não despesa total, então os números não são
+diretamente comparáveis ao piso, mas ficam na faixa esperada); MA com
+18,16% em Educação, similar a SP.
+
 ### Mulheres (`IndicatorCategory.MULHERES`, migration 0010)
 
-Gestão pública, Compras públicas e Comércio exterior ficaram sem
-indicador nesta sessão (ver notas acima — fontes bloqueadas, sem
-agregado pronto ou exigindo consulta órgão por órgão). Mulheres teve
-uma saída boa: **Razão de rendimento entre mulheres e homens**, Brasil
-e por estado.
+Mulheres teve uma boa saída: **Razão de rendimento entre mulheres e
+homens**, Brasil e por estado.
 
 Primeiro indicador do projeto calculado a partir da combinação de duas
 séries do SIDRA — a tabela 10377 (PNAD Contínua anual) traz rendimento

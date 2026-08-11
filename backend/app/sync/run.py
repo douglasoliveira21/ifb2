@@ -29,6 +29,8 @@ from app.sync.definitions import (
     DEFORESTATION_LEGAL_AMAZON,
     DESPESA_COM_PESSOAL_ESTADUAL,
     DESPESA_COM_PESSOAL_MUNICIPAL,
+    DESPESA_EDUCACAO_ESTADUAL,
+    DESPESA_SAUDE_ESTADUAL,
     DIVIDA_CONSOLIDADA_LIQUIDA_ESTADUAL,
     DOMICILIOS_AGUA_REDE_GERAL,
     DOMICILIOS_AGUA_REDE_GERAL_QUERY,
@@ -155,6 +157,8 @@ from app.sync.seed_municipios import seed as seed_municipios
 from app.sync.seed_states import seed as seed_states
 from app.sync.siconfi_client import (
     DESPESA_COM_PESSOAL_RCL,
+    DESPESA_EDUCACAO_PERCENTUAL,
+    DESPESA_SAUDE_PERCENTUAL,
     DIVIDA_CONSOLIDADA_LIQUIDA_RCL,
     fetch_rgf_by_municipio,
     fetch_rgf_by_state,
@@ -523,6 +527,14 @@ def main() -> None:
         fetch_transferencias_constitucionais_by_state,
     )
     sync_by_state(RECEITA_TOTAL_REALIZADA_ESTADUAL, fetch_rreo_by_state)
+    sync_by_state(
+        DESPESA_EDUCACAO_ESTADUAL, lambda: fetch_rreo_by_state(DESPESA_EDUCACAO_PERCENTUAL)
+    )
+    sync_by_state(
+        DESPESA_SAUDE_ESTADUAL, lambda: fetch_rreo_by_state(DESPESA_SAUDE_PERCENTUAL)
+    )
+    # Ambos só têm dado por estado (RREO é declarado por ente federativo) —
+    # não existe uma agregação "Brasil" oficial para despesa por função.
 
     sync_indicator(LEITOS_SUS_ESTADUAL, fetch_leitos_sus_brasil)
     sync_by_state(LEITOS_SUS_ESTADUAL, fetch_leitos_sus_by_state)
