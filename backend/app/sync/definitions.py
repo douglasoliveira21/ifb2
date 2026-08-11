@@ -293,6 +293,64 @@ INDICATORS: list[IndicatorSpec] = [
             "a transformação está documentada aqui e no código-fonte do sync."
         ),
     ),
+    IndicatorSpec(
+        slug="credito-total-sfn",
+        name="Saldo da carteira de crédito do Sistema Financeiro Nacional",
+        category=IndicatorCategory.ECONOMIA,
+        unit="R$ milhões",
+        polarity=IndicatorPolarity.neutral,
+        description_what=(
+            "Saldo total de todas as operações de crédito (empréstimos e financiamentos) "
+            "concedidas por bancos e demais instituições financeiras a pessoas físicas e "
+            "jurídicas no Brasil, em um determinado mês."
+        ),
+        description_how=(
+            "Não é classificado como melhora/piora — crédito em expansão pode significar tanto "
+            "uma economia aquecida quanto endividamento excessivo, dependendo do contexto (taxa "
+            "de juros, inadimplência, renda das famílias). Compare sempre com o indicador de "
+            "endividamento das famílias e com a Selic do mesmo período."
+        ),
+        update_frequency="mensal",
+        source=SOURCE_BCB,
+        sgs_series_code=20539,
+        resample_monthly=False,
+        methodology=(
+            "# Metodologia — Saldo da carteira de crédito do SFN\n\n"
+            "Fonte: Banco Central do Brasil, Estatísticas Monetárias e de Crédito, série temporal "
+            "20539 do SGS — saldo total das operações de crédito do Sistema Financeiro Nacional "
+            "(pessoas físicas e jurídicas, recursos livres e direcionados).\n\n"
+            "É um saldo (estoque), não um fluxo mensal de novas concessões — reflete o total "
+            "acumulado de operações em aberto no fim de cada mês."
+        ),
+    ),
+    IndicatorSpec(
+        slug="endividamento-familias",
+        name="Endividamento das famílias",
+        category=IndicatorCategory.ECONOMIA,
+        unit="% da renda acumulada em 12 meses",
+        polarity=IndicatorPolarity.lower_is_better,
+        description_what=(
+            "Relação entre o saldo total das dívidas das famílias com o Sistema Financeiro "
+            "Nacional e a renda acumulada nos últimos 12 meses, com ajuste sazonal."
+        ),
+        description_how=(
+            "Quanto maior, mais comprometida está a renda das famílias com dívidas já "
+            "contraídas — não deve ser confundido com o comprometimento mensal de renda com o "
+            "pagamento de dívidas (juros e amortizações), que é um indicador diferente do BCB."
+        ),
+        update_frequency="mensal",
+        source=SOURCE_BCB,
+        sgs_series_code=29034,
+        resample_monthly=False,
+        methodology=(
+            "# Metodologia — Endividamento das famílias\n\n"
+            "Fonte: Banco Central do Brasil, Estatísticas Monetárias e de Crédito, série temporal "
+            "29034 do SGS — relação entre o saldo das dívidas das famílias com o SFN e a renda "
+            "acumulada em 12 meses, com ajuste sazonal.\n\n"
+            "O BCB revisa periodicamente a metodologia de cálculo da renda das famílias usada "
+            "nesta série; revisões de valores já publicados ficam registradas em `data_revisions`."
+        ),
+    ),
 ]
 
 DEFORESTATION_LEGAL_AMAZON = StaticIndicatorMeta(
@@ -1097,3 +1155,90 @@ INDICE_ENVELHECIMENTO = StaticIndicatorMeta(
     ),
 )
 INDICE_ENVELHECIMENTO_QUERY = SidraQuery(table=7360, variable=10612, classifications={1933: "all"})
+
+PIB_VALORES_CORRENTES = StaticIndicatorMeta(
+    slug="pib-valores-correntes",
+    name="PIB (valores correntes)",
+    category=IndicatorCategory.ECONOMIA,
+    unit="R$ milhões",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Produto Interno Bruto anual do Brasil, em valores correntes (sem ajuste pela "
+        "inflação) — soma de tudo que foi produzido no país no ano, medido a preços do "
+        "próprio ano."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora isoladamente — parte do crescimento observado "
+        "ao longo dos anos reflete apenas a inflação acumulada, não crescimento real da "
+        "economia. Para avaliar crescimento real, use o indicador `crescimento-pib` (variação "
+        "em volume, já descontada a inflação)."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — PIB (valores correntes)\n\n"
+        "Fonte: IBGE, Sistema de Contas Nacionais — tabela SIDRA 6784, variável 9808. É o PIB "
+        "oficial anual do Brasil (Contas Nacionais Anuais), a referência definitiva para o "
+        "resultado da economia — distinto da estimativa mensal do Banco Central usada no "
+        "indicador `pib-mensal`, que segue metodologia própria e é atualizada com maior "
+        "frequência, mas menor precisão."
+    ),
+)
+PIB_VALORES_CORRENTES_QUERY = SidraQuery(table=6784, variable=9808, classifications={})
+
+CRESCIMENTO_PIB = StaticIndicatorMeta(
+    slug="crescimento-pib",
+    name="Crescimento do PIB (variação real)",
+    category=IndicatorCategory.ECONOMIA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Variação percentual do Produto Interno Bruto do Brasil em relação ao ano anterior, "
+        "em volume — ou seja, já descontado o efeito da inflação. É a medida oficial de "
+        "quanto a economia brasileira cresceu (ou encolheu) em cada ano."
+    ),
+    description_how=(
+        "Positivo indica que a economia produziu mais bens e serviços do que no ano anterior; "
+        "negativo indica recessão (como em 2020, com a pandemia). Não confundir com o PIB em "
+        "valores correntes, que também sobe com a inflação mesmo sem crescimento real."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Crescimento do PIB (variação real)\n\n"
+        "Fonte: IBGE, Sistema de Contas Nacionais — tabela SIDRA 6784, variável 9810 (\"PIB — "
+        "variação em volume\"). Compara o volume de bens e serviços produzidos em cada ano com "
+        "o do ano anterior, a preços constantes — a mesma taxa amplamente divulgada como "
+        "\"crescimento do PIB\" nos anúncios oficiais do IBGE."
+    ),
+)
+CRESCIMENTO_PIB_QUERY = SidraQuery(table=6784, variable=9810, classifications={})
+
+PIB_DEFLATOR = StaticIndicatorMeta(
+    slug="pib-deflator",
+    name="Deflator do PIB (variação anual)",
+    category=IndicatorCategory.ECONOMIA,
+    unit="%",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Variação anual do deflator implícito do PIB — uma medida ampla de inflação que "
+        "cobre todos os bens e serviços finais produzidos na economia, não apenas a cesta de "
+        "consumo das famílias (como o IPCA)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — é um indicador de contexto para interpretar "
+        "a diferença entre o PIB em valores correntes e o PIB em volume. Difere do IPCA por "
+        "medir a inflação de toda a produção do país (incluindo investimentos e exportações), "
+        "não só o que as famílias compram."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Deflator do PIB (variação anual)\n\n"
+        "Fonte: IBGE, Sistema de Contas Nacionais — tabela SIDRA 6784, variável 9811. Calculado "
+        "pelo próprio IBGE como a razão entre o PIB a preços correntes e o PIB a preços do ano "
+        "anterior; não deve ser confundido com o IPCA (indicador separado, `ipca`), que mede "
+        "apenas a inflação ao consumidor."
+    ),
+)
+PIB_DEFLATOR_QUERY = SidraQuery(table=6784, variable=9811, classifications={})

@@ -120,6 +120,9 @@ oficiais via API pública, sem scraping:
 | Taxa de Mortes Violentas Intencionais (MVI), Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota abaixo) | Planilha do Anuário Brasileiro de Segurança Pública, tabela "Mortes violentas intencionais" |
 | População residente estimada, Brasil e por estado | IBGE | SIDRA tabela 6579, variável 9324 |
 | Nascimentos, óbitos, taxas de crescimento/natalidade/mortalidade/fecundidade, índice de envelhecimento — Brasil e por estado | IBGE (Projeção da População) | SIDRA tabela 7360, variáveis 10600/10601/10605/10606/10607/2493/10612 |
+| PIB (valores correntes), Crescimento do PIB (variação real), Deflator do PIB | IBGE (Contas Nacionais) | SIDRA tabela 6784, variáveis 9808/9810/9811 |
+| Saldo da carteira de crédito do SFN | Banco Central | SGS/BCB 20539 |
+| Endividamento das famílias | Banco Central | SGS/BCB 29034 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -407,6 +410,37 @@ saúde melhorando, classificá-la por polaridade produziria "PIOROU"
 enganoso em qualquer estado envelhecendo — diferente da mortalidade
 infantil (essa sim `lower_is_better`, sinal mais direto de saúde
 pública).
+
+### Economia (parte 1 — PIB oficial e crédito)
+
+Cinco indicadores novos, reaproveitando os clientes SIDRA (IBGE) e
+SGS (Banco Central) já existentes — zero cliente novo:
+
+- **PIB (valores correntes)**, **Crescimento do PIB (variação real)** e
+  **Deflator do PIB** — tabela SIDRA 6784 ("Contas Nacionais Anuais"),
+  a mesma já usada para `pib-per-capita`, só com as variáveis 9808, 9810
+  e 9811 em vez da 9812. É o PIB oficial anual do IBGE — distinto da
+  estimativa mensal do Banco Central já integrada (`pib-mensal`, série
+  SGS 4380), que segue metodologia própria e é atualizada com mais
+  frequência, porém menor precisão. Só existe no nível Brasil (tabela
+  6784 não tem quebra por estado no SIDRA), igual ao PIB per capita.
+- **Saldo da carteira de crédito do SFN** (série SGS/BCB 20539) e
+  **Endividamento das famílias** (série SGS/BCB 29034, % da renda
+  acumulada em 12 meses, com ajuste sazonal) — usam o `IndicatorSpec`
+  genérico já existente para séries SGS, sem nenhum código novo.
+
+Validados ao vivo contra números públicos: PIB 2023 = R$ 10.943.345
+milhões e crescimento 2023 = 3,2% (mesmos valores divulgados pelo IBGE
+nas Contas Nacionais); queda de -3,3% em 2020 (recessão da pandemia,
+amplamente noticiada).
+
+Ficaram de fora desta rodada (retomar depois): PIB por setor (tabelas
+5932/6612, "Contas Nacionais Trimestrais") e taxas de investimento/
+poupança (tabelas 6727/6726) — todas de periodicidade **trimestral**,
+enquanto o pipeline atual (`_extract_year` em `ibge_client.py`) só sabe
+tratar séries anuais; e indicadores de empresas ativas/abertura/
+fechamento, que não estão no SIDRA nem no SGS e exigem investigar uma
+fonte nova (Receita Federal/CNPJ).
 
 ### Indicadores por estado
 

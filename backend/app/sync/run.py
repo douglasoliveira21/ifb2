@@ -42,12 +42,18 @@ from app.sync.definitions import (
     LEITOS_SUS_ESTADUAL,
     MORTALIDADE_INFANTIL,
     MORTALIDADE_INFANTIL_QUERY,
+    CRESCIMENTO_PIB,
+    CRESCIMENTO_PIB_QUERY,
     NASCIMENTOS,
     NASCIMENTOS_QUERY,
     OBITOS,
     OBITOS_QUERY,
+    PIB_DEFLATOR,
+    PIB_DEFLATOR_QUERY,
     PIB_PER_CAPITA,
     PIB_PER_CAPITA_QUERY,
+    PIB_VALORES_CORRENTES,
+    PIB_VALORES_CORRENTES_QUERY,
     POPULACAO_RESIDENTE,
     POPULACAO_RESIDENTE_QUERY,
     RECEITA_TOTAL_REALIZADA_ESTADUAL,
@@ -296,7 +302,10 @@ def main() -> None:
     )
 
     sync_indicator(PIB_PER_CAPITA, lambda: fetch_sidra_series(PIB_PER_CAPITA_QUERY))
-    # PIB per capita (tabela 6784) não tem quebra por estado no SIDRA.
+    sync_indicator(PIB_VALORES_CORRENTES, lambda: fetch_sidra_series(PIB_VALORES_CORRENTES_QUERY))
+    sync_indicator(CRESCIMENTO_PIB, lambda: fetch_sidra_series(CRESCIMENTO_PIB_QUERY))
+    sync_indicator(PIB_DEFLATOR, lambda: fetch_sidra_series(PIB_DEFLATOR_QUERY))
+    # Tabela 6784 (Contas Nacionais Anuais) não tem quebra por estado no SIDRA.
 
     sync_indicator(POPULACAO_RESIDENTE, lambda: fetch_sidra_series(POPULACAO_RESIDENTE_QUERY))
     sync_by_state(POPULACAO_RESIDENTE, lambda: fetch_sidra_series_by_state(POPULACAO_RESIDENTE_QUERY))
