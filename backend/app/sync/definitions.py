@@ -1716,3 +1716,90 @@ DOMICILIOS_SEM_DOCUMENTO_PROPRIEDADE = StaticIndicatorMeta(
 DOMICILIOS_SEM_DOCUMENTO_PROPRIEDADE_QUERY = SidraQuery(
     table=7191, variable=10368, classifications={886: 47933}
 )
+
+DOMICILIOS_AGUA_REDE_GERAL = StaticIndicatorMeta(
+    slug="domicilios-agua-rede-geral",
+    name="Domicílios com água da rede geral",
+    category=IndicatorCategory.SANEAMENTO,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de domicílios cuja principal fonte de abastecimento de água é a rede "
+        "geral de distribuição (não poço, cisterna ou outra fonte alternativa), segundo a "
+        "PNAD Contínua."
+    ),
+    description_how=(
+        "Quanto maior, maior a cobertura da rede pública de água tratada — fontes "
+        "alternativas (poço, cisterna, fonte) não garantem a mesma qualidade e regularidade "
+        "de tratamento que a rede geral."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Domicílios com água da rede geral\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 6731, variável 9784 (\"Distribuição "
+        "percentual dos domicílios\"), classificação 1 (\"Situação do domicílio\"), categoria "
+        "6795 (\"Total\", urbano + rural) e classificação 825 (\"Principal fonte de "
+        "abastecimento de água\"), categoria 46285 (\"Rede geral de distribuição\")."
+    ),
+)
+DOMICILIOS_AGUA_REDE_GERAL_QUERY = SidraQuery(table=6731, variable=9784, classifications={1: 6795, 825: 46285})
+
+DOMICILIOS_ESGOTO_REDE_GERAL = StaticIndicatorMeta(
+    slug="domicilios-esgoto-rede-geral",
+    name="Domicílios com esgotamento sanitário adequado",
+    category=IndicatorCategory.SANEAMENTO,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de domicílios cujo esgoto é escoado para rede geral (coletora) ou rede "
+        "pluvial, segundo a PNAD Contínua — não inclui fossa séptica não ligada à rede, fossa "
+        "rudimentar ou despejo direto em rio/mar/valão."
+    ),
+    description_how=(
+        "É historicamente o indicador de saneamento com maior disparidade regional no Brasil "
+        "— quanto maior, maior a cobertura de coleta formal de esgoto, com impacto direto na "
+        "saúde pública (redução de doenças de veiculação hídrica)."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Domicílios com esgotamento sanitário adequado\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 7192, variável 9988 (\"Distribuição "
+        "percentual dos domicílios com banheiro, sanitário ou buraco para dejeções\"), "
+        "classificação 1 (\"Situação do domicílio\"), categoria 6795 (\"Total\") e "
+        "classificação 11558 (\"Tipo de esgotamento sanitário\"), categoria 47930 (\"Rede "
+        "geral ou rede pluvial\").\n\n"
+        "A tabela só existe a partir de 2019 no SIDRA (antes disso, o IBGE publicava a "
+        "pergunta com categorias diferentes, tabela 6735, não comparável diretamente)."
+    ),
+)
+DOMICILIOS_ESGOTO_REDE_GERAL_QUERY = SidraQuery(
+    table=7192, variable=9988, classifications={1: 6795, 11558: 47930}
+)
+
+DOMICILIOS_LIXO_COLETADO = StaticIndicatorMeta(
+    slug="domicilios-lixo-coletado",
+    name="Domicílios com coleta de lixo",
+    category=IndicatorCategory.SANEAMENTO,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de domicílios cujo lixo é coletado diretamente por serviço de limpeza "
+        "urbana (não inclui coleta em caçamba comunitária, queima na propriedade ou outro "
+        "destino), segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "Quanto maior, maior a cobertura do serviço público de coleta domiciliar de lixo — "
+        "queima ou descarte irregular tem impacto direto em saúde pública e meio ambiente."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Domicílios com coleta de lixo\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 6736, variável 9784, classificação 1 "
+        "(\"Situação do domicílio\"), categoria 6795 (\"Total\") e classificação 67 (\"Destino "
+        "do lixo\"), categoria 4661 (\"Coletado diretamente por serviço de limpeza\")."
+    ),
+)
+DOMICILIOS_LIXO_COLETADO_QUERY = SidraQuery(table=6736, variable=9784, classifications={1: 6795, 67: 4661})

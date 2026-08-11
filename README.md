@@ -137,6 +137,9 @@ oficiais via API pública, sem scraping:
 | Pessoas com 12 anos ou mais de estudo (25 anos ou mais), Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7133, variável 10270 |
 | Domicílios alugados, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6821, variável 9784 |
 | Domicílios próprios sem documento de propriedade, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7191, variável 10368 |
+| Domicílios com água da rede geral, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6731, variável 9784 |
+| Domicílios com esgotamento sanitário adequado, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7192, variável 9988 |
+| Domicílios com coleta de lixo, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6736, variável 9784 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -603,6 +606,33 @@ domicílios sem documento de propriedade caindo de 14,9% para 12,0% no
 mesmo período; por estado, SP com mais aluguel (mercado urbano) e MA com
 muito mais informalidade de posse (~31%), ambos batendo com o padrão
 regional conhecido.
+
+### Saneamento (`IndicatorCategory.SANEAMENTO`, migration 0006)
+
+O SNIS (fonte "óbvia" para este setor) continua com o domínio fora do
+ar — reconferido nesta rodada, mesmo resultado de quando foi investigado
+antes (`app4.mdr.gov.br`/`snis.gov.br` não resolvem mais). Em vez disso,
+achei três perguntas de saneamento que já fazem parte da PNAD Contínua
+anual do IBGE (a mesma pesquisa já usada para Emprego/Renda, Educação e
+Habitação) — categoria nova (`SANEAMENTO`, migration 0006, mesmo padrão
+das anteriores), três indicadores, Brasil e por estado, 100%
+reaproveitando o cliente SIDRA já existente:
+
+- **Água da rede geral** (tabela 6731) — principal fonte de
+  abastecimento é a rede pública, não poço/cisterna/fonte alternativa.
+- **Esgotamento sanitário adequado** (tabela 7192) — esgoto escoado
+  para rede geral ou rede pluvial, não fossa rudimentar nem despejo
+  direto. Só existe a partir de 2019 no SIDRA (categorias mudaram).
+- **Coleta de lixo** (tabela 6736) — coletado diretamente por serviço
+  de limpeza urbana.
+
+Validado ao vivo: os três batem com os números de saneamento
+amplamente divulgados no Brasil — água ~85-86%, esgoto ~62-65% (o mais
+baixo dos três, consistente com ser historicamente o gargalo do
+saneamento brasileiro), lixo ~85-87%. Por estado, a disparidade é
+enorme: esgoto em SP chega a 92,4%, contra 24,9% no Maranhão — a mesma
+desigualdade regional de saneamento amplamente reportada na cobertura
+do tema.
 
 ### Indicadores por estado
 
