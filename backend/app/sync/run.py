@@ -57,6 +57,8 @@ from app.sync.definitions import (
     INDICATORS,
     INDICE_ENVELHECIMENTO,
     INDICE_ENVELHECIMENTO_QUERY,
+    INDICE_GINI_PIB_MUNICIPAL,
+    INDICE_GINI_PIB_MUNICIPAL_QUERY,
     INDICE_GINI_RENDA,
     INDICE_GINI_RENDA_QUERY,
     LEITOS_SUS_ESTADUAL,
@@ -549,6 +551,11 @@ def main() -> None:
             uf: [p for p in points if p.reference_date.year >= 1994]
             for uf, points in fetch_sidra_series_by_state(VALOR_PRODUCAO_AGRICOLA_QUERY).items()
         },
+    )
+
+    sync_indicator(INDICE_GINI_PIB_MUNICIPAL, lambda: fetch_sidra_series(INDICE_GINI_PIB_MUNICIPAL_QUERY))
+    sync_by_state(
+        INDICE_GINI_PIB_MUNICIPAL, lambda: fetch_sidra_series_by_state(INDICE_GINI_PIB_MUNICIPAL_QUERY)
     )
 
     refresh_summary_view()

@@ -148,6 +148,7 @@ oficiais via API pública, sem scraping:
 | Razão de rendimento entre mulheres e homens, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 10377, variável 5933 (razão calculada pelo IFB) |
 | Taxa de frequência à creche ou escola (4 a 5 anos), Brasil | IBGE (PNAD Contínua anual) | SIDRA tabela 7140, variável 10280 |
 | Razão de dependência de idosos, Brasil e por estado | IBGE (Projeção da População) | SIDRA tabela 7360, variável 10611 |
+| Índice de Gini da distribuição do PIB municipal, Brasil e por estado | IBGE (PIB dos Municípios) | SIDRA tabela 5939, variável 529 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -782,6 +783,29 @@ sustentabilidade previdenciária.
 Validado ao vivo: 16,9 idosos por 100 pessoas em idade ativa em 2025,
 em trajetória de alta consistente com o envelhecimento populacional já
 documentado na Demografia.
+
+### Desenvolvimento regional (`IndicatorCategory.DESENVOLVIMENTO_REGIONAL`, migration 0013)
+
+Transparência e controle e Justiça ficaram sem indicador nesta sessão
+— vários domínios de destino (`portaldatransparencia.gov.br`,
+`api.cnj.jus.br`, `painel-estatistico-de-eng.cnj.jus.br`) recusaram a
+conexão ou exigiram verificação humana a partir deste ambiente; pode
+ser um bloqueio específico daqui, não necessariamente a fonte estar
+fora do ar — vale reconferir de outro lugar antes de descartar de vez.
+
+Desenvolvimento regional teve uma saída: **Índice de Gini da
+distribuição do PIB municipal**, tabela SIDRA 5939 (Produto Interno
+Bruto dos Municípios), Brasil e por estado, reaproveitando 100% o
+cliente já existente. No nível Brasil, mede a concentração do PIB
+nacional entre municípios; por estado, mede a concentração do PIB
+daquele estado entre seus próprios municípios (sem valor para o
+Distrito Federal, que é um único município).
+
+Validado ao vivo: índice de ~0,84 no Brasil (PIB nacional fortemente
+concentrado em poucos municípios, como amplamente discutido na
+literatura de desenvolvimento regional); por estado, SP e AM acima de
+0,86 — ambos com forte concentração em torno de um polo (a capital),
+padrão esperado.
 
 ### Indicadores por estado
 

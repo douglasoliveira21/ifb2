@@ -2048,3 +2048,33 @@ RAZAO_DEPENDENCIA_IDOSOS = StaticIndicatorMeta(
     ),
 )
 RAZAO_DEPENDENCIA_IDOSOS_QUERY = SidraQuery(table=7360, variable=10611, classifications={1933: "all"})
+
+INDICE_GINI_PIB_MUNICIPAL = StaticIndicatorMeta(
+    slug="indice-gini-pib-municipal",
+    name="Índice de Gini da distribuição do PIB municipal",
+    category=IndicatorCategory.DESENVOLVIMENTO_REGIONAL,
+    unit="índice (0 a 1)",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Medida de concentração do Produto Interno Bruto entre os municípios — no Brasil, "
+        "mede o quanto o PIB nacional está concentrado em poucos municípios; em cada estado, "
+        "mede o quanto o PIB estadual está concentrado em poucos municípios daquele estado. "
+        "Varia de 0 (PIB distribuído igualmente entre todos os municípios) a 1 (totalmente "
+        "concentrado em um único município)."
+    ),
+    description_how=(
+        "Quanto menor, mais distribuído territorialmente é o desenvolvimento econômico — um "
+        "índice alto indica que a atividade econômica está concentrada em poucos polos "
+        "(normalmente a capital ou uma região metropolitana), com o restante do território "
+        "pouco desenvolvido em comparação. Não tem valor para o Distrito Federal (é um único "
+        "município, não há distribuição a medir)."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Índice de Gini da distribuição do PIB municipal\n\n"
+        "Fonte: IBGE, Produto Interno Bruto dos Municípios — tabela SIDRA 5939, variável 529 "
+        "(\"Índice de Gini da distribuição do produto interno bruto a preços correntes\")."
+    ),
+)
+INDICE_GINI_PIB_MUNICIPAL_QUERY = SidraQuery(table=5939, variable=529, classifications={})

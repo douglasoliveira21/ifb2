@@ -26,6 +26,7 @@ class IndicatorCategory(str, enum.Enum):
     MULHERES = "MULHERES"
     CRIANCAS = "CRIANCAS"
     IDOSOS = "IDOSOS"
+    DESENVOLVIMENTO_REGIONAL = "DESENVOLVIMENTO_REGIONAL"
 
 
 class IndicatorPolarity(str, enum.Enum):
