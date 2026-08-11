@@ -126,6 +126,11 @@ oficiais via API pública, sem scraping:
 | Crescimento do PIB agropecuário/industrial/serviços/administração pública (trimestral, YoY) | IBGE (Contas Nacionais Trimestrais) | SIDRA tabela 5932, variável 6561, classificação 11255 |
 | Taxa de investimento | IBGE (Contas Nacionais Trimestrais) | SIDRA tabela 6727, variável 2517 |
 | Taxa de poupança | IBGE (Contas Nacionais Trimestrais) | SIDRA tabela 6726, variável 9774 |
+| Taxa de desocupação (média anual), Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 4562, variável 4099 |
+| Nível da ocupação, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 4363, variável 4097 |
+| Rendimento médio mensal real (média anual), Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 4660, variável 5933 |
+| Taxa de informalidade, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 4708, variável 12466 |
+| Índice de Gini da renda domiciliar per capita, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7435, variável 10681 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -473,6 +478,31 @@ Validados ao vivo: alta de dois dígitos do PIB agropecuário em 2025
 amplamente noticiada no período; taxa de investimento na faixa de 16–18%
 e taxa de poupança de 11–16% do PIB, ambas dentro da faixa historicamente
 publicada pelo IBGE.
+
+### Emprego e renda (Fase 6)
+
+Cinco indicadores novos, todos reaproveitando 100% o cliente SIDRA anual
+já existente (`fetch_sidra_series`, `fetch_sidra_series_by_state`,
+`drop_future_years`) — mesmo padrão de zero código novo já usado na
+Demografia: taxa de desocupação (média anual), nível da ocupação,
+rendimento médio mensal real (média anual), taxa de informalidade e
+índice de Gini da renda domiciliar per capita — todos da PNAD Contínua
+anual do IBGE (tabelas SIDRA 4562, 4363, 4660, 4708 e 7435), com quebra
+por estado.
+
+São complementares, não substitutos, dos indicadores mensais já
+existentes (`desemprego` e `rendimento-medio-real`, ambos via SGS/BCB,
+só nível Brasil): as versões novas são a média anual, mas ganham quebra
+por estado, que a série mensal do BCB não tem — a metodologia de cada
+indicador aponta essa diferença explicitamente.
+
+Validados ao vivo contra números públicos: taxa de desocupação caindo de
+14,0% (2021, ainda em recuperação da pandemia) para 5,6% (2025) — mínima
+histórica amplamente noticiada; taxa de informalidade na faixa de 38–40%,
+número recorrente na cobertura do tema; Índice de Gini caindo de 0,543
+(2021) para ~0,51 (2025), na mesma direção da queda de desigualdade
+reportada pelo IBGE no período; por estado, SP com desocupação mais
+baixa que MA, batendo com o padrão regional conhecido.
 
 ### Indicadores por estado
 

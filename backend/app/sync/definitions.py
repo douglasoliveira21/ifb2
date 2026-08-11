@@ -1404,3 +1404,133 @@ TAXA_POUPANCA = StaticIndicatorMeta(
     ),
 )
 TAXA_POUPANCA_QUERY = SidraQuery(table=6726, variable=9774, classifications={})
+
+TAXA_DESOCUPACAO_ANUAL = StaticIndicatorMeta(
+    slug="taxa-desocupacao-anual",
+    name="Taxa de desocupação (média anual)",
+    category=IndicatorCategory.EMPREGO_RENDA,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual médio no ano de pessoas de 14 anos ou mais que estavam desocupadas (sem "
+        "trabalho, mas disponíveis e procurando), em relação à força de trabalho, segundo a "
+        "PNAD Contínua."
+    ),
+    description_how=(
+        "Quanto menor, maior a proporção da força de trabalho que está ocupada. É a média das "
+        "quatro estimativas trimestrais do ano — diferente do indicador `desemprego` (mensal, "
+        "só Brasil), este tem quebra por estado."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de desocupação (média anual)\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 4562, variável 4099. Diferente do "
+        "indicador `desemprego` (série mensal do SGS/BCB, só nível Brasil), esta versão é a "
+        "média anual e está disponível por estado."
+    ),
+)
+TAXA_DESOCUPACAO_ANUAL_QUERY = SidraQuery(table=4562, variable=4099, classifications={})
+
+NIVEL_OCUPACAO = StaticIndicatorMeta(
+    slug="nivel-ocupacao",
+    name="Nível da ocupação",
+    category=IndicatorCategory.EMPREGO_RENDA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual médio no ano de pessoas de 14 anos ou mais que estavam ocupadas (com "
+        "trabalho) em relação ao total de pessoas em idade de trabalhar, segundo a PNAD "
+        "Contínua."
+    ),
+    description_how=(
+        "Diferente da taxa de desocupação (que só considera quem está procurando emprego), o "
+        "nível de ocupação usa como base todas as pessoas em idade de trabalhar — inclui "
+        "quem desistiu de procurar emprego. Quanto maior, maior a proporção da população "
+        "efetivamente trabalhando."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Nível da ocupação\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 4363, variável 4097."
+    ),
+)
+NIVEL_OCUPACAO_QUERY = SidraQuery(table=4363, variable=4097, classifications={})
+
+RENDIMENTO_MEDIO_ANUAL = StaticIndicatorMeta(
+    slug="rendimento-medio-anual",
+    name="Rendimento médio mensal real (média anual)",
+    category=IndicatorCategory.EMPREGO_RENDA,
+    unit="R$",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Rendimento médio mensal real (já descontada a inflação) que as pessoas ocupadas "
+        "recebem habitualmente em todos os trabalhos, média do ano, segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "Como é uma média, é sensível à composição da força de trabalho no período — compare "
+        "sempre com a taxa de desocupação e o nível de ocupação do mesmo ano. Diferente do "
+        "indicador `rendimento-medio-real` (mensal, só Brasil), este é a média anual e está "
+        "disponível por estado."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Rendimento médio mensal real (média anual)\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 4660, variável 5933 (\"Rendimento "
+        "médio mensal real... habitualmente recebido em todos os trabalhos\")."
+    ),
+)
+RENDIMENTO_MEDIO_ANUAL_QUERY = SidraQuery(table=4660, variable=5933, classifications={})
+
+TAXA_INFORMALIDADE = StaticIndicatorMeta(
+    slug="taxa-informalidade",
+    name="Taxa de informalidade",
+    category=IndicatorCategory.EMPREGO_RENDA,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual médio no ano de pessoas ocupadas de 14 anos ou mais que trabalhavam sem "
+        "carteira assinada, sem CNPJ próprio regularizado ou fora de outras formas de "
+        "contribuição previdenciária formal, segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "Quanto maior, maior a proporção de trabalhadores sem os direitos e proteções "
+        "associados ao trabalho formal (férias, FGTS, previdência). Não deve ser confundido "
+        "com desemprego — um informal está ocupado, só não tem vínculo formal."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de informalidade\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 4708, variável 12466."
+    ),
+)
+TAXA_INFORMALIDADE_QUERY = SidraQuery(table=4708, variable=12466, classifications={})
+
+INDICE_GINI_RENDA = StaticIndicatorMeta(
+    slug="indice-gini-renda",
+    name="Índice de Gini da renda domiciliar per capita",
+    category=IndicatorCategory.EMPREGO_RENDA,
+    unit="índice (0 a 1)",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Medida de desigualdade na distribuição da renda domiciliar per capita — varia de 0 "
+        "(todos os domicílios têm a mesma renda por pessoa) a 1 (uma única pessoa concentra "
+        "toda a renda)."
+    ),
+    description_how=(
+        "Quanto menor, mais igualitária é a distribuição de renda entre os domicílios. O "
+        "Brasil está historicamente entre os países mais desiguais do mundo nesse índice, "
+        "ainda que com queda observada nos últimos anos."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Índice de Gini da renda domiciliar per capita\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 7435, variável 10681 (\"Índice de "
+        "Gini do rendimento domiciliar per capita, a preços médios do ano\")."
+    ),
+)
+INDICE_GINI_RENDA_QUERY = SidraQuery(table=7435, variable=10681, classifications={})
