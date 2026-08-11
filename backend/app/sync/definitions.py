@@ -1658,3 +1658,61 @@ ESCOLARIDADE_AVANCADA = StaticIndicatorMeta(
     ),
 )
 ESCOLARIDADE_AVANCADA_QUERY = SidraQuery(table=7133, variable=10270, classifications={2: 6794, 71: 6664})
+
+DOMICILIOS_ALUGADOS = StaticIndicatorMeta(
+    slug="domicilios-alugados",
+    name="Domicílios alugados",
+    category=IndicatorCategory.HABITACAO,
+    unit="%",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Percentual de domicílios particulares permanentes que estavam alugados, segundo a "
+        "PNAD Contínua."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — um aumento pode refletir tanto maior acesso "
+        "ao mercado de aluguel quanto dificuldade crescente de comprar a casa própria, "
+        "dependendo do contexto de preços de imóveis e crédito habitacional do período."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Domicílios alugados\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 6821, variável 9784 (\"Distribuição "
+        "percentual dos domicílios\"), classificação 63 (\"Condição de ocupação do "
+        "domicílio\"), categoria 1055 (\"Alugado\")."
+    ),
+)
+DOMICILIOS_ALUGADOS_QUERY = SidraQuery(table=6821, variable=9784, classifications={63: 1055})
+
+DOMICILIOS_SEM_DOCUMENTO_PROPRIEDADE = StaticIndicatorMeta(
+    slug="domicilios-sem-documento-propriedade",
+    name="Domicílios próprios sem documento de propriedade",
+    category=IndicatorCategory.HABITACAO,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual de domicílios próprios cujos moradores declararam não ter nenhum "
+        "documento que comprove a propriedade do imóvel (escritura, contrato, matrícula "
+        "etc.), segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "Quanto menor, maior a segurança jurídica da posse do imóvel para quem mora nele — "
+        "um proxy direto de informalidade e irregularidade fundiária, que afeta o acesso a "
+        "crédito e a políticas habitacionais que exigem comprovação de propriedade."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Domicílios próprios sem documento de propriedade\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 7191, variável 10368 (\"Distribuição "
+        "percentual dos domicílios próprios\"), classificação 886 (\"Existência de algum "
+        "documento que comprove a propriedade do domicílio\"), categoria 47933 (\"Não tem "
+        "documento que comprove sua propriedade\").\n\n"
+        "Considera apenas domicílios já classificados como próprios — não inclui alugados ou "
+        "cedidos, que por definição não têm documento de propriedade em nome do morador."
+    ),
+)
+DOMICILIOS_SEM_DOCUMENTO_PROPRIEDADE_QUERY = SidraQuery(
+    table=7191, variable=10368, classifications={886: 47933}
+)

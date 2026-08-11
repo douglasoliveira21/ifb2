@@ -30,6 +30,10 @@ from app.sync.definitions import (
     DESPESA_COM_PESSOAL_ESTADUAL,
     DESPESA_COM_PESSOAL_MUNICIPAL,
     DIVIDA_CONSOLIDADA_LIQUIDA_ESTADUAL,
+    DOMICILIOS_ALUGADOS,
+    DOMICILIOS_ALUGADOS_QUERY,
+    DOMICILIOS_SEM_DOCUMENTO_PROPRIEDADE,
+    DOMICILIOS_SEM_DOCUMENTO_PROPRIEDADE_QUERY,
     ESCOLARIDADE_AVANCADA,
     ESCOLARIDADE_AVANCADA_QUERY,
     ESPERANCA_VIDA,
@@ -399,6 +403,8 @@ def main() -> None:
     for meta, query in [
         (MEDIA_ANOS_ESTUDO, MEDIA_ANOS_ESTUDO_QUERY),
         (ESCOLARIDADE_AVANCADA, ESCOLARIDADE_AVANCADA_QUERY),
+        (DOMICILIOS_ALUGADOS, DOMICILIOS_ALUGADOS_QUERY),
+        (DOMICILIOS_SEM_DOCUMENTO_PROPRIEDADE, DOMICILIOS_SEM_DOCUMENTO_PROPRIEDADE_QUERY),
     ]:
         sync_indicator(meta, lambda query=query: drop_future_years(fetch_sidra_series(query)))
         sync_by_state(meta, lambda query=query: drop_future_years_by_state(fetch_sidra_series_by_state(query)))

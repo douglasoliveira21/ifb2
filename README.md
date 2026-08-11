@@ -135,6 +135,8 @@ oficiais via API pública, sem scraping:
 | Óbitos por causas não naturais, Brasil e por estado | IBGE (Estatísticas do Registro Civil) | SIDRA tabela 2681, variável 343, classificação 1836 |
 | Número médio de anos de estudo, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7126, variável 3593 |
 | Pessoas com 12 anos ou mais de estudo (25 anos ou mais), Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7133, variável 10270 |
+| Domicílios alugados, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6821, variável 9784 |
+| Domicílios próprios sem documento de propriedade, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7191, variável 10368 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -573,6 +575,34 @@ reportada pelo IBGE no período; percentual com 12+ anos de estudo
 subindo de 50% para 57,8% no mesmo intervalo; por estado, SP
 consistentemente acima de MA nos dois indicadores, batendo com o
 padrão regional de desigualdade educacional já conhecido.
+
+### Habitação (`IndicatorCategory.HABITACAO`, migration 0005)
+
+Primeiro setor novo desde a Demografia — categoria nova no banco
+(precisou de migration, diferente dos complementos anteriores que
+reaproveitaram categorias já existentes). Dois indicadores, ambos da
+PNAD Contínua anual, Brasil e por estado, reaproveitando 100% o cliente
+SIDRA já existente:
+
+- **Domicílios alugados** (tabela 6821, variável 9784) — `neutral`: um
+  aumento pode refletir tanto maior acesso ao aluguel quanto
+  dificuldade crescente de comprar a casa própria.
+- **Domicílios próprios sem documento de propriedade** (tabela 7191,
+  variável 10368) — `lower_is_better`, um proxy direto de
+  irregularidade fundiária/informalidade habitacional.
+
+Investiguei "déficit habitacional" e "aglomerados subnormais" (favelas)
+como candidatos adicionais, mas não achei uma tabela SIDRA com
+atualização anual contínua para nenhum dos dois (déficit habitacional é
+calculado pela Fundação João Pinheiro, não pelo IBGE, com metodologia
+própria e periodicidade irregular; aglomerados subnormais só existe no
+Censo, a cada 10 anos) — ficam de fora por enquanto.
+
+Validado ao vivo: aluguel subindo de 19,2% (2019) para 23,8% (2025);
+domicílios sem documento de propriedade caindo de 14,9% para 12,0% no
+mesmo período; por estado, SP com mais aluguel (mercado urbano) e MA com
+muito mais informalidade de posse (~31%), ambos batendo com o padrão
+regional conhecido.
 
 ### Indicadores por estado
 
