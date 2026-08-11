@@ -2078,3 +2078,48 @@ INDICE_GINI_PIB_MUNICIPAL = StaticIndicatorMeta(
     ),
 )
 INDICE_GINI_PIB_MUNICIPAL_QUERY = SidraQuery(table=5939, variable=529, classifications={})
+
+SOURCE_CNJ = SourceSpec(
+    key="cnj",
+    name="Conselho Nacional de Justiça (DataJud)",
+    url="https://datajud-wiki.cnj.jus.br/api-publica/",
+    description="Conselho Nacional de Justiça — base nacional de dados do Poder Judiciário (DataJud).",
+)
+
+PROCESSOS_AJUIZADOS_ESTADUAL = StaticIndicatorMeta(
+    slug="processos-ajuizados-estadual",
+    name="Processos ajuizados na Justiça estadual",
+    category=IndicatorCategory.JUSTICA,
+    unit="processos",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Número de novos processos judiciais ajuizados no ano nos Tribunais de Justiça "
+        "estaduais (1º e 2º graus, todos os ramos de competência) — não inclui Justiça "
+        "Federal, do Trabalho, Eleitoral, Militar nem os tribunais superiores (STJ, TST, TSE, "
+        "STF), que têm bases próprias não cobertas por este indicador."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — mais processos pode significar tanto maior "
+        "acesso da população à Justiça quanto mais conflitos na sociedade, e menos processos "
+        "pode refletir tanto menor litigiosidade quanto barreiras de acesso. É uma contagem "
+        "absoluta, então estados mais populosos tendem a ter números maiores."
+    ),
+    update_frequency="anual",
+    source=SOURCE_CNJ,
+    methodology=(
+        "# Metodologia — Processos ajuizados na Justiça estadual\n\n"
+        "Fonte: CNJ, API Pública do DataJud (`api-publica.datajud.cnj.jus.br`) — base nacional "
+        "de metadados processuais do Judiciário, alimentada diretamente pelos sistemas dos "
+        "tribunais. O IFB consulta, para cada um dos 27 Tribunais de Justiça estaduais, uma "
+        "agregação de contagem (não baixa processo nenhum) filtrando pelo campo "
+        "`dataAjuizamento` dentro do ano de referência, e soma os 27 totais para o valor "
+        "Brasil.\n\n"
+        "A API do DataJud usa uma chave pública compartilhada, documentada oficialmente pelo "
+        "próprio CNJ para uso livre por qualquer aplicação (não é uma credencial do IFB) — o "
+        "CNJ pode trocar essa chave a qualquer momento, o que interromperia a sincronização "
+        "deste indicador até a atualização da chave em `app/sync/datajud_client.py`.\n\n"
+        "Cobre só a Justiça estadual (Tribunais de Justiça) — Justiça Federal, do Trabalho, "
+        "Eleitoral, Militar e tribunais superiores têm bases próprias no DataJud, não "
+        "agregadas aqui nesta primeira versão do indicador."
+    ),
+)

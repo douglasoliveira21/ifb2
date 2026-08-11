@@ -92,6 +92,7 @@ from app.sync.definitions import (
     PIB_VALORES_CORRENTES_QUERY,
     POPULACAO_RESIDENTE,
     POPULACAO_RESIDENTE_QUERY,
+    PROCESSOS_AJUIZADOS_ESTADUAL,
     PRODUCAO_INDUSTRIAL,
     PRODUCAO_INDUSTRIAL_QUERY,
     RAZAO_DEPENDENCIA_IDOSOS,
@@ -131,6 +132,10 @@ from app.sync.definitions import (
     VALOR_PRODUCAO_AGRICOLA_QUERY,
     IndicatorSpec,
     StaticIndicatorMeta,
+)
+from app.sync.datajud_client import (
+    fetch_processos_ajuizados_series_brasil,
+    fetch_processos_ajuizados_series_by_state,
 )
 from app.sync.fbsp_client import fetch_mvi_rate_brasil, fetch_mvi_rate_by_state
 from app.sync.ibge_client import (
@@ -556,6 +561,19 @@ def main() -> None:
     sync_indicator(INDICE_GINI_PIB_MUNICIPAL, lambda: fetch_sidra_series(INDICE_GINI_PIB_MUNICIPAL_QUERY))
     sync_by_state(
         INDICE_GINI_PIB_MUNICIPAL, lambda: fetch_sidra_series_by_state(INDICE_GINI_PIB_MUNICIPAL_QUERY)
+    )
+
+    # Só até o último ano completo — o ano corrente teria contagem parcial
+    # (o ano ainda não acabou) e pareceria uma queda de processos que não
+    # é real, só um efeito de o ano estar em andamento.
+    _last_complete_year = datetime.now(timezone.utc).year - 1
+    sync_indicator(
+        PROCESSOS_AJUIZADOS_ESTADUAL,
+        lambda: fetch_processos_ajuizados_series_brasil(start_year=2019, end_year=_last_complete_year),
+    )
+    sync_by_state(
+        PROCESSOS_AJUIZADOS_ESTADUAL,
+        lambda: fetch_processos_ajuizados_series_by_state(start_year=2019, end_year=_last_complete_year),
     )
 
     refresh_summary_view()

@@ -17,6 +17,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   CRIANCAS: "Crianças",
   IDOSOS: "Idosos",
   DESENVOLVIMENTO_REGIONAL: "Desenvolvimento regional",
+  JUSTICA: "Justiça",
 };
 
 export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);

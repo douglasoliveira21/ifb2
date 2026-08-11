@@ -149,6 +149,7 @@ oficiais via API pública, sem scraping:
 | Taxa de frequência à creche ou escola (4 a 5 anos), Brasil | IBGE (PNAD Contínua anual) | SIDRA tabela 7140, variável 10280 |
 | Razão de dependência de idosos, Brasil e por estado | IBGE (Projeção da População) | SIDRA tabela 7360, variável 10611 |
 | Índice de Gini da distribuição do PIB municipal, Brasil e por estado | IBGE (PIB dos Municípios) | SIDRA tabela 5939, variável 529 |
+| Processos ajuizados na Justiça estadual, Brasil e por estado | CNJ (DataJud) | API Pública do DataJud, agregação de contagem por `dataAjuizamento`, somada dos 27 TJs |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -786,12 +787,19 @@ documentado na Demografia.
 
 ### Desenvolvimento regional (`IndicatorCategory.DESENVOLVIMENTO_REGIONAL`, migration 0013)
 
-Transparência e controle e Justiça ficaram sem indicador nesta sessão
-— vários domínios de destino (`portaldatransparencia.gov.br`,
-`api.cnj.jus.br`, `painel-estatistico-de-eng.cnj.jus.br`) recusaram a
-conexão ou exigiram verificação humana a partir deste ambiente; pode
-ser um bloqueio específico daqui, não necessariamente a fonte estar
-fora do ar — vale reconferir de outro lugar antes de descartar de vez.
+Transparência e controle ficou sem indicador nesta sessão —
+`portaldatransparencia.gov.br` recusou a conexão a partir deste
+ambiente (a API que exige chave respondeu normalmente com 401 pedindo
+cadastro, mas o site em si e o serviço de download em lote bloquearam
+com verificação humana). Pode ser um bloqueio específico daqui, não
+necessariamente a fonte estar fora do ar — vale reconferir de outro
+lugar antes de descartar de vez.
+
+**Correção**: eu tinha descartado Justiça também, dizendo que os
+domínios do CNJ recusavam conexão — isso estava errado. O domínio que
+eu testei (`api.cnj.jus.br`) não existe mesmo, mas a API Pública real
+do CNJ é outro domínio (`api-publica.datajud.cnj.jus.br`, o DataJud) e
+funciona normalmente. Corrigido abaixo.
 
 Desenvolvimento regional teve uma saída: **Índice de Gini da
 distribuição do PIB municipal**, tabela SIDRA 5939 (Produto Interno
@@ -806,6 +814,46 @@ concentrado em poucos municípios, como amplamente discutido na
 literatura de desenvolvimento regional); por estado, SP e AM acima de
 0,86 — ambos com forte concentração em torno de um polo (a capital),
 padrão esperado.
+
+### Justiça (`IndicatorCategory.JUSTICA`, migration 0014)
+
+**Processos ajuizados na Justiça estadual**, Brasil e por estado —
+primeiro indicador do projeto que não vem do IBGE, BCB, Tesouro ou
+INPE. Fonte: **API Pública do DataJud**, do CNJ
+(`api-publica.datajud.cnj.jus.br`), uma API de busca (Elasticsearch)
+com uma coleção por tribunal, cada uma com dezenas de milhões de
+processos — bem diferente do padrão "série pronta" das outras fontes
+do projeto.
+
+Novo cliente `app/sync/datajud_client.py`: para cada um dos 27
+Tribunais de Justiça estaduais, faz uma consulta de **agregação de
+contagem** (`size: 0`, `track_total_hits`) filtrando o campo
+`dataAjuizamento` (string de largura fixa `AAAAMMDDHHMMSS`, comparável
+como range de texto) pelo ano — nunca baixa um processo sequer, só o
+total. Busca em paralelo (`ThreadPoolExecutor`, mesmo padrão do
+cliente SICONFI municipal) e soma os 27 totais para o valor Brasil. Só
+mostra anos completos — o ano corrente é excluído do sync porque uma
+contagem parcial (o ano ainda não acabou) pareceria uma queda de
+processos que não é real.
+
+A API usa uma **chave pública compartilhada**, documentada oficialmente
+pelo próprio CNJ para uso livre por qualquer aplicação
+(`datajud-wiki.cnj.jus.br/api-publica/acesso/`) — não é uma credencial
+do IFB, e o CNJ avisa que pode trocá-la a qualquer momento por
+segurança.
+
+Cobre só a Justiça estadual (Tribunais de Justiça) nesta primeira
+versão — Justiça Federal, do Trabalho, Eleitoral, Militar e tribunais
+superiores (STJ, TST, TSE, STF) têm índices próprios no DataJud, ainda
+não agregados aqui.
+
+Validado ao vivo: TJSP registrou 3.329.580 processos ajuizados em
+2024 (maior tribunal estadual do país, ordem de grandeza compatível
+com o volume conhecido de litígios em São Paulo), TJRS 1.473.514, TJMA
+565.250, TJDFT 39.930 — todos crescendo com o tamanho do estado, como
+esperado; soma Brasil de ~18-20 milhões de processos/ano, batendo com
+os números de litigiosidade do país amplamente reportados pelo
+próprio CNJ (Justiça em Números).
 
 ### Indicadores por estado
 
