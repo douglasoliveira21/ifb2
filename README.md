@@ -118,6 +118,8 @@ oficiais via API pública, sem scraping:
 | Receita total realizada, por estado | Tesouro Nacional (SICONFI) | RREO, Anexo 01, fechamento do 6º bimestre |
 | Leitos SUS, Brasil e por estado | Ministério da Saúde (CNES) | Arquivo anual `Leitos_AAAA.csv`, soma de `LEITOS_SUS` no último mês publicado |
 | Taxa de Mortes Violentas Intencionais (MVI), Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota abaixo) | Planilha do Anuário Brasileiro de Segurança Pública, tabela "Mortes violentas intencionais" |
+| População residente estimada, Brasil e por estado | IBGE | SIDRA tabela 6579, variável 9324 |
+| Nascimentos, óbitos, taxas de crescimento/natalidade/mortalidade/fecundidade, índice de envelhecimento — Brasil e por estado | IBGE (Projeção da População) | SIDRA tabela 7360, variáveis 10600/10601/10605/10606/10607/2493/10612 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -374,6 +376,37 @@ municipais forem adicionados no futuro.
 sincronizado (nunca os ~5.570 de uma vez) e tem busca por nome;
 `/municipios/[uf]/[codigo]` é a ficha do município, mesmo layout de
 `/estados/[uf]`.
+
+### Demografia (`IndicatorCategory.DEMOGRAFIA`, migration 0004)
+
+Oito indicadores novos, todos reaproveitando 100% o cliente SIDRA já
+existente (`fetch_sidra_series`, `fetch_sidra_series_by_state`,
+`drop_future_years`) — zero código novo de integração, só tabelas e
+variáveis diferentes: população residente estimada (tabela 6579) e
+nascimentos, óbitos, taxa de crescimento populacional, taxa de
+natalidade, taxa de mortalidade geral, taxa de fecundidade e índice de
+envelhecimento (todos da tabela 7360, "Indicadores implícitos na
+projeção da população").
+
+Validados contra números amplamente divulgados antes de entrar no
+código: população do Brasil em 2025 = 213.421.037 (mesma estimativa
+noticiada pelo IBGE); taxa de fecundidade 2023 = 1,75 filho/mulher
+(abaixo do nível de reposição, número muito citado na imprensa); taxa de
+crescimento geométrico 2023 = 0,68% (desaceleração populacional também
+amplamente noticiada); índice de envelhecimento mais baixo nos estados
+do Norte que no Sul, batendo com o padrão demográfico regional
+conhecido.
+
+A tabela 7360 tem a mesma armadilha de "dois campos Ano" já documentada
+para a 7362 (esperança de vida/mortalidade infantil) — `_extract_year`
+em `ibge_client.py` já trata isso, nenhuma mudança necessária.
+
+**Taxa bruta de mortalidade é `neutral`, não `lower_is_better`**: como
+ela sobe estruturalmente com o envelhecimento da população mesmo com a
+saúde melhorando, classificá-la por polaridade produziria "PIOROU"
+enganoso em qualquer estado envelhecendo — diferente da mortalidade
+infantil (essa sim `lower_is_better`, sinal mais direto de saúde
+pública).
 
 ### Indicadores por estado
 

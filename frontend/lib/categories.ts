@@ -1,4 +1,5 @@
 export const CATEGORY_LABELS: Record<string, string> = {
+  DEMOGRAFIA: "Demografia",
   ECONOMIA: "Economia",
   EMPREGO_RENDA: "Emprego e renda",
   SAUDE: "Saúde",

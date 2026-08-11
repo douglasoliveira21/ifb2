@@ -905,3 +905,195 @@ DESPESA_COM_PESSOAL_MUNICIPAL = StaticIndicatorMeta(
         "Testado contra São Paulo (capital) em 2023: 29,98% da RCL, dentro do limite de 54%."
     ),
 )
+
+# --- Demografia (IBGE, tabelas 6579 e 7360) ---------------------------------
+#
+# Reaproveita 100% o cliente SIDRA já existente (`fetch_sidra_series`,
+# `fetch_sidra_series_by_state`, `drop_future_years`) — mesmo padrão de
+# ESPERANCA_VIDA/MORTALIDADE_INFANTIL, só tabelas/variáveis diferentes.
+# Tabela 7360 tem a mesma armadilha de "dois campos Ano" já documentada
+# para a 7362 (`_extract_year` em ibge_client.py já trata isso).
+#
+# Valores conferidos contra números amplamente divulgados: população do
+# Brasil em 2025 = 213.421.037 (mesmo valor da estimativa IBGE noticiada);
+# taxa de fecundidade total 2023 = 1,75 filho/mulher (abaixo do nível de
+# reposição, número muito citado na imprensa); taxa de crescimento
+# geométrico 2023 = 0,68% (crescimento populacional em desaceleração,
+# também amplamente noticiado); índice de envelhecimento mais baixo nos
+# estados do Norte (ex: Amazonas ~20 em 2023) que no Sul, batendo com o
+# padrão demográfico regional conhecido.
+
+POPULACAO_RESIDENTE = StaticIndicatorMeta(
+    slug="populacao-residente",
+    name="População residente estimada",
+    category=IndicatorCategory.DEMOGRAFIA,
+    unit="pessoas",
+    polarity=IndicatorPolarity.neutral,
+    description_what="Estimativa da população residente, atualizada anualmente pelo IBGE.",
+    description_how=(
+        "Não é um indicador de 'melhora' ou 'piora' — é o tamanho da população, usado como "
+        "referência para calcular outros indicadores per capita."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — População residente estimada\n\n"
+        "Fonte: IBGE, Estimativas de População — tabela SIDRA 6579, variável 9324."
+    ),
+)
+POPULACAO_RESIDENTE_QUERY = SidraQuery(table=6579, variable=9324, classifications={})
+
+NASCIMENTOS = StaticIndicatorMeta(
+    slug="nascimentos",
+    name="Nascimentos",
+    category=IndicatorCategory.DEMOGRAFIA,
+    unit="nascimentos",
+    polarity=IndicatorPolarity.neutral,
+    description_what="Número estimado de nascimentos no ano, segundo a Projeção da População do IBGE.",
+    description_how="Não é classificado como melhora/piora — é um número absoluto de referência.",
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Nascimentos\n\n"
+        "Fonte: IBGE, Projeção da População — tabela SIDRA 7360, variável 10600 "
+        "(\"Nascimentos\"), parte do modelo oficial de projeção demográfica, não contagem "
+        "direta de registro civil (que tem defasagem de anos)."
+    ),
+)
+NASCIMENTOS_QUERY = SidraQuery(table=7360, variable=10600, classifications={1933: "all"})
+
+OBITOS = StaticIndicatorMeta(
+    slug="obitos",
+    name="Óbitos",
+    category=IndicatorCategory.DEMOGRAFIA,
+    unit="óbitos",
+    polarity=IndicatorPolarity.neutral,
+    description_what="Número estimado de óbitos no ano, segundo a Projeção da População do IBGE.",
+    description_how=(
+        "Não é classificado como melhora/piora automaticamente — o número tende a subir com o "
+        "envelhecimento da população, o que não é, por si só, um resultado ruim de política "
+        "pública."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Óbitos\n\n"
+        "Fonte: IBGE, Projeção da População — tabela SIDRA 7360, variável 10601 (\"Óbitos\"), "
+        "modelo oficial de projeção demográfica."
+    ),
+)
+OBITOS_QUERY = SidraQuery(table=7360, variable=10601, classifications={1933: "all"})
+
+TAXA_CRESCIMENTO_POPULACIONAL = StaticIndicatorMeta(
+    slug="taxa-crescimento-populacional",
+    name="Taxa de crescimento populacional",
+    category=IndicatorCategory.DEMOGRAFIA,
+    unit="%",
+    polarity=IndicatorPolarity.neutral,
+    description_what="Taxa de crescimento geométrico anual da população, segundo o IBGE.",
+    description_how=(
+        "Não é classificada como melhora/piora — o Brasil está em desaceleração populacional "
+        "estrutural (transição demográfica), não um resultado de política de um governo "
+        "específico."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de crescimento populacional\n\n"
+        "Fonte: IBGE, Projeção da População — tabela SIDRA 7360, variável 10605 (\"Taxa de "
+        "crescimento geométrico\")."
+    ),
+)
+TAXA_CRESCIMENTO_POPULACIONAL_QUERY = SidraQuery(table=7360, variable=10605, classifications={1933: "all"})
+
+TAXA_NATALIDADE = StaticIndicatorMeta(
+    slug="taxa-natalidade",
+    name="Taxa bruta de natalidade",
+    category=IndicatorCategory.DEMOGRAFIA,
+    unit="por mil habitantes",
+    polarity=IndicatorPolarity.neutral,
+    description_what="Número de nascimentos por mil habitantes no ano, segundo o IBGE.",
+    description_how="Não é classificada como melhora/piora — reflete tendência demográfica, não política pública isolada.",
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa bruta de natalidade\n\n"
+        "Fonte: IBGE, Projeção da População — tabela SIDRA 7360, variável 10606."
+    ),
+)
+TAXA_NATALIDADE_QUERY = SidraQuery(table=7360, variable=10606, classifications={1933: "all"})
+
+TAXA_MORTALIDADE_GERAL = StaticIndicatorMeta(
+    slug="taxa-mortalidade-geral",
+    name="Taxa bruta de mortalidade",
+    category=IndicatorCategory.DEMOGRAFIA,
+    unit="por mil habitantes",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Número de óbitos por mil habitantes no ano (todas as idades e causas) — diferente da "
+        "mortalidade infantil, que mede só óbitos de crianças menores de 1 ano."
+    ),
+    description_how=(
+        "O IFB não classifica este indicador como melhora/piora: ele tende a subir "
+        "estruturalmente com o envelhecimento da população, mesmo com a saúde melhorando — "
+        "diferente da mortalidade infantil (essa sim classificada, por ser um sinal mais "
+        "direto de saúde pública). Compare sempre com a esperança de vida do mesmo período "
+        "antes de interpretar uma alta como piora."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa bruta de mortalidade\n\n"
+        "Fonte: IBGE, Projeção da População — tabela SIDRA 7360, variável 10607. Não confundir "
+        "com mortalidade infantil (indicador separado, `mortalidade-infantil`)."
+    ),
+)
+TAXA_MORTALIDADE_GERAL_QUERY = SidraQuery(table=7360, variable=10607, classifications={1933: "all"})
+
+TAXA_FECUNDIDADE = StaticIndicatorMeta(
+    slug="taxa-fecundidade",
+    name="Taxa de fecundidade total",
+    category=IndicatorCategory.DEMOGRAFIA,
+    unit="filhos por mulher",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Número médio de filhos que uma mulher teria ao final da vida reprodutiva, mantidas as "
+        "taxas de fecundidade por idade observadas no ano."
+    ),
+    description_how=(
+        "Não é classificada como melhora/piora — o Brasil está abaixo do nível de reposição "
+        "populacional (2,1 filhos/mulher) desde a década de 2000, tendência estrutural de "
+        "longo prazo."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de fecundidade total\n\n"
+        "Fonte: IBGE, Projeção da População — tabela SIDRA 7360, variável 2493."
+    ),
+)
+TAXA_FECUNDIDADE_QUERY = SidraQuery(table=7360, variable=2493, classifications={1933: "all"})
+
+INDICE_ENVELHECIMENTO = StaticIndicatorMeta(
+    slug="indice-envelhecimento",
+    name="Índice de envelhecimento",
+    category=IndicatorCategory.DEMOGRAFIA,
+    unit="%",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Número de pessoas de 65 anos ou mais para cada 100 pessoas de 0 a 14 anos — quanto "
+        "maior, mais envelhecida é a estrutura etária da população."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — reflete a transição demográfica (mais "
+        "esperança de vida, menos nascimentos), com implicações para previdência e saúde que "
+        "vão além de um único governo."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Índice de envelhecimento\n\n"
+        "Fonte: IBGE, Projeção da População — tabela SIDRA 7360, variável 10612."
+    ),
+)
+INDICE_ENVELHECIMENTO_QUERY = SidraQuery(table=7360, variable=10612, classifications={1933: "all"})
