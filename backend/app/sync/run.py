@@ -9,7 +9,7 @@ Uso: python -m app.sync.run
 """
 import sys
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -100,7 +100,11 @@ from app.sync.definitions import (
     POPULACAO_RESIDENTE,
     POPULACAO_RESIDENTE_QUERY,
     PROCESSOS_AJUIZADOS_ESTADUAL,
+    PESSOAS_COM_DEFICIENCIA_CENSO_2022,
+    PESSOAS_COM_DEFICIENCIA_QUERY,
+    PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY,
     PRODUCAO_INDUSTRIAL,
+    VALOR_CONTRATACOES_PREGAO_ELETRONICO,
     PRODUCAO_INDUSTRIAL_QUERY,
     RAZAO_DEPENDENCIA_IDOSOS,
     RAZAO_DEPENDENCIA_IDOSOS_QUERY,
@@ -160,6 +164,11 @@ from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
 from app.sync.deter_client import fetch_area_desmatada_brasil, fetch_area_desmatada_by_state
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.leitos_sus_client import fetch_leitos_sus_brasil, fetch_leitos_sus_by_state
+from app.sync.pncp_client import (
+    read_accumulated_totals_brasil,
+    read_accumulated_totals_by_state,
+    sync_pncp_incremental,
+)
 from app.sync.siop_client import fetch_execucao_orcamentaria_uniao
 from app.sync.sinesp_vde_client import (
     fetch_homicidio_doloso_brasil,
@@ -215,6 +224,29 @@ def _ratio_series_by_state(
         for uf, points in numerator.items()
         if uf in denominator
     }
+
+
+def _sync_compras_publicas() -> None:
+    """Roda a acumulação incremental do PNCP (busca só o delta desde o
+    último checkpoint, soma ao total já acumulado) e depois publica os
+    totais já acumulados como indicador normal — os usuários nunca leem
+    o PNCP diretamente, só o total pré-calculado."""
+    db = SessionLocal()
+    try:
+        sync_pncp_incremental(db)
+        brasil_totals = read_accumulated_totals_brasil(db)
+        by_state_totals = read_accumulated_totals_by_state(db)
+    finally:
+        db.close()
+
+    brasil_points = [SeriesPoint(reference_date=date(ano, 1, 1), value=valor) for ano, valor in brasil_totals]
+    by_state_points = {
+        uf: [SeriesPoint(reference_date=date(ano, 1, 1), value=valor) for ano, valor in pontos]
+        for uf, pontos in by_state_totals.items()
+    }
+
+    sync_indicator(VALOR_CONTRATACOES_PREGAO_ELETRONICO, lambda: brasil_points)
+    sync_by_state(VALOR_CONTRATACOES_PREGAO_ELETRONICO, lambda: by_state_points)
 
 
 def sync_indicator(
@@ -508,6 +540,21 @@ def main() -> None:
     )
 
     sync_indicator(
+        PESSOAS_COM_DEFICIENCIA_CENSO_2022,
+        lambda: _ratio_series(
+            fetch_sidra_series(PESSOAS_COM_DEFICIENCIA_QUERY),
+            fetch_sidra_series(PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY),
+        ),
+    )
+    sync_by_state(
+        PESSOAS_COM_DEFICIENCIA_CENSO_2022,
+        lambda: _ratio_series_by_state(
+            fetch_sidra_series_by_state(PESSOAS_COM_DEFICIENCIA_QUERY),
+            fetch_sidra_series_by_state(PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY),
+        ),
+    )
+
+    sync_indicator(
         TAXA_FREQUENCIA_PRE_ESCOLA, lambda: fetch_sidra_series(TAXA_FREQUENCIA_PRE_ESCOLA_QUERY)
     )
     # Tabela 7140 não tem quebra por estado no SIDRA (só Brasil e Grandes Regiões).
@@ -633,6 +680,8 @@ def main() -> None:
     )
     # Só nível Brasil — é o orçamento consolidado da União, não faz
     # sentido uma quebra por estado.
+
+    _sync_compras_publicas()
 
     refresh_summary_view()
     print("Materialized view `indicators` atualizada.")

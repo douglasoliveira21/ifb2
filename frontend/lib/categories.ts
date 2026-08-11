@@ -21,6 +21,8 @@ export const CATEGORY_LABELS: Record<string, string> = {
   GESTAO_PUBLICA: "Gestão pública",
   COMERCIO_EXTERIOR: "Comércio exterior",
   TRANSPARENCIA_CONTROLE: "Transparência e controle",
+  PESSOAS_COM_DEFICIENCIA: "Pessoas com deficiência",
+  COMPRAS_PUBLICAS: "Compras públicas",
 };
 
 export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);

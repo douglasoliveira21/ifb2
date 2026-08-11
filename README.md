@@ -105,6 +105,8 @@ oficiais via API pública, sem scraping:
 | Desmatamento — Amazônia Legal | INPE (PRODES) | Arquivo de taxas anuais do TerraBrasilis (soma por período) |
 | Área sob alerta de desmatamento — Cerrado (DETER), Brasil e por estado | INPE (DETER) | `file-delivery/download/deter-cerrado-nb/monthly`, soma mensal por ano |
 | Execução orçamentária da União (valor pago), Brasil | Ministério do Planejamento e Orçamento (SIOP) | Endpoint SPARQL público, soma de `loa:valorPago` por exercício |
+| Pessoas com deficiência (Censo 2022), Brasil e por estado | IBGE (Censo Demográfico 2022) | SIDRA tabela 10130, razão calculada pelo IFB |
+| Valor de contratações públicas — Pregão Eletrônico, Brasil e por estado | PNCP | API pública, acumulação incremental (ver metodologia) |
 | Taxa de analfabetismo (15+ anos) | IBGE (PNAD Contínua) | SIDRA tabela 7113, variável 10267 |
 | Esperança de vida ao nascer | IBGE (Projeção da População) | SIDRA tabela 7362, variável 2503 |
 | Mortalidade infantil | IBGE (Projeção da População) | SIDRA tabela 7362, variável 1940 |
@@ -399,38 +401,81 @@ emergenciais da pandemia, amplamente noticiado), subindo de forma
 consistente e monotônica até R$ 5,05 tri em 2025 — a mesma tendência e
 ordem de grandeza divulgada pela imprensa econômica ano a ano.
 
-### Setores reinvestigados sem indicador novo (2ª rodada de correção)
+### Compras públicas — acumulação incremental do PNCP (`app/sync/pncp_client.py`)
 
-Depois de corrigir Justiça, Gestão pública, Comércio exterior e
-Segurança pública (achados errados em rodadas anteriores), os 5 setores
-abaixo foram reinvestigados com o mesmo rigor. Nenhum resultou em
-indicador novo desta vez, mas por motivos mais específicos e melhor
-documentados do que antes:
+**5ª rodada de correção.** O diagnóstico anterior (PNCP sem nenhum
+agregado pronto, só registros paginados) estava certo, mas a conclusão
+de "grande demais para a arquitetura leve do projeto" não era — a
+solução não é somar tudo a cada sync, é **acumular incrementalmente**:
+buscar só o que mudou desde a última vez e somar ao total já calculado,
+nunca refazer a soma do histórico inteiro do zero, e nunca consultar o
+PNCP em tempo real por requisição de usuário.
 
-- **Compras públicas**: o PNCP (Portal Nacional de Contratações
-  Públicas, `pncp.gov.br/api/consulta`) é uma API real, pública, sem
-  chave — isso corrige a alegação anterior de que só existiam
-  estatísticas de uso da API do compras.gov.br. O problema é outro: o
-  endpoint de contratações não tem nenhum agregado pronto, só registros
-  individuais paginados (50 por página) — uma única semana, de um único
-  código de modalidade de contratação, já tem 724 registros. Somar o
-  valor total de compras públicas do país exigiria paginar centenas de
-  milhares de registros por ano, através de ~13 códigos de modalidade —
-  mesma categoria de problema do SIM (mortalidade), grande demais para
-  a arquitetura leve do projeto sem uma reformulação maior.
-- **Ciência e tecnologia**: procurei "PINTEC Semestral" especificamente
-  (nome sugerido) no catálogo do SIDRA e não encontrei nenhuma tabela
-  com esse nome ou período mais recente que 2017; o site do IBGE
-  bloqueou (403) as tentativas de acesso direto para confirmar pela
-  fonte primária. Fica como pendência real, não como "não existe" —
-  não tive como confirmar nem descartar com confiança.
-- **Pessoas com deficiência**: o Censo 2022 e a PNS 2019 têm dados
-  sobre deficiência, mas em anos e metodologias diferentes entre si (e
-  diferentes da PNAD Contínua usada no resto do projeto) — não formam
-  uma série comparável ano a ano sem uma reformulação de como o IFB
-  trata indicadores de fonte não-contínua. Combinar os dois sem deixar
-  isso claro seria enganoso; documentar essa combinação corretamente
-  fica como trabalho futuro.
+Duas tabelas novas no Postgres do IFB (não uma dependência nova como
+DuckDB/Parquet — o projeto já tem Postgres):
+
+- `pncp_sync_checkpoints`: até que data já foi processada, por
+  modalidade de contratação.
+- `pncp_contratacao_totals`: total acumulado (soma incremental via
+  `INSERT ... ON CONFLICT DO UPDATE SET valor_total = valor_total + `
+  novo delta), por ano/UF/modalidade.
+
+A cada sync, `sync_pncp_incremental()` busca só as contratações
+publicadas desde o checkpoint até ontem, soma por ano/UF, e adiciona ao
+total acumulado — depois os totais já acumulados (sem nenhuma chamada
+ao PNCP) alimentam o indicador normal, exatamente como qualquer outra
+fonte do IFB.
+
+**Escopo desta primeira versão**: só a modalidade Pregão Eletrônico
+(código 6) — a mais comum, mas não a única (faltam Dispensa,
+Concorrência etc., que podem ser adicionadas ao mesmo mecanismo depois).
+Validado ao vivo: um dia de agosto/2026 trouxe 17 contratações reais
+somando R$ 33,4 milhões, com valores individuais na faixa esperada
+para compras estaduais/municipais de rotina.
+
+### Ciência e tecnologia — sem fonte aberta processável (confirmado)
+
+**Investigação mais profunda, seguindo a orientação de usar o arquivo
+oficial da pesquisa em vez de provar ausência pelo SIDRA.** Busquei o
+PINTEC em `ftp.ibge.gov.br/Inovacao/` (o diretório de download de
+microdados do IBGE, mesmo mecanismo usado por outras pesquisas do
+projeto) — só tem uma pesquisa específica de empresas estatais
+federais, não o PINTEC principal. A página oficial do PINTEC continua
+bloqueando (403) mesmo com cabeçalho de navegador completo. O catálogo
+da Biblioteca do IBGE para a edição mais recente só lista **PDFs
+narrativos** (informativo + notas técnicas), nenhuma tabela XLS nem
+microdado para download.
+
+Conclusão revisada: o PINTEC parece ser distribuído só como relatório
+PDF, sem dado aberto em formato processável — diferente de pesquisas
+domiciliares como PNAD/Censo, que têm microdados abertos de verdade.
+Consistente com pesquisas empresariais do IBGE terem mais restrição de
+sigilo estatístico. Fica confirmadamente sem fonte aberta processável
+nesta versão do IFB, não como pendência.
+
+### Pessoas com deficiência — Censo 2022 (`slug: pessoas-com-deficiencia-censo-2022`)
+
+Seguindo a orientação de aceitar séries não contínuas em vez de forçar
+uma série anual que não existe: **Pessoas com deficiência (Censo
+2022)**, Brasil e por estado, publicado como indicador isolado — um
+retrato datado, não uma série temporal, com a metodologia deixando
+isso explícito (inclusive avisando para não comparar com o Censo 2010,
+que usava critério diferente, nem com a PNS, que é outra pesquisa).
+
+Mesma armadilha da tabela "Distribuição percentual" já documentada no
+indicador de Bolsa Família: a variável pronta do SIDRA retorna sempre
+100% quando filtrada por uma categoria específica de deficiência (é a
+distribuição *dentro* do grupo, não em relação ao total da população)
+— o IFB busca a contagem de pessoas com deficiência e a contagem total
+separadamente e calcula a razão, reaproveitando os mesmos helpers
+`_ratio_series`/`_ratio_series_by_state` já criados para a razão de
+rendimento mulher/homem.
+
+Validado ao vivo contra a ordem de grandeza amplamente divulgada na
+cobertura do Censo 2022: 14.400.869 pessoas com deficiência em
+198.348.756 pessoas de 2 anos ou mais (7,3% do total); por estado, MA
+(8,15%) acima de SP (6,34%), consistente com o padrão regional já
+observado em outros indicadores socioeconômicos do projeto.
 
 ### Contas públicas por estado (`app/sync/siconfi_client.py`, `app/sync/tesouro_transferencias_client.py`)
 

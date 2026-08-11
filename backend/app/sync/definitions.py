@@ -2388,3 +2388,104 @@ EXECUCAO_ORCAMENTARIA_UNIAO = StaticIndicatorMeta(
         "de forma consistente até R$ 4,65 tri (2024)."
     ),
 )
+
+PESSOAS_COM_DEFICIENCIA_CENSO_2022 = StaticIndicatorMeta(
+    slug="pessoas-com-deficiencia-censo-2022",
+    name="Pessoas com deficiência (Censo 2022)",
+    category=IndicatorCategory.PESSOAS_COM_DEFICIENCIA,
+    unit="% da população de 2 anos ou mais",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Percentual da população de 2 anos ou mais de idade identificada como pessoa com "
+        "deficiência no Censo Demográfico 2022, segundo os critérios do Grupo de Washington "
+        "sobre Estatísticas de Deficiência (avaliação de dificuldade funcional em enxergar, "
+        "ouvir, caminhar, memória/concentração e cuidados pessoais)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — é um retrato demográfico, não um resultado "
+        "de política pública que muda de um ano para o outro. **Não compare este número com "
+        "censos anteriores** (o Censo 2010 usava outra metodologia, sem o Grupo de "
+        "Washington, e produzia um percentual muito mais alto) nem com pesquisas amostrais "
+        "como a PNS — são instrumentos e critérios diferentes, não a mesma medição em pontos "
+        "diferentes do tempo. Só existe o ano de 2022; o próximo ponto de comparação será o "
+        "Censo seguinte, daqui a cerca de 10 anos."
+    ),
+    update_frequency="decenal (Censo)",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Pessoas com deficiência (Censo 2022)\n\n"
+        "Fonte: IBGE, Censo Demográfico 2022 — tabela SIDRA 10130, variável 11852 (contagem "
+        "de pessoas), classificação 2 (\"Sexo\"), categoria 6794 (\"Total\") e classificação "
+        "839 (\"Existência de deficiência\"). O IFB busca a contagem de pessoas com "
+        "deficiência e a contagem total separadamente e calcula a razão — a variável "
+        "\"Distribuição percentual\" da própria tabela do SIDRA (11856) não serve para isso: "
+        "ela é sempre 100% quando filtrada por uma categoria específica de deficiência (é a "
+        "distribuição *dentro* do grupo, não em relação ao total da população), mesma "
+        "armadilha de combinação de classificações já documentada no indicador "
+        "`domicilios-bolsa-familia`.\n\n"
+        "**Sobre a metodologia do Censo 2022**: o IBGE adotou pela primeira vez o conjunto "
+        "curto de perguntas do Grupo de Washington sobre Estatísticas de Deficiência — uma "
+        "mudança amplamente noticiada, porque produziu um percentual de pessoas com "
+        "deficiência muito menor do que o Censo 2010 (que usava outra metodologia). Não é "
+        "uma queda real na prevalência de deficiência no país, é uma mudança na forma de "
+        "medir — por isso este indicador é publicado isoladamente, sem tentar formar uma "
+        "série histórica com censos anteriores ou com outras pesquisas (ex: PNS), que usam "
+        "instrumentos diferentes.\n\n"
+        "Validado ao vivo contra a ordem de grandeza amplamente divulgada na cobertura do "
+        "Censo 2022: 14.400.869 pessoas com deficiência em 198.348.756 pessoas de 2 anos ou "
+        "mais (7,3% do total)."
+    ),
+)
+PESSOAS_COM_DEFICIENCIA_QUERY = SidraQuery(table=10130, variable=11852, classifications={2: 6794, 839: 58765})
+PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY = SidraQuery(table=10130, variable=11852, classifications={2: 6794, 839: 46583})
+
+SOURCE_PNCP = SourceSpec(
+    key="pncp",
+    name="Portal Nacional de Contratações Públicas (PNCP)",
+    url="https://pncp.gov.br/",
+    description=(
+        "Portal Nacional de Contratações Públicas — base oficial de publicação de "
+        "contratações do poder público (Lei 14.133/2021), mantida pela Controladoria-Geral "
+        "da União."
+    ),
+)
+
+VALOR_CONTRATACOES_PREGAO_ELETRONICO = StaticIndicatorMeta(
+    slug="valor-contratacoes-pregao-eletronico",
+    name="Valor de contratações públicas — Pregão Eletrônico",
+    category=IndicatorCategory.COMPRAS_PUBLICAS,
+    unit="R$",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Soma do valor total estimado das contratações públicas publicadas no PNCP sob a "
+        "modalidade Pregão Eletrônico — a modalidade mais comum de compra pública no Brasil "
+        "(leilão eletrônico reverso para bens e serviços comuns), por qualquer ente federativo "
+        "(municípios, estados e União)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — é o volume de contratações publicadas, não "
+        "uma medida de eficiência, economicidade ou regularidade do gasto. **Cobre só uma "
+        "modalidade de contratação** (Pregão Eletrônico) — não inclui Dispensa de Licitação, "
+        "Concorrência, Inexigibilidade e as demais modalidades previstas na Lei 14.133/2021, "
+        "então não deve ser lido como \"o total de compras públicas do Brasil\"."
+    ),
+    update_frequency="anual",
+    source=SOURCE_PNCP,
+    methodology=(
+        "# Metodologia — Valor de contratações públicas (Pregão Eletrônico)\n\n"
+        "Fonte: PNCP (Portal Nacional de Contratações Públicas), API pública de consulta "
+        "(`pncp.gov.br/api/consulta`), sem chave de acesso.\n\n"
+        "**Acumulação incremental, não tempo real**: o PNCP não expõe nenhum total agregado "
+        "pronto — só registros individuais paginados (até 50 por página; uma única semana de "
+        "Pregão Eletrônico já tem milhares de registros). Para nunca precisar consultar o "
+        "PNCP em tempo real a cada requisição de usuário, o IFB acumula os totais "
+        "localmente: a cada sync, busca só os registros publicados desde a última execução "
+        "e **soma** ao total já acumulado (tabelas internas `pncp_sync_checkpoints` e "
+        "`pncp_contratacao_totals`, ver `app/sync/pncp_client.py`) — nunca refaz a soma do "
+        "histórico inteiro do zero. O ano de referência de cada registro é o ano de "
+        "`dataPublicacaoPncp` (data em que a contratação foi publicada no portal).\n\n"
+        "**Escopo desta primeira versão**: só a modalidade \"Pregão Eletrônico\" (código 6 "
+        "na tabela de domínio do PNCP) — a mais comum, mas não a única. Não há registro "
+        "publicado no PNCP anterior a 2021 (Lei 14.133/2021, que criou essa obrigatoriedade)."
+    ),
+)
