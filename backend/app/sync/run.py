@@ -26,6 +26,7 @@ from app.sync.bcb_client import (
 from app.sync.definitions import (
     ALFABETISMO,
     ALFABETISMO_QUERY,
+    AREA_ALERTA_DESMATAMENTO_CERRADO,
     DEFORESTATION_LEGAL_AMAZON,
     DESPESA_COM_PESSOAL_ESTADUAL,
     DESPESA_COM_PESSOAL_MUNICIPAL,
@@ -155,6 +156,7 @@ from app.sync.ibge_client import (
     fetch_sidra_series_quarterly,
 )
 from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
+from app.sync.deter_client import fetch_area_desmatada_brasil, fetch_area_desmatada_by_state
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.leitos_sus_client import fetch_leitos_sus_brasil, fetch_leitos_sus_by_state
 from app.sync.sinesp_vde_client import (
@@ -385,6 +387,8 @@ def main() -> None:
         sync_bcb_indicator(spec)
     sync_indicator(DEFORESTATION_LEGAL_AMAZON, fetch_prodes_legal_amazon)
     sync_prodes_states()
+    sync_indicator(AREA_ALERTA_DESMATAMENTO_CERRADO, fetch_area_desmatada_brasil)
+    sync_by_state(AREA_ALERTA_DESMATAMENTO_CERRADO, fetch_area_desmatada_by_state)
     sync_indicator(ALFABETISMO, lambda: fetch_sidra_series(ALFABETISMO_QUERY))
     sync_by_state(ALFABETISMO, lambda: fetch_sidra_series_by_state(ALFABETISMO_QUERY))
 

@@ -2299,3 +2299,42 @@ HOMICIDIO_DOLOSO_ESTADUAL = StaticIndicatorMeta(
         "fonte oficial do governo federal."
     ),
 )
+
+AREA_ALERTA_DESMATAMENTO_CERRADO = StaticIndicatorMeta(
+    slug="area-alerta-desmatamento-cerrado",
+    name="Área sob alerta de desmatamento — Cerrado (DETER)",
+    category=IndicatorCategory.MEIO_AMBIENTE,
+    unit="km²/ano",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Área total sob alerta de desmatamento no bioma Cerrado detectada pelo sistema DETER "
+        "do INPE, somada por ano civil (janeiro a dezembro)."
+    ),
+    description_how=(
+        "Quanto menor, menos área sob alerta de desmatamento no período. O DETER é um sistema "
+        "de **alerta rápido**, não a taxa oficial consolidada de desmatamento (essa é medida "
+        "pelo PRODES, que para o Cerrado não está disponível nesta versão do IFB — ver nota "
+        "na metodologia) — os números não devem ser somados nem comparados diretamente com o "
+        "indicador de desmatamento da Amazônia Legal, que usa o PRODES."
+    ),
+    update_frequency="anual",
+    source=SOURCE_INPE,
+    methodology=(
+        "# Metodologia — Área sob alerta de desmatamento no Cerrado (DETER)\n\n"
+        "Fonte: INPE, sistema DETER (Detecção de Desmatamento em Tempo Real) para o bioma "
+        "Cerrado. O IFB coleta o arquivo de alertas mensais agregados por estado, publicado "
+        "pelo painel oficial TerraBrasilis (`file-delivery/download/deter-cerrado-nb/monthly`), "
+        "e soma os 12 meses de cada ano civil. O ano corrente é sempre excluído por estar "
+        "incompleto.\n\n"
+        "**Por que DETER e não PRODES para o Cerrado**: o painel oficial do PRODES Cerrado "
+        "(distinto do DETER) apresentou um problema técnico confirmado em testes do IFB — a "
+        "página específica do Cerrado carrega os dados da Amazônia Legal por engano — então "
+        "não foi usado. O DETER cobre o mesmo bioma por um sistema de alerta diferente, "
+        "operado pelo mesmo INPE, com dados agregados e publicados corretamente.\n\n"
+        "**DETER não é a taxa oficial de desmatamento**: mede alertas detectados por satélite "
+        "de forma rápida (dias a semanas), com metodologia de classificação diferente da "
+        "consolidação anual do PRODES — os valores costumam diferir entre os dois sistemas "
+        "para o mesmo período, e este indicador não deve ser interpretado como \"a taxa de "
+        "desmatamento do Cerrado\", só como um indicador de tendência baseado em alertas."
+    ),
+)

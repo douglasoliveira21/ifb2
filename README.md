@@ -103,6 +103,7 @@ oficiais via API pública, sem scraping:
 | PIB mensal (valores correntes) | Banco Central | SGS/BCB 4380 |
 | Resultado primário do governo central (12 meses) | Banco Central | SGS/BCB 5783 (sinal invertido — ver abaixo) |
 | Desmatamento — Amazônia Legal | INPE (PRODES) | Arquivo de taxas anuais do TerraBrasilis (soma por período) |
+| Área sob alerta de desmatamento — Cerrado (DETER), Brasil e por estado | INPE (DETER) | `file-delivery/download/deter-cerrado-nb/monthly`, soma mensal por ano |
 | Taxa de analfabetismo (15+ anos) | IBGE (PNAD Contínua) | SIDRA tabela 7113, variável 10267 |
 | Esperança de vida ao nascer | IBGE (Projeção da População) | SIDRA tabela 7362, variável 2503 |
 | Mortalidade infantil | IBGE (Projeção da População) | SIDRA tabela 7362, variável 1940 |
@@ -339,6 +340,38 @@ de Segurança Pública para esses anos; por estado, Bahia lidera em 2024
 (4.207), consistente com a Bahia estar entre os estados com as taxas
 de homicídio mais altas do país nos últimos anos, amplamente noticiado.
 
+### Meio ambiente — Área sob alerta de desmatamento no Cerrado (`app/sync/deter_client.py`)
+
+**3ª rodada de correção.** O PRODES Cerrado (fonte "óbvia" para
+desmatamento nesse bioma) continua com o bug confirmado nas duas
+tentativas anteriores — a página do dashboard carrega o arquivo de
+dados da Amazônia por engano. Mas o INPE tem uma segunda fonte para o
+mesmo bioma: o **DETER** (sistema de alerta rápido de desmatamento,
+distinto do PRODES), com um dashboard próprio ("avisos de
+Desmatamento") que funciona corretamente.
+
+Inspecionando as chamadas de rede desse dashboard (mesma técnica que
+já tinha funcionado para achar o arquivo de taxas do PRODES Amazônia
+Legal), achei `file-delivery/download/deter-cerrado-nb/monthly` — um
+endpoint que devolve a área de alerta **já agregada por mês e por
+estado** (campo `ar` em km², sem geometria) — diferente do problema que
+inviabilizou usar os polígonos brutos do PRODES Cerrado via WFS (2,3
+milhões de feições sem agregação no servidor), aqui o próprio INPE já
+soma do lado dele. O IFB soma os 12 meses de cada ano civil, por
+estado e para o Brasil (13 estados do bioma Cerrado).
+
+**Importante**: DETER não é a taxa oficial de desmatamento (essa é o
+PRODES) — é um sistema de alerta rápido, com metodologia diferente. A
+metodologia do indicador documenta essa distinção explicitamente, e o
+valor não deve ser somado nem comparado diretamente ao indicador de
+desmatamento da Amazônia Legal (que usa PRODES).
+
+Validado ao vivo: soma nacional de 2024 = 5.901 km² sob alerta —
+mesma ordem de grandeza da taxa oficial do PRODES para o Cerrado no
+período 2023-2024 (8.174 km², amplamente noticiada), com a diferença
+esperada entre os dois sistemas (ano civil vs. ano agrícola
+ago-jul, e metodologias diferentes).
+
 ### Setores reinvestigados sem indicador novo (2ª rodada de correção)
 
 Depois de corrigir Justiça, Gestão pública, Comércio exterior e
@@ -358,18 +391,6 @@ documentados do que antes:
   milhares de registros por ano, através de ~13 códigos de modalidade —
   mesma categoria de problema do SIM (mortalidade), grande demais para
   a arquitetura leve do projeto sem uma reformulação maior.
-- **Meio ambiente (PRODES Cerrado)**: o bug do dashboard foi
-  reproduzido de novo e confirmado (a página do Cerrado ainda carrega o
-  arquivo de dados da Amazônia). Mas desta vez fui além: descobri que o
-  dado real do Cerrado existe num serviço WFS oficial do INPE
-  (`geoserver/ows`, camada `prodes-cerrado-nb:yearly_deforestation`) —
-  um serviço geoespacial padrão, não o dashboard com bug. O problema:
-  são mais de 2,3 milhões de polígonos de desmatamento (um por cena de
-  satélite), sem nenhuma agregação disponível no servidor (o serviço
-  WPS, que faria a soma do lado do INPE, está desabilitado nesta
-  instância) — somar a área por estado/ano exigiria baixar e processar
-  todos os polígonos localmente, de novo na mesma categoria de peso do
-  SIM.
 - **Ciência e tecnologia**: procurei "PINTEC Semestral" especificamente
   (nome sugerido) no catálogo do SIDRA e não encontrei nenhuma tabela
   com esse nome ou período mais recente que 2017; o site do IBGE
