@@ -23,6 +23,7 @@ class IndicatorCategory(str, enum.Enum):
     AGRICULTURA = "AGRICULTURA"
     INDUSTRIA = "INDUSTRIA"
     ASSISTENCIA_SOCIAL = "ASSISTENCIA_SOCIAL"
+    MULHERES = "MULHERES"
 
 
 class IndicatorPolarity(str, enum.Enum):

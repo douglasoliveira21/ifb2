@@ -92,7 +92,10 @@ from app.sync.definitions import (
     POPULACAO_RESIDENTE_QUERY,
     PRODUCAO_INDUSTRIAL,
     PRODUCAO_INDUSTRIAL_QUERY,
+    RAZAO_RENDIMENTO_MULHER_HOMEM,
     RECEITA_TOTAL_REALIZADA_ESTADUAL,
+    RENDIMENTO_HOMENS_QUERY,
+    RENDIMENTO_MULHERES_QUERY,
     RENDIMENTO_MEDIO_ANUAL,
     RENDIMENTO_MEDIO_ANUAL_QUERY,
     TAXA_CRESCIMENTO_POPULACIONAL,
@@ -161,6 +164,29 @@ from app.sync.upsert import (
 )
 
 IndicatorMeta = IndicatorSpec | StaticIndicatorMeta
+
+
+def _ratio_series(numerator: list[SeriesPoint], denominator: list[SeriesPoint]) -> list[SeriesPoint]:
+    """Combina duas séries do SIDRA ponto a ponto (mesmo ano) em uma razão
+    percentual — usado quando o indicador é uma comparação entre duas
+    séries que o SIDRA não traz prontas (ex: rendimento mulher/homem)."""
+    denom_by_date = {p.reference_date: p.value for p in denominator}
+    points = []
+    for p in numerator:
+        denom = denom_by_date.get(p.reference_date)
+        if denom:
+            points.append(SeriesPoint(reference_date=p.reference_date, value=round(p.value / denom * 100, 1)))
+    return points
+
+
+def _ratio_series_by_state(
+    numerator: dict[str, list[SeriesPoint]], denominator: dict[str, list[SeriesPoint]]
+) -> dict[str, list[SeriesPoint]]:
+    return {
+        uf: _ratio_series(points, denominator[uf])
+        for uf, points in numerator.items()
+        if uf in denominator
+    }
 
 
 def sync_indicator(
@@ -435,6 +461,20 @@ def main() -> None:
     ]:
         sync_indicator(meta, lambda query=query: drop_future_years(fetch_sidra_series(query)))
         sync_by_state(meta, lambda query=query: drop_future_years_by_state(fetch_sidra_series_by_state(query)))
+
+    sync_indicator(
+        RAZAO_RENDIMENTO_MULHER_HOMEM,
+        lambda: _ratio_series(
+            fetch_sidra_series(RENDIMENTO_MULHERES_QUERY), fetch_sidra_series(RENDIMENTO_HOMENS_QUERY)
+        ),
+    )
+    sync_by_state(
+        RAZAO_RENDIMENTO_MULHER_HOMEM,
+        lambda: _ratio_series_by_state(
+            fetch_sidra_series_by_state(RENDIMENTO_MULHERES_QUERY),
+            fetch_sidra_series_by_state(RENDIMENTO_HOMENS_QUERY),
+        ),
+    )
 
     sync_indicator(
         IDEB_ANOS_INICIAIS,

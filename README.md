@@ -145,6 +145,7 @@ oficiais via API pública, sem scraping:
 | Valor da produção agrícola, Brasil e por estado (desde 1994) | IBGE (Produção Agrícola Municipal) | SIDRA tabela 5457, variável 215 |
 | Produção industrial (variação interanual), Brasil e estados com cobertura da amostra | IBGE (PIM-PF) | SIDRA tabela 8888, variável 11602 |
 | Domicílios que recebem Bolsa Família, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7449, variável 10790 |
+| Razão de rendimento entre mulheres e homens, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 10377, variável 5933 (razão calculada pelo IFB) |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -730,6 +731,28 @@ contagem absoluta próxima à de São Paulo (920 mil x 1,34 milhão) apesar
 de ter menos de um sexto da população de SP — confirma a cobertura
 proporcionalmente muito maior nos estados mais pobres, padrão já
 conhecido do programa.
+
+### Mulheres (`IndicatorCategory.MULHERES`, migration 0010)
+
+Gestão pública, Compras públicas e Comércio exterior ficaram sem
+indicador nesta sessão (ver notas acima — fontes bloqueadas, sem
+agregado pronto ou exigindo consulta órgão por órgão). Mulheres teve
+uma saída boa: **Razão de rendimento entre mulheres e homens**, Brasil
+e por estado.
+
+Primeiro indicador do projeto calculado a partir da combinação de duas
+séries do SIDRA — a tabela 10377 (PNAD Contínua anual) traz rendimento
+médio por sexo, mas não a razão entre os dois. Adicionado
+`_ratio_series()`/`_ratio_series_by_state()` em `run.py`: busca as
+séries de homens e mulheres separadamente e calcula a razão
+mulher/homem ano a ano (ignora anos em que falta um dos dois lados, "0"
+no denominador não gera divisão por zero). Testado com dois casos que
+cobrem essas bordas (`tests/test_run_ratio_series.py`).
+
+Validado ao vivo: razão de ~78-79% no Brasil nos últimos anos (mulheres
+ganham cerca de 21-22% menos que homens em média), na mesma faixa do
+gap salarial de gênero amplamente reportado no país; em SP a razão é
+um pouco menor (75-76%), também plausível.
 
 ### Indicadores por estado
 

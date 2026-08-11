@@ -1956,3 +1956,36 @@ DOMICILIOS_BOLSA_FAMILIA = StaticIndicatorMeta(
     ),
 )
 DOMICILIOS_BOLSA_FAMILIA_QUERY = SidraQuery(table=7449, variable=10790, classifications={1032: 49236})
+
+RAZAO_RENDIMENTO_MULHER_HOMEM = StaticIndicatorMeta(
+    slug="razao-rendimento-mulher-homem",
+    name="Razão de rendimento entre mulheres e homens",
+    category=IndicatorCategory.MULHERES,
+    unit="% do rendimento dos homens",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Rendimento médio mensal real habitual das mulheres ocupadas, como percentual do "
+        "rendimento médio dos homens ocupados, segundo a PNAD Contínua. Quanto mais perto de "
+        "100%, menor a diferença salarial entre os sexos."
+    ),
+    description_how=(
+        "Quanto maior, menor a disparidade salarial entre mulheres e homens. Não isola o "
+        "efeito de cargo, escolaridade ou setor de atuação — é a diferença bruta observada no "
+        "mercado de trabalho como um todo, um retrato do resultado agregado, não uma medida "
+        "de discriminação direta em uma função idêntica."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Razão de rendimento entre mulheres e homens\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 10377, variável 5933 (\"Rendimento "
+        "médio mensal real... habitualmente recebido em todos os trabalhos\"), classificação "
+        "2 (\"Sexo\"), categorias 4 (\"Homens\") e 5 (\"Mulheres\").\n\n"
+        "O IFB busca as duas séries (rendimento de homens e de mulheres) separadamente e "
+        "calcula a razão mulheres/homens em cada ano — a própria tabela do SIDRA não traz "
+        "essa razão pronta. O cálculo é feito no sync (`app/sync/run.py`), não no cliente "
+        "SIDRA, que continua devolvendo cada série sem transformação."
+    ),
+)
+RENDIMENTO_HOMENS_QUERY = SidraQuery(table=10377, variable=5933, classifications={2: 4})
+RENDIMENTO_MULHERES_QUERY = SidraQuery(table=10377, variable=5933, classifications={2: 5})
