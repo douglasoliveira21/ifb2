@@ -96,6 +96,8 @@ from app.sync.definitions import (
     RECEITA_TOTAL_REALIZADA_ESTADUAL,
     RENDIMENTO_HOMENS_QUERY,
     RENDIMENTO_MULHERES_QUERY,
+    TAXA_FREQUENCIA_PRE_ESCOLA,
+    TAXA_FREQUENCIA_PRE_ESCOLA_QUERY,
     RENDIMENTO_MEDIO_ANUAL,
     RENDIMENTO_MEDIO_ANUAL_QUERY,
     TAXA_CRESCIMENTO_POPULACIONAL,
@@ -475,6 +477,11 @@ def main() -> None:
             fetch_sidra_series_by_state(RENDIMENTO_HOMENS_QUERY),
         ),
     )
+
+    sync_indicator(
+        TAXA_FREQUENCIA_PRE_ESCOLA, lambda: fetch_sidra_series(TAXA_FREQUENCIA_PRE_ESCOLA_QUERY)
+    )
+    # Tabela 7140 não tem quebra por estado no SIDRA (só Brasil e Grandes Regiões).
 
     sync_indicator(
         IDEB_ANOS_INICIAIS,

@@ -1989,3 +1989,33 @@ RAZAO_RENDIMENTO_MULHER_HOMEM = StaticIndicatorMeta(
 )
 RENDIMENTO_HOMENS_QUERY = SidraQuery(table=10377, variable=5933, classifications={2: 4})
 RENDIMENTO_MULHERES_QUERY = SidraQuery(table=10377, variable=5933, classifications={2: 5})
+
+TAXA_FREQUENCIA_PRE_ESCOLA = StaticIndicatorMeta(
+    slug="taxa-frequencia-pre-escola",
+    name="Taxa de frequência à creche ou escola (4 a 5 anos)",
+    category=IndicatorCategory.CRIANCAS,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de crianças de 4 a 5 anos de idade que frequentam creche ou escola "
+        "(pré-escola), segundo a PNAD Contínua — a faixa etária em que a Constituição prevê "
+        "acesso obrigatório à educação básica no Brasil."
+    ),
+    description_how=(
+        "Quanto maior, mais perto da universalização do acesso à pré-escola, meta "
+        "constitucional desde a Emenda 59/2009. Não tem quebra por estado disponível nesta "
+        "tabela do IBGE — só Brasil e grandes regiões."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de frequência à creche ou escola (4 a 5 anos)\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 7140, variável 10280 (\"Distribuição "
+        "percentual das crianças de 0 a 5 anos de idade\"), classificação 58 (\"Grupo de "
+        "idade\"), categoria 47813 (\"4 a 5 anos\") e classificação 12081 (\"Frequência à "
+        "creche ou escola\"), categoria 47810 (\"Frequenta escola ou creche\").\n\n"
+        "A tabela do IBGE só tem nível Brasil e Grandes Regiões (N1/N2) — não há quebra por "
+        "estado disponível nesta pesquisa."
+    ),
+)
+TAXA_FREQUENCIA_PRE_ESCOLA_QUERY = SidraQuery(table=7140, variable=10280, classifications={58: 47813, 12081: 47810})

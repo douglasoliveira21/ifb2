@@ -146,6 +146,7 @@ oficiais via API pública, sem scraping:
 | Produção industrial (variação interanual), Brasil e estados com cobertura da amostra | IBGE (PIM-PF) | SIDRA tabela 8888, variável 11602 |
 | Domicílios que recebem Bolsa Família, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7449, variável 10790 |
 | Razão de rendimento entre mulheres e homens, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 10377, variável 5933 (razão calculada pelo IFB) |
+| Taxa de frequência à creche ou escola (4 a 5 anos), Brasil | IBGE (PNAD Contínua anual) | SIDRA tabela 7140, variável 10280 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -753,6 +754,16 @@ Validado ao vivo: razão de ~78-79% no Brasil nos últimos anos (mulheres
 ganham cerca de 21-22% menos que homens em média), na mesma faixa do
 gap salarial de gênero amplamente reportado no país; em SP a razão é
 um pouco menor (75-76%), também plausível.
+
+### Crianças (`IndicatorCategory.CRIANCAS`, migration 0011)
+
+**Taxa de frequência à creche ou escola (4 a 5 anos)** — a faixa etária
+em que o acesso à pré-escola é obrigatório pela Constituição (EC
+59/2009), tabela SIDRA 7140, reaproveitando 100% o cliente já
+existente. Só Brasil (a tabela do IBGE não tem quebra por estado).
+
+Validado ao vivo: 92,8% em 2019 subindo para 94,9% em 2025, condizente
+com o avanço reportado rumo à universalização da pré-escola no país.
 
 ### Indicadores por estado
 
