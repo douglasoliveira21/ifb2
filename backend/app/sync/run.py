@@ -92,6 +92,8 @@ from app.sync.definitions import (
     POPULACAO_RESIDENTE_QUERY,
     PRODUCAO_INDUSTRIAL,
     PRODUCAO_INDUSTRIAL_QUERY,
+    RAZAO_DEPENDENCIA_IDOSOS,
+    RAZAO_DEPENDENCIA_IDOSOS_QUERY,
     RAZAO_RENDIMENTO_MULHER_HOMEM,
     RECEITA_TOTAL_REALIZADA_ESTADUAL,
     RENDIMENTO_HOMENS_QUERY,
@@ -411,6 +413,7 @@ def main() -> None:
         (TAXA_MORTALIDADE_GERAL, TAXA_MORTALIDADE_GERAL_QUERY),
         (TAXA_FECUNDIDADE, TAXA_FECUNDIDADE_QUERY),
         (INDICE_ENVELHECIMENTO, INDICE_ENVELHECIMENTO_QUERY),
+        (RAZAO_DEPENDENCIA_IDOSOS, RAZAO_DEPENDENCIA_IDOSOS_QUERY),
     ]:
         sync_indicator(meta, lambda query=query: drop_future_years(fetch_sidra_series(query)))
         sync_by_state(meta, lambda query=query: drop_future_years_by_state(fetch_sidra_series_by_state(query)))

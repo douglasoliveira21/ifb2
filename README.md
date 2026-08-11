@@ -147,6 +147,7 @@ oficiais via API pública, sem scraping:
 | Domicílios que recebem Bolsa Família, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7449, variável 10790 |
 | Razão de rendimento entre mulheres e homens, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 10377, variável 5933 (razão calculada pelo IFB) |
 | Taxa de frequência à creche ou escola (4 a 5 anos), Brasil | IBGE (PNAD Contínua anual) | SIDRA tabela 7140, variável 10280 |
+| Razão de dependência de idosos, Brasil e por estado | IBGE (Projeção da População) | SIDRA tabela 7360, variável 10611 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -764,6 +765,23 @@ existente. Só Brasil (a tabela do IBGE não tem quebra por estado).
 
 Validado ao vivo: 92,8% em 2019 subindo para 94,9% em 2025, condizente
 com o avanço reportado rumo à universalização da pré-escola no país.
+
+### Idosos (`IndicatorCategory.IDOSOS`, migration 0012)
+
+**Razão de dependência de idosos** — idosos (65+) para cada 100 pessoas
+em idade ativa (15 a 64 anos), Brasil e por estado. Mesma tabela SIDRA
+7360 (Projeção da População) já usada para nascimentos, óbitos e
+índice de envelhecimento — só uma variável nova (10611), zero código
+novo de integração.
+
+Complementa o índice de envelhecimento já existente: enquanto aquele
+compara idosos com crianças, este compara idosos com quem está em
+idade de trabalhar — a métrica mais direta para debates sobre
+sustentabilidade previdenciária.
+
+Validado ao vivo: 16,9 idosos por 100 pessoas em idade ativa em 2025,
+em trajetória de alta consistente com o envelhecimento populacional já
+documentado na Demografia.
 
 ### Indicadores por estado
 

@@ -2019,3 +2019,32 @@ TAXA_FREQUENCIA_PRE_ESCOLA = StaticIndicatorMeta(
     ),
 )
 TAXA_FREQUENCIA_PRE_ESCOLA_QUERY = SidraQuery(table=7140, variable=10280, classifications={58: 47813, 12081: 47810})
+
+RAZAO_DEPENDENCIA_IDOSOS = StaticIndicatorMeta(
+    slug="razao-dependencia-idosos",
+    name="Razão de dependência de idosos",
+    category=IndicatorCategory.IDOSOS,
+    unit="idosos por 100 pessoas em idade ativa",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Número de pessoas de 65 anos ou mais para cada 100 pessoas em idade ativa (15 a 64 "
+        "anos), segundo a Projeção da População do IBGE."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — reflete a transição demográfica estrutural "
+        "do país (mais esperança de vida, menos nascimentos), com implicações diretas para o "
+        "sistema previdenciário e a demanda por saúde e cuidados de longa duração, mas que vão "
+        "muito além de um único governo."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Razão de dependência de idosos\n\n"
+        "Fonte: IBGE, Projeção da População — tabela SIDRA 7360, variável 10611. Mesma tabela "
+        "já usada para nascimentos, óbitos e índice de envelhecimento (indicador "
+        "`indice-envelhecimento`) — diferente deste, que é uma proporção sobre o total de "
+        "crianças, a razão de dependência de idosos é sobre a população em idade ativa, "
+        "métrica mais direta para debates sobre sustentabilidade previdenciária."
+    ),
+)
+RAZAO_DEPENDENCIA_IDOSOS_QUERY = SidraQuery(table=7360, variable=10611, classifications={1933: "all"})
