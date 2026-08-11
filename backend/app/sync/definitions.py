@@ -1603,3 +1603,58 @@ OBITOS_CAUSAS_NAO_NATURAIS = StaticIndicatorMeta(
 OBITOS_CAUSAS_NAO_NATURAIS_QUERY = SidraQuery(
     table=2681, variable=343, classifications={1836: 99818, 244: 0, 2: 0, 260: 0, 257: 0}
 )
+
+MEDIA_ANOS_ESTUDO = StaticIndicatorMeta(
+    slug="media-anos-estudo",
+    name="Número médio de anos de estudo",
+    category=IndicatorCategory.EDUCACAO,
+    unit="anos",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Número médio de anos de estudo completos das pessoas de 15 anos ou mais de idade, "
+        "segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "Quanto maior, mais anos de escolaridade completa a população adulta acumulou em "
+        "média. É um indicador de estoque (reflete décadas de política educacional "
+        "acumulada), então muda pouco de um ano para o outro — mudanças relevantes aparecem "
+        "em janelas de vários anos, não de um mandato isolado."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Número médio de anos de estudo\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 7126, variável 3593, classificações "
+        "2 (\"Sexo\"), categoria 6794 (\"Total\") e 58 (\"Grupo de idade\"), categoria 2795 "
+        "(\"15 anos ou mais\")."
+    ),
+)
+MEDIA_ANOS_ESTUDO_QUERY = SidraQuery(table=7126, variable=3593, classifications={2: 6794, 58: 2795})
+
+ESCOLARIDADE_AVANCADA = StaticIndicatorMeta(
+    slug="escolaridade-avancada",
+    name="Pessoas com 12 anos ou mais de estudo (25 anos ou mais)",
+    category=IndicatorCategory.EDUCACAO,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de pessoas de 25 anos ou mais de idade que completaram 12 anos ou mais "
+        "de estudo — aproximadamente equivalente a ter concluído o ensino médio ou mais, "
+        "segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "Quanto maior, maior a proporção da população adulta com pelo menos ensino médio "
+        "completo. Assim como o número médio de anos de estudo, é um indicador de estoque "
+        "educacional acumulado — muda lentamente, ano a ano."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Pessoas com 12 anos ou mais de estudo (25 anos ou mais)\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 7133, variável 10270 (\"Distribuição "
+        "percentual das pessoas de 25 anos ou mais de idade\"), classificações 2 (\"Sexo\"), "
+        "categoria 6794 (\"Total\") e 71 (\"Grupos de anos de estudo\"), categoria 6664 "
+        "(\"12 anos ou mais\")."
+    ),
+)
+ESCOLARIDADE_AVANCADA_QUERY = SidraQuery(table=7133, variable=10270, classifications={2: 6794, 71: 6664})

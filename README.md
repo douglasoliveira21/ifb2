@@ -133,6 +133,8 @@ oficiais via API pública, sem scraping:
 | Índice de Gini da renda domiciliar per capita, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7435, variável 10681 |
 | Dívida líquida do setor público (% do PIB) | Banco Central | SGS/BCB 4513 |
 | Óbitos por causas não naturais, Brasil e por estado | IBGE (Estatísticas do Registro Civil) | SIDRA tabela 2681, variável 343, classificação 1836 |
+| Número médio de anos de estudo, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7126, variável 3593 |
+| Pessoas com 12 anos ou mais de estudo (25 anos ou mais), Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7133, variável 10270 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -554,6 +556,23 @@ Brasil entre 2020 e 2024, ordem de grandeza compatível com os totais de
 acidentes + violência amplamente reportados no país; por estado, SP
 concentra a maior contagem absoluta (~21 mil/ano), esperado por ser o
 estado mais populoso.
+
+### Educação (complemento)
+
+O setor já tinha analfabetismo, IDEB e escolarização (6-14 e 15-17
+anos). Adicionei dois indicadores de estoque educacional acumulado,
+reaproveitando 100% o cliente SIDRA já existente: **número médio de
+anos de estudo** das pessoas de 15+ anos e **percentual de pessoas de
+25+ anos com 12 anos ou mais de estudo** (aproximadamente "concluiu ao
+menos o ensino médio") — ambos da PNAD Contínua anual, Brasil e por
+estado.
+
+Validados ao vivo: média de anos de estudo subindo de 9,8 (2019) para
+10,4 (2025), tendência consistente com a melhoria de escolaridade
+reportada pelo IBGE no período; percentual com 12+ anos de estudo
+subindo de 50% para 57,8% no mesmo intervalo; por estado, SP
+consistentemente acima de MA nos dois indicadores, batendo com o
+padrão regional de desigualdade educacional já conhecido.
 
 ### Indicadores por estado
 

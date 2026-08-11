@@ -30,6 +30,8 @@ from app.sync.definitions import (
     DESPESA_COM_PESSOAL_ESTADUAL,
     DESPESA_COM_PESSOAL_MUNICIPAL,
     DIVIDA_CONSOLIDADA_LIQUIDA_ESTADUAL,
+    ESCOLARIDADE_AVANCADA,
+    ESCOLARIDADE_AVANCADA_QUERY,
     ESPERANCA_VIDA,
     ESPERANCA_VIDA_QUERY,
     IDEB_ANOS_FINAIS,
@@ -42,6 +44,8 @@ from app.sync.definitions import (
     INDICE_GINI_RENDA,
     INDICE_GINI_RENDA_QUERY,
     LEITOS_SUS_ESTADUAL,
+    MEDIA_ANOS_ESTUDO,
+    MEDIA_ANOS_ESTUDO_QUERY,
     MORTALIDADE_INFANTIL,
     MORTALIDADE_INFANTIL_QUERY,
     NIVEL_OCUPACAO,
@@ -391,6 +395,13 @@ def main() -> None:
         TAXA_ESCOLARIZACAO_15_A_17,
         lambda: fetch_sidra_series_by_state(TAXA_ESCOLARIZACAO_15_A_17_QUERY),
     )
+
+    for meta, query in [
+        (MEDIA_ANOS_ESTUDO, MEDIA_ANOS_ESTUDO_QUERY),
+        (ESCOLARIDADE_AVANCADA, ESCOLARIDADE_AVANCADA_QUERY),
+    ]:
+        sync_indicator(meta, lambda query=query: drop_future_years(fetch_sidra_series(query)))
+        sync_by_state(meta, lambda query=query: drop_future_years_by_state(fetch_sidra_series_by_state(query)))
 
     sync_indicator(
         IDEB_ANOS_INICIAIS,
