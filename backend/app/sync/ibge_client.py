@@ -31,6 +31,14 @@ _YEAR_RE = re.compile(r"^(19|20)\d{2}$")
 _QUARTER_CODE_RE = re.compile(r"^((?:19|20)\d{2})(0[1-4])$")
 _NO_DATA_MARKERS = {"..", "...", "-", "X", None, ""}
 
+_MONTH_NAMES = {
+    "janeiro": 1, "fevereiro": 2, "março": 3, "abril": 4, "maio": 5, "junho": 6,
+    "julho": 7, "agosto": 8, "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12,
+}
+_MONTH_LABEL_RE = re.compile(
+    r"^(" + "|".join(_MONTH_NAMES) + r") ((?:19|20)\d{2})$"
+)
+
 # Códigos numéricos de UF do IBGE -> sigla, conforme retornados no campo
 # D1C/D1N das respostas do SIDRA quando a consulta é feita em nível n3.
 IBGE_UF_CODES: dict[str, str] = {
@@ -183,6 +191,60 @@ def _extract_quarter(row: dict) -> tuple[int, int] | None:
                 match = _QUARTER_CODE_RE.fullmatch(code)
                 if match:
                     return int(match.group(1)), int(match.group(2))
+    return None
+
+
+def fetch_sidra_series_monthly(query: SidraQuery, *, timeout: float = 30.0) -> list[SeriesPoint]:
+    """Busca uma série MENSAL do SIDRA para o Brasil (ex: PIM-PF, Produção
+    Física Industrial — dimensão 'Mês', não 'Ano' nem 'Trimestre')."""
+    rows = _get_rows(_build_url(query, "n1", "1"), timeout=timeout)
+    return _rows_to_points_monthly(rows)
+
+
+def fetch_sidra_series_monthly_by_state(
+    query: SidraQuery, *, timeout: float = 30.0
+) -> dict[str, list[SeriesPoint]]:
+    """Mesma série mensal, por UF (nível territorial 3, todos os estados de
+    uma vez)."""
+    rows = _get_rows(_build_url(query, "n3", "all"), timeout=timeout)
+
+    by_state: dict[str, list[dict]] = {}
+    for row in rows:
+        uf = IBGE_UF_CODES.get(row.get("D1C", ""))
+        if uf is None:
+            continue
+        by_state.setdefault(uf, []).append(row)
+
+    return {uf: _rows_to_points_monthly(state_rows) for uf, state_rows in by_state.items()}
+
+
+def _rows_to_points_monthly(rows: list[dict]) -> list[SeriesPoint]:
+    points: list[SeriesPoint] = []
+    for row in rows:
+        value_raw = row.get("V")
+        if value_raw in _NO_DATA_MARKERS:
+            continue
+        year_month = _extract_month(row)
+        if year_month is None:
+            continue
+        year, month = year_month
+        points.append(SeriesPoint(reference_date=date(year, month, 1), value=float(value_raw)))
+
+    points.sort(key=lambda p: p.reference_date)
+    return points
+
+
+def _extract_month(row: dict) -> tuple[int, int] | None:
+    """Acha a dimensão 'Mês' da linha pelo texto do campo N ('fevereiro
+    2026' etc.) — nunca pelo nome do campo em si, que pode variar de
+    posição (D3N, D4N...) dependendo de quantas classificações a tabela
+    tem, e nunca pela variável (que às vezes menciona 'mês' no próprio
+    nome, ex: 'Variação mês/mesmo mês do ano anterior')."""
+    for key, val in row.items():
+        if key.endswith("N") and isinstance(val, str):
+            match = _MONTH_LABEL_RE.fullmatch(val.lower())
+            if match:
+                return int(match.group(2)), _MONTH_NAMES[match.group(1)]
     return None
 
 

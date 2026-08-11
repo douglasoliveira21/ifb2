@@ -143,6 +143,7 @@ oficiais via API pública, sem scraping:
 | Domicílios com energia elétrica em tempo integral, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6738, variável 9994 |
 | Domicílios com acesso à internet, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7307, variável 9784 |
 | Valor da produção agrícola, Brasil e por estado (desde 1994) | IBGE (Produção Agrícola Municipal) | SIDRA tabela 5457, variável 215 |
+| Produção industrial (variação interanual), Brasil e estados com cobertura da amostra | IBGE (PIM-PF) | SIDRA tabela 8888, variável 11602 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -675,6 +676,35 @@ a trajetória de preços de commodities amplamente noticiada no período
 (alta em 2021-2022, queda depois); por estado, Mato Grosso na liderança
 folgada (R$ 120-153 bilhões), consistente com ser o maior produtor
 agrícola do país.
+
+### Indústria (`IndicatorCategory.INDUSTRIA`, migration 0008)
+
+Primeiro indicador da categoria: **Produção industrial (variação
+interanual)** — a mesma taxa mensal amplamente divulgada como
+"produção industrial" nos anúncios do IBGE (PIM-PF, tabela SIDRA 8888,
+categoria "Indústria geral"), Brasil e estados com cobertura da
+amostra.
+
+Exigiu suporte novo no cliente SIDRA: a tabela usa período **mensal**
+("fevereiro 2026", código `202602`), formato que nem o cliente anual
+nem o trimestral (adicionado na Fase de Economia) sabiam interpretar —
+um mês tem código de 2 dígitos (01-12) que colide com o formato de
+trimestre (01-04), então não dava para reaproveitar `_extract_quarter`
+sem risco de interpretar "outubro" como "trimestre 10" errado.
+Adicionado `fetch_sidra_series_monthly()` + `_extract_month()` em
+`ibge_client.py`, que reconhece o mês pelo nome por extenso no rótulo
+da linha (\"fevereiro 2026\") em vez de tentar decodificar o código —
+mais robusto a variações de posição da dimensão entre tabelas, e não
+se confunde com variáveis cujo nome também menciona "mês" (ex:
+"Variação mês/mesmo mês do ano anterior").
+
+A pesquisa por estado do IBGE não cobre as 27 UFs (só os estados com
+representatividade industrial suficiente para a amostra) — o IFB
+mostra só os que têm dado, sem inventar valor para o resto.
+
+Validado ao vivo: variações mensais entre -0,7% e +4,4% nos últimos
+meses, na faixa normal de volatilidade da produção industrial
+brasileira amplamente reportada pela imprensa econômica.
 
 ### Indicadores por estado
 

@@ -1888,3 +1888,35 @@ VALOR_PRODUCAO_AGRICOLA = StaticIndicatorMeta(
     ),
 )
 VALOR_PRODUCAO_AGRICOLA_QUERY = SidraQuery(table=5457, variable=215, classifications={782: 0})
+
+PRODUCAO_INDUSTRIAL = StaticIndicatorMeta(
+    slug="producao-industrial",
+    name="Produção industrial (variação interanual)",
+    category=IndicatorCategory.INDUSTRIA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Variação mensal do índice de produção física da indústria geral (extrativa + "
+        "transformação), em relação ao mesmo mês do ano anterior, segundo a Pesquisa "
+        "Industrial Mensal de Produção Física (PIM-PF) do IBGE."
+    ),
+    description_how=(
+        "É a mesma taxa amplamente divulgada como \"produção industrial\" nos anúncios "
+        "mensais do IBGE. Positivo indica que a indústria produziu mais do que no mesmo mês "
+        "do ano anterior; negativo indica retração."
+    ),
+    update_frequency="mensal",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Produção industrial (variação interanual)\n\n"
+        "Fonte: IBGE, Pesquisa Industrial Mensal - Produção Física (PIM-PF) — tabela SIDRA "
+        "8888, variável 11602 (\"Variação mês/mesmo mês do ano anterior (M/M-12)\"), "
+        "classificação 544 (\"Seções e atividades industriais\"), categoria 129314 (\"1 "
+        "Indústria geral\").\n\n"
+        "A pesquisa por estado não cobre todas as 27 unidades da federação — só os estados "
+        "com representatividade industrial suficiente para a amostra do IBGE. O IFB não "
+        "inventa um valor para os estados sem cobertura; eles simplesmente não aparecem na "
+        "comparação por estado."
+    ),
+)
+PRODUCAO_INDUSTRIAL_QUERY = SidraQuery(table=8888, variable=11602, classifications={544: 129314})

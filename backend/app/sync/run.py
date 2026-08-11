@@ -88,6 +88,8 @@ from app.sync.definitions import (
     PIB_VALORES_CORRENTES_QUERY,
     POPULACAO_RESIDENTE,
     POPULACAO_RESIDENTE_QUERY,
+    PRODUCAO_INDUSTRIAL,
+    PRODUCAO_INDUSTRIAL_QUERY,
     RECEITA_TOTAL_REALIZADA_ESTADUAL,
     RENDIMENTO_MEDIO_ANUAL,
     RENDIMENTO_MEDIO_ANUAL_QUERY,
@@ -125,6 +127,8 @@ from app.sync.ibge_client import (
     drop_future_years_by_state,
     fetch_sidra_series,
     fetch_sidra_series_by_state,
+    fetch_sidra_series_monthly,
+    fetch_sidra_series_monthly_by_state,
     fetch_sidra_series_quarterly,
 )
 from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
@@ -362,6 +366,9 @@ def main() -> None:
     ]:
         sync_indicator(meta, lambda query=query: fetch_sidra_series_quarterly(query))
     # Tabelas 5932/6726/6727 (Contas Nacionais Trimestrais) não têm quebra por estado no SIDRA.
+
+    sync_indicator(PRODUCAO_INDUSTRIAL, lambda: fetch_sidra_series_monthly(PRODUCAO_INDUSTRIAL_QUERY))
+    sync_by_state(PRODUCAO_INDUSTRIAL, lambda: fetch_sidra_series_monthly_by_state(PRODUCAO_INDUSTRIAL_QUERY))
 
     sync_indicator(POPULACAO_RESIDENTE, lambda: fetch_sidra_series(POPULACAO_RESIDENTE_QUERY))
     sync_by_state(POPULACAO_RESIDENTE, lambda: fetch_sidra_series_by_state(POPULACAO_RESIDENTE_QUERY))

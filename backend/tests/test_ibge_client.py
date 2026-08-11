@@ -9,6 +9,7 @@ from app.sync.ibge_client import (
     drop_future_years,
     fetch_municipio_codes,
     fetch_sidra_series,
+    fetch_sidra_series_monthly,
     fetch_sidra_series_quarterly,
 )
 
@@ -109,6 +110,45 @@ def test_fetch_sidra_series_quarterly_with_classification_dimension(monkeypatch:
     )
 
     assert points == [SeriesPoint(reference_date=date(2025, 10, 1), value=12.1)]
+
+
+def test_fetch_sidra_series_monthly_parses_month_label(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = [
+        {"NC": "cabecalho"},
+        {
+            "D2N": "PIMPF - Variação mês/mesmo mês do ano anterior (M/M-12)",
+            "D3N": "1 Indústria geral",
+            "D4C": "202605",
+            "D4N": "maio 2026",
+            "V": "0.2",
+        },
+        {
+            "D2N": "PIMPF - Variação mês/mesmo mês do ano anterior (M/M-12)",
+            "D3N": "1 Indústria geral",
+            "D4C": "202606",
+            "D4N": "junho 2026",
+            "V": "1.7",
+        },
+        {
+            "D2N": "PIMPF - Variação mês/mesmo mês do ano anterior (M/M-12)",
+            "D3N": "1 Indústria geral",
+            "D4C": "202607",
+            "D4N": "julho 2026",
+            "V": "..",  # sem dado
+        },
+    ]
+
+    def fake_get(url: str, headers: dict, timeout: float) -> httpx.Response:
+        return httpx.Response(200, json=payload, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    points = fetch_sidra_series_monthly(SidraQuery(table=8888, variable=11602, classifications={544: 129314}))
+
+    assert points == [
+        SeriesPoint(reference_date=date(2026, 5, 1), value=0.2),
+        SeriesPoint(reference_date=date(2026, 6, 1), value=1.7),
+    ]
 
 
 def test_fetch_municipio_codes_returns_string_ids(monkeypatch: pytest.MonkeyPatch) -> None:
