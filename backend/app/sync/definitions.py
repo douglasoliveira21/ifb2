@@ -1803,3 +1803,57 @@ DOMICILIOS_LIXO_COLETADO = StaticIndicatorMeta(
     ),
 )
 DOMICILIOS_LIXO_COLETADO_QUERY = SidraQuery(table=6736, variable=9784, classifications={1: 6795, 67: 4661})
+
+DOMICILIOS_ENERGIA_ELETRICA = StaticIndicatorMeta(
+    slug="domicilios-energia-eletrica",
+    name="Domicílios com energia elétrica em tempo integral",
+    category=IndicatorCategory.INFRAESTRUTURA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de domicílios que têm energia elétrica proveniente da rede geral em "
+        "tempo integral (24 horas por dia), segundo a PNAD Contínua."
+    ),
+    description_how=(
+        "O Brasil já tem cobertura elétrica quase universal — este indicador é mais útil para "
+        "identificar os bolsões residuais sem acesso (áreas rurais isoladas, comunidades "
+        "ribeirinhas) do que para acompanhar tendência nacional, que se move pouco de um ano "
+        "para o outro."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Domicílios com energia elétrica em tempo integral\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 6738, variável 9994 (\"Percentual de "
+        "domicílios com energia elétrica proveniente de rede geral em tempo integral\"), "
+        "classificação 1 (\"Situação do domicílio\"), categoria 6795 (\"Total\")."
+    ),
+)
+DOMICILIOS_ENERGIA_ELETRICA_QUERY = SidraQuery(table=6738, variable=9994, classifications={1: 6795})
+
+DOMICILIOS_COM_INTERNET = StaticIndicatorMeta(
+    slug="domicilios-com-internet",
+    name="Domicílios com acesso à internet",
+    category=IndicatorCategory.INFRAESTRUTURA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de domicílios em que havia utilização de internet, segundo a PNAD "
+        "Contínua — não distingue qualidade ou velocidade da conexão, só se havia acesso."
+    ),
+    description_how=(
+        "Quanto maior, maior a proporção de domicílios com acesso à internet — hoje um "
+        "insumo básico para trabalho, estudo e acesso a serviços públicos digitais. Ainda "
+        "existe uma diferença relevante entre estados."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Domicílios com acesso à internet\n\n"
+        "Fonte: IBGE, PNAD Contínua anual — tabela SIDRA 7307, variável 9784 (\"Distribuição "
+        "percentual dos domicílios\"), classificação 1 (\"Situação do domicílio\"), categoria "
+        "6795 (\"Total\") e classificação 688 (\"Existência de utilização da Internet no "
+        "domicílio\"), categoria 48534 (\"Havia utilização de internet\")."
+    ),
+)
+DOMICILIOS_COM_INTERNET_QUERY = SidraQuery(table=7307, variable=9784, classifications={1: 6795, 688: 48534})

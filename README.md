@@ -140,6 +140,8 @@ oficiais via API pública, sem scraping:
 | Domicílios com água da rede geral, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6731, variável 9784 |
 | Domicílios com esgotamento sanitário adequado, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7192, variável 9988 |
 | Domicílios com coleta de lixo, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6736, variável 9784 |
+| Domicílios com energia elétrica em tempo integral, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6738, variável 9994 |
+| Domicílios com acesso à internet, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7307, variável 9784 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -633,6 +635,25 @@ saneamento brasileiro), lixo ~85-87%. Por estado, a disparidade é
 enorme: esgoto em SP chega a 92,4%, contra 24,9% no Maranhão — a mesma
 desigualdade regional de saneamento amplamente reportada na cobertura
 do tema.
+
+### Infraestrutura (primeiros indicadores da categoria)
+
+`IndicatorCategory.INFRAESTRUTURA` já existia no schema desde a Fase 2,
+mas sem nenhum indicador associado até agora. Dois indicadores novos,
+mesmo padrão de reaproveitamento 100% do cliente SIDRA já existente,
+Brasil e por estado:
+
+- **Domicílios com energia elétrica em tempo integral** (tabela 6738) —
+  cobertura já quase universal no Brasil (~98%), mais útil para achar
+  os bolsões residuais sem acesso do que para acompanhar tendência.
+- **Domicílios com acesso à internet** (tabela 7307) — ainda com gap
+  relevante entre estados.
+
+Validado ao vivo: energia elétrica em 98-99% desde 2019 (bate com a
+cobertura quase universal já noticiada); internet subindo de 90% para
+95% entre 2019 e 2025 (crescimento de acesso amplamente reportado); por
+estado, energia elétrica quase igual entre SP e MA (~98%), mas internet
+com gap maior (SP 96,6% x MA 92,1%), como esperado.
 
 ### Indicadores por estado
 
