@@ -28,6 +28,7 @@ MAX_ATTEMPTS = 3
 RETRY_STATUS_CODES = {429, 500, 502, 503, 504}
 
 _YEAR_RE = re.compile(r"^(19|20)\d{2}$")
+_QUARTER_CODE_RE = re.compile(r"^((?:19|20)\d{2})(0[1-4])$")
 _NO_DATA_MARKERS = {"..", "...", "-", "X", None, ""}
 
 # Códigos numéricos de UF do IBGE -> sigla, conforme retornados no campo
@@ -141,6 +142,48 @@ def _extract_year(row: dict) -> int | None:
         if key.endswith("N") and isinstance(val, str) and _YEAR_RE.fullmatch(val):
             year = int(val)
     return year
+
+
+def fetch_sidra_series_quarterly(query: SidraQuery, *, timeout: float = 30.0) -> list[SeriesPoint]:
+    """Busca uma série TRIMESTRAL do SIDRA para o Brasil (ex: Contas
+    Nacionais Trimestrais, tabelas com dimensão 'Trimestre' em vez de
+    'Ano'). Cada ponto é datado no primeiro mês do trimestre (jan/abr/
+    jul/out) — mesma convenção de 'um ponto por período' usada nas séries
+    mensais do BCB. Ignora linhas sem dado, igual a `fetch_sidra_series`."""
+    rows = _get_rows(_build_url(query, "n1", "1"), timeout=timeout)
+    return _rows_to_points_quarterly(rows)
+
+
+def _rows_to_points_quarterly(rows: list[dict]) -> list[SeriesPoint]:
+    points: list[SeriesPoint] = []
+    for row in rows:
+        value_raw = row.get("V")
+        if value_raw in _NO_DATA_MARKERS:
+            continue
+        year_quarter = _extract_quarter(row)
+        if year_quarter is None:
+            continue
+        year, quarter = year_quarter
+        month = (quarter - 1) * 3 + 1
+        points.append(SeriesPoint(reference_date=date(year, month, 1), value=float(value_raw)))
+
+    points.sort(key=lambda p: p.reference_date)
+    return points
+
+
+def _extract_quarter(row: dict) -> tuple[int, int] | None:
+    """Acha a dimensão 'Trimestre' da linha (nome varia — 'D3N'/'D4N' etc.
+    dependendo de quantas classificações a tabela tem) pelo texto do campo
+    N ('1º trimestre 2025' etc.) e lê o ano/trimestre do campo C
+    correspondente ('202501'), que é sempre AAAAQQ."""
+    for key, val in row.items():
+        if key.endswith("N") and isinstance(val, str) and "trimestre" in val.lower():
+            code = row.get(key[:-1] + "C")
+            if isinstance(code, str):
+                match = _QUARTER_CODE_RE.fullmatch(code)
+                if match:
+                    return int(match.group(1)), int(match.group(2))
+    return None
 
 
 def fetch_municipio_codes(*, timeout: float = 60.0) -> list[str]:

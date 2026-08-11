@@ -4,7 +4,13 @@ import httpx
 import pytest
 
 from app.sync.bcb_client import SeriesPoint
-from app.sync.ibge_client import SidraQuery, drop_future_years, fetch_municipio_codes, fetch_sidra_series
+from app.sync.ibge_client import (
+    SidraQuery,
+    drop_future_years,
+    fetch_municipio_codes,
+    fetch_sidra_series,
+    fetch_sidra_series_quarterly,
+)
 
 SIMPLE_PAYLOAD = [
     {"NC": "Nível Territorial (Código)"},  # linha de cabeçalho, deve ser ignorada
@@ -55,6 +61,54 @@ def test_drop_future_years_keeps_only_past_and_current() -> None:
     filtered = drop_future_years(points)
 
     assert filtered == [SeriesPoint(reference_date=date(2020, 1, 1), value=1.0)]
+
+
+def test_fetch_sidra_series_quarterly_parses_period_code(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = [
+        {"NC": "cabecalho"},
+        {"D2N": "Taxa de investimento", "D3C": "202503", "D3N": "3º trimestre 2025", "V": "17.3"},
+        {"D2N": "Taxa de investimento", "D3C": "202504", "D3N": "4º trimestre 2025", "V": "16.0"},
+        {"D2N": "Taxa de investimento", "D3C": "202601", "D3N": "1º trimestre 2026", "V": ".."},  # sem dado
+    ]
+
+    def fake_get(url: str, headers: dict, timeout: float) -> httpx.Response:
+        return httpx.Response(200, json=payload, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    points = fetch_sidra_series_quarterly(SidraQuery(table=6727, variable=2517, classifications={}))
+
+    assert points == [
+        SeriesPoint(reference_date=date(2025, 7, 1), value=17.3),
+        SeriesPoint(reference_date=date(2025, 10, 1), value=16.0),
+    ]
+
+
+def test_fetch_sidra_series_quarterly_with_classification_dimension(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Quando a tabela tem uma classificação extra (ex: setor), a dimensão
+    'Trimestre' aparece em D4, não D3 — a busca pelo texto deve achar o
+    campo certo independente da posição."""
+    payload = [
+        {"NC": "cabecalho"},
+        {
+            "D2N": "Taxa trimestral",
+            "D3N": "Agropecuária - total",
+            "D4C": "202504",
+            "D4N": "4º trimestre 2025",
+            "V": "12.1",
+        },
+    ]
+
+    def fake_get(url: str, headers: dict, timeout: float) -> httpx.Response:
+        return httpx.Response(200, json=payload, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    points = fetch_sidra_series_quarterly(
+        SidraQuery(table=5932, variable=6561, classifications={11255: 90687})
+    )
+
+    assert points == [SeriesPoint(reference_date=date(2025, 10, 1), value=12.1)]
 
 
 def test_fetch_municipio_codes_returns_string_ids(monkeypatch: pytest.MonkeyPatch) -> None:

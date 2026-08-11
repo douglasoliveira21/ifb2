@@ -1242,3 +1242,165 @@ PIB_DEFLATOR = StaticIndicatorMeta(
     ),
 )
 PIB_DEFLATOR_QUERY = SidraQuery(table=6784, variable=9811, classifications={})
+
+CRESCIMENTO_PIB_AGROPECUARIO = StaticIndicatorMeta(
+    slug="crescimento-pib-agropecuario",
+    name="Crescimento do PIB agropecuário",
+    category=IndicatorCategory.ECONOMIA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Variação trimestral do valor adicionado pela agropecuária ao PIB, em relação ao "
+        "mesmo trimestre do ano anterior, já descontada a inflação."
+    ),
+    description_how=(
+        "É fortemente influenciado pela safra agrícola do período — anos de safra recorde "
+        "(como 2025) podem produzir altas de dois dígitos sem relação com política econômica "
+        "de curto prazo. Compare sempre com os demais setores antes de atribuir a variação a "
+        "um governo específico."
+    ),
+    update_frequency="trimestral",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Crescimento do PIB agropecuário\n\n"
+        "Fonte: IBGE, Contas Nacionais Trimestrais — tabela SIDRA 5932, variável 6561 (\"Taxa "
+        "trimestral, em relação ao mesmo período do ano anterior\"), classificação 11255 "
+        "(\"Setores e subsetores\"), categoria 90687 (\"Agropecuária - total\").\n\n"
+        "Cada ponto é datado no primeiro mês do trimestre a que se refere (jan/abr/jul/out)."
+    ),
+)
+CRESCIMENTO_PIB_AGROPECUARIO_QUERY = SidraQuery(table=5932, variable=6561, classifications={11255: 90687})
+
+CRESCIMENTO_PIB_INDUSTRIAL = StaticIndicatorMeta(
+    slug="crescimento-pib-industrial",
+    name="Crescimento do PIB industrial",
+    category=IndicatorCategory.ECONOMIA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Variação trimestral do valor adicionado pela indústria ao PIB (extrativa, "
+        "transformação, construção e eletricidade/água/saneamento), em relação ao mesmo "
+        "trimestre do ano anterior, já descontada a inflação."
+    ),
+    description_how=(
+        "Reflete o desempenho conjunto de fábricas, mineração, construção civil e utilidades. "
+        "Um trimestre fraco pode refletir tanto queda de demanda interna quanto fatores "
+        "externos (preço de commodities, juros para investimento)."
+    ),
+    update_frequency="trimestral",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Crescimento do PIB industrial\n\n"
+        "Fonte: IBGE, Contas Nacionais Trimestrais — tabela SIDRA 5932, variável 6561, "
+        "classificação 11255, categoria 90691 (\"Indústria - total\").\n\n"
+        "Cada ponto é datado no primeiro mês do trimestre a que se refere (jan/abr/jul/out)."
+    ),
+)
+CRESCIMENTO_PIB_INDUSTRIAL_QUERY = SidraQuery(table=5932, variable=6561, classifications={11255: 90691})
+
+CRESCIMENTO_PIB_SERVICOS = StaticIndicatorMeta(
+    slug="crescimento-pib-servicos",
+    name="Crescimento do PIB de serviços",
+    category=IndicatorCategory.ECONOMIA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Variação trimestral do valor adicionado pelo setor de serviços ao PIB (comércio, "
+        "transporte, informação, atividades financeiras e imobiliárias, entre outros), em "
+        "relação ao mesmo trimestre do ano anterior, já descontada a inflação."
+    ),
+    description_how=(
+        "É o maior setor da economia brasileira em participação no PIB — costuma ser o mais "
+        "estável dos três (agropecuária, indústria, serviços), refletindo consumo das famílias "
+        "no dia a dia."
+    ),
+    update_frequency="trimestral",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Crescimento do PIB de serviços\n\n"
+        "Fonte: IBGE, Contas Nacionais Trimestrais — tabela SIDRA 5932, variável 6561, "
+        "classificação 11255, categoria 90696 (\"Serviços - total\").\n\n"
+        "Cada ponto é datado no primeiro mês do trimestre a que se refere (jan/abr/jul/out)."
+    ),
+)
+CRESCIMENTO_PIB_SERVICOS_QUERY = SidraQuery(table=5932, variable=6561, classifications={11255: 90696})
+
+CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA = StaticIndicatorMeta(
+    slug="crescimento-pib-administracao-publica",
+    name="Crescimento do PIB de administração pública",
+    category=IndicatorCategory.ECONOMIA,
+    unit="%",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Variação trimestral do valor adicionado por administração, saúde e educação públicas "
+        "e seguridade social ao PIB, em relação ao mesmo trimestre do ano anterior, já "
+        "descontada a inflação."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — mede principalmente o volume de gastos e "
+        "serviços do setor público (folha de servidores, saúde e educação públicas), que pode "
+        "crescer tanto por expansão deliberada de serviços quanto por outros fatores "
+        "metodológicos, sem relação direta com qualidade de vida."
+    ),
+    update_frequency="trimestral",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Crescimento do PIB de administração pública\n\n"
+        "Fonte: IBGE, Contas Nacionais Trimestrais — tabela SIDRA 5932, variável 6561, "
+        "classificação 11255, categoria 90703 (\"Administração, saúde e educação públicas e "
+        "seguridade social\").\n\n"
+        "Cada ponto é datado no primeiro mês do trimestre a que se refere (jan/abr/jul/out)."
+    ),
+)
+CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA_QUERY = SidraQuery(
+    table=5932, variable=6561, classifications={11255: 90703}
+)
+
+TAXA_INVESTIMENTO = StaticIndicatorMeta(
+    slug="taxa-investimento",
+    name="Taxa de investimento",
+    category=IndicatorCategory.ECONOMIA,
+    unit="% do PIB",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual do PIB que foi destinado à formação bruta de capital fixo (construção, "
+        "máquinas, equipamentos) no trimestre, em vez de consumo imediato."
+    ),
+    description_how=(
+        "Quanto maior, maior a parcela da economia voltada para ampliar a capacidade produtiva "
+        "futura do país (estradas, fábricas, equipamentos), em vez de consumo corrente."
+    ),
+    update_frequency="trimestral",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de investimento\n\n"
+        "Fonte: IBGE, Contas Nacionais Trimestrais — tabela SIDRA 6727, variável 2517. "
+        "Cada ponto é datado no primeiro mês do trimestre a que se refere (jan/abr/jul/out)."
+    ),
+)
+TAXA_INVESTIMENTO_QUERY = SidraQuery(table=6727, variable=2517, classifications={})
+
+TAXA_POUPANCA = StaticIndicatorMeta(
+    slug="taxa-poupanca",
+    name="Taxa de poupança",
+    category=IndicatorCategory.ECONOMIA,
+    unit="% do PIB",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Percentual do PIB que corresponde à poupança bruta da economia (renda não consumida) "
+        "no trimestre — o principal financiador interno do investimento."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — uma taxa de poupança alta pode refletir tanto "
+        "solidez financeira quanto retração do consumo das famílias; compare sempre com a taxa "
+        "de investimento do mesmo período."
+    ),
+    update_frequency="trimestral",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de poupança\n\n"
+        "Fonte: IBGE, Contas Nacionais Trimestrais — tabela SIDRA 6726, variável 9774. "
+        "Cada ponto é datado no primeiro mês do trimestre a que se refere (jan/abr/jul/out)."
+    ),
+)
+TAXA_POUPANCA_QUERY = SidraQuery(table=6726, variable=9774, classifications={})

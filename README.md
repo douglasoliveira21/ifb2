@@ -123,6 +123,9 @@ oficiais via API pública, sem scraping:
 | PIB (valores correntes), Crescimento do PIB (variação real), Deflator do PIB | IBGE (Contas Nacionais) | SIDRA tabela 6784, variáveis 9808/9810/9811 |
 | Saldo da carteira de crédito do SFN | Banco Central | SGS/BCB 20539 |
 | Endividamento das famílias | Banco Central | SGS/BCB 29034 |
+| Crescimento do PIB agropecuário/industrial/serviços/administração pública (trimestral, YoY) | IBGE (Contas Nacionais Trimestrais) | SIDRA tabela 5932, variável 6561, classificação 11255 |
+| Taxa de investimento | IBGE (Contas Nacionais Trimestrais) | SIDRA tabela 6727, variável 2517 |
+| Taxa de poupança | IBGE (Contas Nacionais Trimestrais) | SIDRA tabela 6726, variável 9774 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -434,13 +437,42 @@ milhões e crescimento 2023 = 3,2% (mesmos valores divulgados pelo IBGE
 nas Contas Nacionais); queda de -3,3% em 2020 (recessão da pandemia,
 amplamente noticiada).
 
-Ficaram de fora desta rodada (retomar depois): PIB por setor (tabelas
-5932/6612, "Contas Nacionais Trimestrais") e taxas de investimento/
-poupança (tabelas 6727/6726) — todas de periodicidade **trimestral**,
-enquanto o pipeline atual (`_extract_year` em `ibge_client.py`) só sabe
-tratar séries anuais; e indicadores de empresas ativas/abertura/
-fechamento, que não estão no SIDRA nem no SGS e exigem investigar uma
-fonte nova (Receita Federal/CNPJ).
+Ficou de fora desta rodada: empresas ativas/abertura/fechamento, que não
+está no SIDRA nem no SGS e exige investigar uma fonte nova (Receita
+Federal/CNPJ).
+
+### Economia (parte 2 — PIB por setor e investimento/poupança, com suporte trimestral)
+
+As tabelas de "Contas Nacionais Trimestrais" do IBGE (5932, 6726, 6727)
+não tinham como ser integradas com o cliente SIDRA existente: ele só
+sabia interpretar séries **anuais** (`_extract_year` procura um campo
+com nome de ano tipo "2023"). Essas tabelas publicam por **trimestre**
+("1º trimestre 2025", código `202501`), formato inteiramente novo.
+
+Adicionado a `ibge_client.py`: `fetch_sidra_series_quarterly()` +
+`_extract_quarter()`, que localiza a dimensão "Trimestre" pelo texto do
+campo (funciona em qualquer posição — D3 numa tabela simples, D4 quando
+há uma classificação extra como setor) e converte o código `AAAAQQ` em
+uma data no primeiro mês do trimestre (jan/abr/jul/out), mesma convenção
+"um ponto por período" já usada nas séries mensais do BCB. Zero mudança
+no cliente existente (`fetch_sidra_series`, anual, intocado).
+
+Seis indicadores novos com isso:
+
+- **Crescimento do PIB agropecuário/industrial/serviços/administração
+  pública** (tabela 5932, variável 6561, classificação 11255 "Setores e
+  subsetores") — variação trimestral em relação ao mesmo trimestre do
+  ano anterior, já descontada a inflação. Administração pública é
+  `neutral` (mede volume de gasto público, não qualidade de vida); os
+  outros três são `higher_is_better`.
+- **Taxa de investimento** (tabela 6727, variável 2517) e **Taxa de
+  poupança** (tabela 6726, variável 9774) — ambas % do PIB.
+
+Validados ao vivo: alta de dois dígitos do PIB agropecuário em 2025
+(10–13% nos quatro trimestres) bate com a safra recorde de grãos
+amplamente noticiada no período; taxa de investimento na faixa de 16–18%
+e taxa de poupança de 11–16% do PIB, ambas dentro da faixa historicamente
+publicada pelo IBGE.
 
 ### Indicadores por estado
 

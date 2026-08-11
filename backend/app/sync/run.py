@@ -43,7 +43,15 @@ from app.sync.definitions import (
     MORTALIDADE_INFANTIL,
     MORTALIDADE_INFANTIL_QUERY,
     CRESCIMENTO_PIB,
+    CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA,
+    CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA_QUERY,
+    CRESCIMENTO_PIB_AGROPECUARIO,
+    CRESCIMENTO_PIB_AGROPECUARIO_QUERY,
+    CRESCIMENTO_PIB_INDUSTRIAL,
+    CRESCIMENTO_PIB_INDUSTRIAL_QUERY,
     CRESCIMENTO_PIB_QUERY,
+    CRESCIMENTO_PIB_SERVICOS,
+    CRESCIMENTO_PIB_SERVICOS_QUERY,
     NASCIMENTOS,
     NASCIMENTOS_QUERY,
     OBITOS,
@@ -65,11 +73,15 @@ from app.sync.definitions import (
     TAXA_ESCOLARIZACAO_15_A_17_QUERY,
     TAXA_FECUNDIDADE,
     TAXA_FECUNDIDADE_QUERY,
+    TAXA_INVESTIMENTO,
+    TAXA_INVESTIMENTO_QUERY,
     TAXA_MORTALIDADE_GERAL,
     TAXA_MORTALIDADE_GERAL_QUERY,
     TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL,
     TAXA_NATALIDADE,
     TAXA_NATALIDADE_QUERY,
+    TAXA_POUPANCA,
+    TAXA_POUPANCA_QUERY,
     TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
     TRANSFERENCIAS_CONSTITUCIONAIS_MUNICIPAL,
     IndicatorSpec,
@@ -81,6 +93,7 @@ from app.sync.ibge_client import (
     drop_future_years_by_state,
     fetch_sidra_series,
     fetch_sidra_series_by_state,
+    fetch_sidra_series_quarterly,
 )
 from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
@@ -306,6 +319,17 @@ def main() -> None:
     sync_indicator(CRESCIMENTO_PIB, lambda: fetch_sidra_series(CRESCIMENTO_PIB_QUERY))
     sync_indicator(PIB_DEFLATOR, lambda: fetch_sidra_series(PIB_DEFLATOR_QUERY))
     # Tabela 6784 (Contas Nacionais Anuais) não tem quebra por estado no SIDRA.
+
+    for meta, query in [
+        (CRESCIMENTO_PIB_AGROPECUARIO, CRESCIMENTO_PIB_AGROPECUARIO_QUERY),
+        (CRESCIMENTO_PIB_INDUSTRIAL, CRESCIMENTO_PIB_INDUSTRIAL_QUERY),
+        (CRESCIMENTO_PIB_SERVICOS, CRESCIMENTO_PIB_SERVICOS_QUERY),
+        (CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA, CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA_QUERY),
+        (TAXA_INVESTIMENTO, TAXA_INVESTIMENTO_QUERY),
+        (TAXA_POUPANCA, TAXA_POUPANCA_QUERY),
+    ]:
+        sync_indicator(meta, lambda query=query: fetch_sidra_series_quarterly(query))
+    # Tabelas 5932/6726/6727 (Contas Nacionais Trimestrais) não têm quebra por estado no SIDRA.
 
     sync_indicator(POPULACAO_RESIDENTE, lambda: fetch_sidra_series(POPULACAO_RESIDENTE_QUERY))
     sync_by_state(POPULACAO_RESIDENTE, lambda: fetch_sidra_series_by_state(POPULACAO_RESIDENTE_QUERY))
