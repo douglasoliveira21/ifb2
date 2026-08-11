@@ -142,6 +142,7 @@ oficiais via API pública, sem scraping:
 | Domicílios com coleta de lixo, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6736, variável 9784 |
 | Domicílios com energia elétrica em tempo integral, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 6738, variável 9994 |
 | Domicílios com acesso à internet, Brasil e por estado | IBGE (PNAD Contínua anual) | SIDRA tabela 7307, variável 9784 |
+| Valor da produção agrícola, Brasil e por estado (desde 1994) | IBGE (Produção Agrícola Municipal) | SIDRA tabela 5457, variável 215 |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
@@ -654,6 +655,26 @@ cobertura quase universal já noticiada); internet subindo de 90% para
 95% entre 2019 e 2025 (crescimento de acesso amplamente reportado); por
 estado, energia elétrica quase igual entre SP e MA (~98%), mas internet
 com gap maior (SP 96,6% x MA 92,1%), como esperado.
+
+### Agricultura (`IndicatorCategory.AGRICULTURA`, migration 0007)
+
+Primeiro indicador da categoria: **Valor da produção agrícola**
+(lavouras temporárias e permanentes — soja, milho, cana, café, laranja
+etc.), tabela SIDRA 5457 (Produção Agrícola Municipal), Brasil e por
+estado, reaproveitando 100% o cliente já existente.
+
+Cuidado de dado tratado nesta rodada: a série da tabela começa em 1974,
+mas atravessou quatro moedas diferentes antes do Plano Real (Cruzeiro,
+Cruzado, Cruzado Novo, Cruzeiro Real) — misturar isso num único gráfico
+seria enganoso. O sync agora filtra a série para começar em 1994 (só
+"Mil Reais"), tanto na busca Brasil quanto na busca por estado.
+
+Validado ao vivo: valor subindo de R$ 468 bilhões (2020) para um pico
+de R$ 833 bilhões (2022) e caindo para R$ 783 bilhões (2024) — bate com
+a trajetória de preços de commodities amplamente noticiada no período
+(alta em 2021-2022, queda depois); por estado, Mato Grosso na liderança
+folgada (R$ 120-153 bilhões), consistente com ser o maior produtor
+agrícola do país.
 
 ### Indicadores por estado
 

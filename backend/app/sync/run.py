@@ -114,6 +114,8 @@ from app.sync.definitions import (
     TAXA_POUPANCA_QUERY,
     TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
     TRANSFERENCIAS_CONSTITUCIONAIS_MUNICIPAL,
+    VALOR_PRODUCAO_AGRICOLA,
+    VALOR_PRODUCAO_AGRICOLA_QUERY,
     IndicatorSpec,
     StaticIndicatorMeta,
 )
@@ -472,6 +474,21 @@ def main() -> None:
     sync_by_municipio(
         DESPESA_COM_PESSOAL_MUNICIPAL,
         lambda: fetch_rgf_by_municipio(DESPESA_COM_PESSOAL_RCL),
+    )
+
+    # Só a partir de 1994 (Plano Real) — antes disso a série troca de moeda
+    # várias vezes (Cruzeiro, Cruzado, Cruzado Novo, Cruzeiro Real), ver
+    # metodologia do indicador.
+    sync_indicator(
+        VALOR_PRODUCAO_AGRICOLA,
+        lambda: [p for p in fetch_sidra_series(VALOR_PRODUCAO_AGRICOLA_QUERY) if p.reference_date.year >= 1994],
+    )
+    sync_by_state(
+        VALOR_PRODUCAO_AGRICOLA,
+        lambda: {
+            uf: [p for p in points if p.reference_date.year >= 1994]
+            for uf, points in fetch_sidra_series_by_state(VALOR_PRODUCAO_AGRICOLA_QUERY).items()
+        },
     )
 
     refresh_summary_view()

@@ -1857,3 +1857,34 @@ DOMICILIOS_COM_INTERNET = StaticIndicatorMeta(
     ),
 )
 DOMICILIOS_COM_INTERNET_QUERY = SidraQuery(table=7307, variable=9784, classifications={1: 6795, 688: 48534})
+
+VALOR_PRODUCAO_AGRICOLA = StaticIndicatorMeta(
+    slug="valor-producao-agricola",
+    name="Valor da produção agrícola",
+    category=IndicatorCategory.AGRICULTURA,
+    unit="R$ mil",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Valor total da produção das lavouras temporárias (soja, milho, cana etc.) e "
+        "permanentes (café, laranja etc.), a preços correntes de cada ano, segundo o IBGE."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — o valor varia tanto pela quantidade "
+        "produzida quanto pelo preço internacional das commodities agrícolas, que o governo "
+        "brasileiro não controla diretamente. Uma queda pode refletir preços internacionais "
+        "mais baixos numa safra recorde, e não necessariamente um problema de produção."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Valor da produção agrícola\n\n"
+        "Fonte: IBGE, Produção Agrícola Municipal (PAM) — tabela SIDRA 5457, variável 215 "
+        "(\"Valor da produção\"), classificação 782 (\"Produto das lavouras temporárias e "
+        "permanentes\"), categoria 0 (\"Total\").\n\n"
+        "A série da tabela começa em 1974, mas mudou de moeda várias vezes antes do Plano "
+        "Real (Cruzeiro, Cruzado, Cruzado Novo, Cruzeiro Real) — o IFB só exibe valores a "
+        "partir de 1994 (\"Mil Reais\"), quando a série passa a usar uma moeda única e "
+        "estável, comparável ano a ano sem correção manual."
+    ),
+)
+VALOR_PRODUCAO_AGRICOLA_QUERY = SidraQuery(table=5457, variable=215, classifications={782: 0})
