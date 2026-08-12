@@ -88,6 +88,19 @@ tipo "Cron", com o comando `python -m app.sync.run` e um agendamento diário
 cron dentro do container da API e mantém os dois papéis (servir requisições x
 sincronizar dados) desacoplados, sem precisar de Celery ou orquestrador externo.
 
+Da mesma forma, a varredura automática de Frases Verificadas
+(`app/sync/claim_scan.py`) é um terceiro app "Cron" no EasyPanel, mesma
+imagem do backend, comando `python -m app.sync.claim_scan`, agendado a
+cada 3 horas (`0 */3 * * *`). Requer a variável `ANTHROPIC_API_KEY`
+(gerada em https://console.anthropic.com/settings/keys) configurada
+**apenas nesse serviço Cron** — sem ela o job imprime um aviso e sai sem
+erro, não afeta o resto do deploy. O job lê os feeds RSS definidos em
+`RSS_FEEDS` (hoje G1 Política e G1 Economia), manda cada matéria nova
+para o modelo Claude junto com os indicadores reais do IFB, e só grava
+um rascunho (`status=DRAFT`) quando encontra uma citação com número
+checável — nunca publica sozinho. Revise e aprove (ou descarte) cada
+rascunho em `/admin/frases-verificadas`.
+
 ### Indicadores integrados (Fases 2–4)
 
 `app/sync/definitions.py` descreve os indicadores já integrados a fontes

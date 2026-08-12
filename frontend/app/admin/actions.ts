@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import {
   createAdminCorrection,
   createAdminVerifiedClaim,
+  deleteAdminVerifiedClaim,
+  publishAdminVerifiedClaim,
   toggleAdminIndicator,
   triggerAdminSync,
   updateAdminVerifiedClaim,
@@ -63,6 +65,20 @@ export async function createVerifiedClaimAction(formData: FormData): Promise<voi
 export async function updateVerifiedClaimAction(formData: FormData): Promise<void> {
   const id = String(formData.get("id"));
   await updateAdminVerifiedClaim(id, claimPayloadFromForm(formData));
+  revalidatePath("/admin/frases-verificadas");
+  revalidatePath("/frases-verificadas");
+}
+
+export async function publishVerifiedClaimAction(formData: FormData): Promise<void> {
+  const id = String(formData.get("id"));
+  await publishAdminVerifiedClaim(id);
+  revalidatePath("/admin/frases-verificadas");
+  revalidatePath("/frases-verificadas");
+}
+
+export async function discardVerifiedClaimAction(formData: FormData): Promise<void> {
+  const id = String(formData.get("id"));
+  await deleteAdminVerifiedClaim(id);
   revalidatePath("/admin/frases-verificadas");
   revalidatePath("/frases-verificadas");
 }

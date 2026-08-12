@@ -1,6 +1,11 @@
 import { getAdminIndicators, getAdminVerifiedClaims } from "@/lib/admin-api";
 import { formatDate } from "@/lib/format";
-import { createVerifiedClaimAction, updateVerifiedClaimAction } from "@/app/admin/actions";
+import {
+  createVerifiedClaimAction,
+  discardVerifiedClaimAction,
+  publishVerifiedClaimAction,
+  updateVerifiedClaimAction,
+} from "@/app/admin/actions";
 
 const VERDICT_LABELS: Record<string, string> = {
   CONFIRMADO: "Confirmado",
@@ -21,6 +26,8 @@ export default async function AdminFrasesVerificadasPage({
   const [indicators, claims] = await Promise.all([getAdminIndicators(), getAdminVerifiedClaims()]);
   const editing = edit ? claims.find((c) => c.id === edit) : undefined;
   const action = editing ? updateVerifiedClaimAction : createVerifiedClaimAction;
+  const drafts = claims.filter((c) => c.status === "DRAFT");
+  const published = claims.filter((c) => c.status === "PUBLISHED");
 
   return (
     <div>
@@ -143,12 +150,18 @@ export default async function AdminFrasesVerificadasPage({
       </form>
 
       <section className="mt-10">
-        <h2 className="text-lg font-bold">Frases publicadas</h2>
-        {claims.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">Nenhuma frase verificada publicada ainda.</p>
+        <h2 className="text-lg font-bold">
+          Rascunhos pendentes de revisão {drafts.length > 0 && `(${drafts.length})`}
+        </h2>
+        <p className="mt-1 text-xs text-gray-500 max-w-2xl">
+          Gerados pela varredura automática de RSS a cada 3h — nunca aparecem em
+          /frases-verificadas até você aprovar. Revise a citação e a fonte antes de aprovar.
+        </p>
+        {drafts.length === 0 ? (
+          <p className="mt-2 text-sm text-gray-500">Nenhum rascunho pendente no momento.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-gray-200 bg-paper border border-gray-200">
-            {claims.map((c) => (
+          <ul className="mt-2 divide-y divide-gray-200 bg-paper border border-yellow">
+            {drafts.map((c) => (
               <li key={c.id} className="px-4 py-3 text-sm flex items-start justify-between gap-4">
                 <div>
                   <p className="font-medium">&ldquo;{c.quote}&rdquo;</p>
@@ -157,6 +170,67 @@ export default async function AdminFrasesVerificadasPage({
                     {c.speaker_role ? ` (${c.speaker_role})` : ""}
                     {c.claim_date ? ` · ${formatDate(c.claim_date)}` : ""} —{" "}
                     {VERDICT_LABELS[c.verdict] ?? c.verdict}
+                  </p>
+                  <p className="text-gray-500 mt-0.5">{c.explanation}</p>
+                  {c.source_url && (
+                    <a
+                      href={c.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs underline underline-offset-2 hover:text-ink text-gray-500"
+                    >
+                      Ver matéria original
+                    </a>
+                  )}
+                </div>
+                <div className="shrink-0 flex flex-col items-end gap-2">
+                  <a
+                    href={`/admin/frases-verificadas?edit=${c.id}`}
+                    className="text-xs underline underline-offset-2 hover:text-ink text-gray-500"
+                  >
+                    Editar
+                  </a>
+                  <form action={publishVerifiedClaimAction}>
+                    <input type="hidden" name="id" value={c.id} />
+                    <button
+                      type="submit"
+                      className="bg-yellow text-ink text-xs font-semibold px-3 py-1.5"
+                    >
+                      Aprovar e publicar
+                    </button>
+                  </form>
+                  <form action={discardVerifiedClaimAction}>
+                    <input type="hidden" name="id" value={c.id} />
+                    <button
+                      type="submit"
+                      className="border border-ink text-xs font-semibold px-3 py-1.5 hover:bg-ink hover:text-paper"
+                    >
+                      Descartar
+                    </button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-bold">Frases publicadas</h2>
+        {published.length === 0 ? (
+          <p className="mt-2 text-sm text-gray-500">Nenhuma frase verificada publicada ainda.</p>
+        ) : (
+          <ul className="mt-2 divide-y divide-gray-200 bg-paper border border-gray-200">
+            {published.map((c) => (
+              <li key={c.id} className="px-4 py-3 text-sm flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-medium">&ldquo;{c.quote}&rdquo;</p>
+                  <p className="text-gray-500 mt-0.5">
+                    {c.speaker_name}
+                    {c.speaker_role ? ` (${c.speaker_role})` : ""}
+                    {c.claim_date ? ` · ${formatDate(c.claim_date)}` : ""} —{" "}
+                    {VERDICT_LABELS[c.verdict] ?? c.verdict}
+                    {c.origin === "AI_SCAN" ? " · via varredura IA" : ""}
                   </p>
                 </div>
                 <a

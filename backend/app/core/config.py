@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     admin_username: str = "admin"
     admin_password: str | None = None
+    anthropic_api_key: str | None = None
 
     @property
     def cors_origin_list(self) -> list[str]:

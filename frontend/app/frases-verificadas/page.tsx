@@ -68,6 +68,12 @@ export default async function FrasesVerificadasPage() {
                     {VERDICT_LABELS[claim.verdict] ?? claim.verdict}
                   </p>
                   <p className="mt-1 text-sm text-gray-500 leading-relaxed">{claim.explanation}</p>
+                  {claim.origin === "AI_SCAN" && (
+                    <p className="mt-2 text-xs text-gray-500">
+                      Identificado por varredura automática, revisado e aprovado por um editor
+                      humano antes da publicação.
+                    </p>
+                  )}
 
                   {claim.indicator_slug && (
                     <Link

@@ -46,6 +46,22 @@ services:
         condition: service_healthy
     command: ["python", "-m", "app.sync.run"]
 
+  # Varredura de Frases Verificadas sob demanda: docker compose run --rm claim_scan
+  # Em produção (EasyPanel), roda como outro serviço "Cron" separado, agendado
+  # a cada 3 horas — ver README. Requer ANTHROPIC_API_KEY; sem ela, o job
+  # imprime um aviso e sai sem fazer nada (não quebra o resto do deploy).
+  claim_scan:
+    build: ./backend
+    profiles: ["tools"]
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://ifb:ifb@db:5432/ifb
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "app.sync.claim_scan"]
+
   frontend:
     build: ./frontend
     restart: unless-stopped

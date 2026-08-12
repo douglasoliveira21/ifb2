@@ -183,6 +183,9 @@ export type ClaimVerdict =
   | "FALSO"
   | "INCONCLUSIVO";
 
+export type ClaimStatus = "DRAFT" | "PUBLISHED";
+export type ClaimOrigin = "MANUAL" | "AI_SCAN";
+
 export interface VerifiedClaim {
   id: string;
   quote: string;
@@ -193,6 +196,8 @@ export interface VerifiedClaim {
   indicator_slug: string | null;
   verdict: ClaimVerdict;
   explanation: string;
+  status: ClaimStatus;
+  origin: ClaimOrigin;
   created_at: string;
 }
 

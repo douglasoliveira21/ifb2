@@ -90,8 +90,9 @@ export interface VerifiedClaimPayload {
   explanation: string;
 }
 
-export async function getAdminVerifiedClaims(): Promise<VerifiedClaim[]> {
-  return (await adminFetch("/verified-claims")).json();
+export async function getAdminVerifiedClaims(status?: "DRAFT" | "PUBLISHED"): Promise<VerifiedClaim[]> {
+  const query = status ? `?status=${status}` : "";
+  return (await adminFetch(`/verified-claims${query}`)).json();
 }
 
 export async function createAdminVerifiedClaim(payload: VerifiedClaimPayload): Promise<void> {
@@ -100,4 +101,12 @@ export async function createAdminVerifiedClaim(payload: VerifiedClaimPayload): P
 
 export async function updateAdminVerifiedClaim(id: string, payload: VerifiedClaimPayload): Promise<void> {
   await adminFetch(`/verified-claims/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+}
+
+export async function publishAdminVerifiedClaim(id: string): Promise<void> {
+  await adminFetch(`/verified-claims/${id}/publish`, { method: "POST" });
+}
+
+export async function deleteAdminVerifiedClaim(id: string): Promise<void> {
+  await adminFetch(`/verified-claims/${id}`, { method: "DELETE" });
 }

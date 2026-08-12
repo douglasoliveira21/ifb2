@@ -15,7 +15,12 @@ from app.models.indicator_value import IndicatorValue
 from app.models.location import Location
 from app.models.source import Source
 from app.models.sync_run import SyncRun
-from app.models.verified_claim import ClaimVerdict, VerifiedClaim
+from app.models.verified_claim import (
+    ClaimOrigin,
+    ClaimStatus,
+    ClaimVerdict,
+    VerifiedClaim,
+)
 from app.schemas.admin import (
     AdminIndicatorOut,
     AdminIndicatorValueOut,
@@ -173,7 +178,9 @@ _sync_running = False
 def _run_sync_and_release() -> None:
     global _sync_running
     try:
-        from app.sync.run import main as run_sync  # import local: evita custo de import em todo request
+        from app.sync.run import (
+            main as run_sync,  # import local: evita custo de import em todo request
+        )
 
         run_sync()
     finally:
@@ -307,13 +314,26 @@ def _verified_claim_out(db: Session, claim: VerifiedClaim) -> VerifiedClaimOut:
         indicator_slug=slug,
         verdict=claim.verdict.value,
         explanation=claim.explanation,
+        status=claim.status.value,
+        origin=claim.origin.value,
         created_at=claim.created_at,
     )
 
 
 @router.get("/verified-claims", response_model=list[VerifiedClaimOut])
-def list_admin_verified_claims(db: Session = Depends(get_db)) -> list[VerifiedClaimOut]:
-    rows = db.execute(select(VerifiedClaim).order_by(VerifiedClaim.created_at.desc())).scalars().all()
+def list_admin_verified_claims(
+    status: str | None = None, db: Session = Depends(get_db)
+) -> list[VerifiedClaimOut]:
+    """`status=DRAFT` lista só os rascunhos pendentes de revisão (gerados
+    pela varredura automática ou manualmente); sem o parâmetro, lista
+    tudo, rascunho e publicado."""
+    query = select(VerifiedClaim)
+    if status:
+        try:
+            query = query.where(VerifiedClaim.status == ClaimStatus(status))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=f"Status inválido: {status}") from exc
+    rows = db.execute(query.order_by(VerifiedClaim.created_at.desc())).scalars().all()
     return [_verified_claim_out(db, claim) for claim in rows]
 
 
@@ -333,6 +353,8 @@ def create_verified_claim(payload: VerifiedClaimIn, db: Session = Depends(get_db
         indicator_id=_resolve_indicator_id(db, payload.indicator_slug),
         verdict=verdict,
         explanation=payload.explanation.strip(),
+        status=ClaimStatus.PUBLISHED,
+        origin=ClaimOrigin.MANUAL,
     )
     db.add(claim)
     db.commit()
@@ -344,6 +366,9 @@ def create_verified_claim(payload: VerifiedClaimIn, db: Session = Depends(get_db
 def update_verified_claim(
     claim_id: UUID, payload: VerifiedClaimIn, db: Session = Depends(get_db)
 ) -> VerifiedClaimOut:
+    """Edita o conteúdo de uma frase, publicada ou rascunho — não muda o
+    status. Use POST /verified-claims/{id}/publish para aprovar um
+    rascunho."""
     claim = db.execute(select(VerifiedClaim).where(VerifiedClaim.id == claim_id)).scalar_one_or_none()
     if claim is None:
         raise HTTPException(status_code=404, detail="Frase verificada não encontrada")
@@ -364,3 +389,27 @@ def update_verified_claim(
     db.commit()
     db.refresh(claim)
     return _verified_claim_out(db, claim)
+
+
+@router.post("/verified-claims/{claim_id}/publish", response_model=VerifiedClaimOut)
+def publish_verified_claim(claim_id: UUID, db: Session = Depends(get_db)) -> VerifiedClaimOut:
+    """Aprova um rascunho (gerado pela varredura automática ou manual) e
+    o torna público em /frases-verificadas."""
+    claim = db.execute(select(VerifiedClaim).where(VerifiedClaim.id == claim_id)).scalar_one_or_none()
+    if claim is None:
+        raise HTTPException(status_code=404, detail="Frase verificada não encontrada")
+    claim.status = ClaimStatus.PUBLISHED
+    db.commit()
+    db.refresh(claim)
+    return _verified_claim_out(db, claim)
+
+
+@router.delete("/verified-claims/{claim_id}", status_code=204)
+def delete_verified_claim(claim_id: UUID, db: Session = Depends(get_db)) -> None:
+    """Descarta uma frase — usado principalmente para rejeitar rascunhos
+    da varredura automática que não fazem sentido publicar."""
+    claim = db.execute(select(VerifiedClaim).where(VerifiedClaim.id == claim_id)).scalar_one_or_none()
+    if claim is None:
+        raise HTTPException(status_code=404, detail="Frase verificada não encontrada")
+    db.delete(claim)
+    db.commit()

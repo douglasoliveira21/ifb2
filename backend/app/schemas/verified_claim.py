@@ -14,4 +14,6 @@ class VerifiedClaimOut(BaseModel):
     indicator_slug: str | None
     verdict: str
     explanation: str
+    status: str
+    origin: str
     created_at: datetime
