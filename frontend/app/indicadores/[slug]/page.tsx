@@ -65,9 +65,20 @@ export default async function IndicadorPage({ params }: { params: Promise<Params
       {isDemo && <DemoBanner />}
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-10 sm:pt-16">
-        <Link href="/indicadores" className="text-sm text-gray-500 hover:text-ink underline underline-offset-2">
-          ← Todos os indicadores
-        </Link>
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/indicadores" className="text-sm text-gray-500 hover:text-ink underline underline-offset-2">
+            ← Todos os indicadores
+          </Link>
+          {summary?.last_value !== null && summary?.last_value !== undefined && (
+            <a
+              href={`/api/share/${slug}`}
+              download
+              className="shrink-0 border border-ink px-3 py-1.5 text-xs font-semibold hover:bg-ink hover:text-paper transition"
+            >
+              Baixar imagem
+            </a>
+          )}
+        </div>
         <p className="mt-4 text-sm font-medium text-gray-500 uppercase tracking-wide">
           {CATEGORY_LABELS[detail.category] ?? detail.category}
         </p>
@@ -81,15 +92,6 @@ export default async function IndicadorPage({ params }: { params: Promise<Params
             </p>
           </div>
           {summary && <ClassificationBadge classification={summary.classification} />}
-          {summary?.last_value !== null && summary?.last_value !== undefined && (
-            <a
-              href={`/api/share/${slug}`}
-              download
-              className="border border-ink px-3 py-1.5 text-xs font-semibold hover:bg-ink hover:text-paper transition"
-            >
-              Baixar imagem
-            </a>
-          )}
         </div>
         {lastPoint && (
           <p className="mt-2 text-sm text-gray-500">Referente a {formatDate(lastPoint.reference_date)}.</p>

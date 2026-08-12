@@ -6,7 +6,7 @@ import { formatNumber, formatDate } from "@/lib/format";
 
 const WIDTH = 800;
 const HEIGHT = 320;
-const PADDING = { top: 16, right: 16, bottom: 28, left: 48 };
+const PADDING = { top: 16, right: 16, bottom: 44, left: 48 };
 
 function firstName(fullName: string): string {
   return fullName.split(" ")[0];
@@ -126,10 +126,12 @@ export default function HistoryChart({
               strokeDasharray="2,3"
             />
             <text
-              x={marker.xPos + 4}
-              y={HEIGHT - 8}
-              fontSize={9}
+              x={marker.xPos}
+              y={HEIGHT - 6}
+              fontSize={11}
               fill="var(--color-gray-500)"
+              textAnchor="end"
+              transform={`rotate(-40 ${marker.xPos} ${HEIGHT - 6})`}
             >
               {firstName(marker.holder_name)}
             </text>

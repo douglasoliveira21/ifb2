@@ -4,6 +4,7 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import Footer from "@/components/Footer";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import Header from "@/components/Header";
+import ScrollCue from "@/components/ScrollCue";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <Footer />
+        <ScrollCue />
         <CookieConsentBanner />
       </body>
     </html>
