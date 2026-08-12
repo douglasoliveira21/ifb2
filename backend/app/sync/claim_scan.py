@@ -218,6 +218,12 @@ def analyze_article(client: httpx.Client, item: FeedItem, indicators: list[dict]
             "Content-Type": "application/json",
         },
     )
+    if response.status_code >= 400:
+        # A mensagem padrão do httpx (`response.raise_for_status()`) não inclui o
+        # corpo da resposta — a DeepSeek manda o motivo real do erro (chave
+        # inválida vs. sem saldo vs. modelo errado) só no corpo, então logamos
+        # explicitamente antes de estourar a exceção genérica.
+        print(f"DeepSeek respondeu {response.status_code}: {response.text[:300]}")
     response.raise_for_status()
     body = response.json()
     choices = body.get("choices") or []
