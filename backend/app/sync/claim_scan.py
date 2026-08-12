@@ -212,6 +212,11 @@ def analyze_article(client: httpx.Client, item: FeedItem, indicators: list[dict]
             ],
             "tools": [SCAN_TOOL],
             "tool_choice": {"type": "function", "function": {"name": "record_scan_result"}},
+            # deepseek-v4-flash fica em "thinking mode" por padrão, que não
+            # aceita tool_choice forçando uma função específica (erro 400
+            # "Thinking mode does not support this tool_choice") — precisa
+            # desligar explicitamente pra usar tool_choice aqui.
+            "thinking": {"type": "disabled"},
         },
         headers={
             "Authorization": f"Bearer {get_settings().deepseek_api_key or ''}",
