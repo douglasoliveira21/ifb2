@@ -27,12 +27,31 @@ export default function PrivacidadePage() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold">Não usamos cookies de rastreamento nem publicidade</h2>
+            <h2 className="text-xl font-bold">Não exibimos publicidade</h2>
             <p className="mt-2 text-sm text-gray-500 leading-relaxed">
-              O IFB não exibe anúncios e não usa cookies de rastreamento, pixels de redes sociais ou
-              ferramentas de publicidade de terceiros. O site pode registrar métricas técnicas
-              básicas e agregadas de acesso (como volume de visitas), sem identificar
-              individualmente quem visitou.
+              O IFB não exibe anúncios, não usa pixels de redes sociais e não vende nem compartilha
+              dados de visitantes com terceiros para fins comerciais.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold">Google Analytics</h2>
+            <p className="mt-2 text-sm text-gray-500 leading-relaxed">
+              Usamos o Google Analytics para entender, de forma agregada, quantas pessoas visitam o
+              site, quais páginas são mais acessadas e de onde vêm os acessos — isso nos ajuda a
+              priorizar quais indicadores e fontes desenvolver a seguir. Essa ferramenta usa cookies
+              e pode coletar informações como endereço IP (de forma truncada/anonimizada pelo
+              Google), tipo de dispositivo e páginas visitadas. Os dados são processados pelo Google
+              conforme a{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-ink"
+              >
+                política de privacidade do Google
+              </a>
+              . Não usamos esses dados para identificar uma pessoa específica, nem para publicidade.
             </p>
           </div>
 

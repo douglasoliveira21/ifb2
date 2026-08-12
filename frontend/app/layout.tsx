@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { SITE_URL } from "@/lib/site";
@@ -69,6 +70,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: JSON.stringify(WEBSITE_JSON_LD).replace(/</g, "\\u003c"),
           }}
         />
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-8L1FRPH86R" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-8L1FRPH86R');`}
+        </Script>
         <a
           href="#conteudo"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-yellow focus:text-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
