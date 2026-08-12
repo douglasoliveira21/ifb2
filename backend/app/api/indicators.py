@@ -24,23 +24,48 @@ def list_indicators(db: Session = Depends(get_db)) -> list[IndicatorSummaryOut]:
     return [IndicatorSummaryOut.model_validate(dict(row)) for row in rows]
 
 
+def _resolve_location(db: Session, location: str | None) -> Location | None:
+    """`location` é `None`/"BR" para o Brasil (padrão), a sigla de um
+    estado (2 letras) ou o código IBGE de 7 dígitos de um município —
+    mesma convenção já usada em `app/api/compare.py` e
+    `app/api/municipios.py`."""
+    if location is None or location.upper() == "BR":
+        return db.execute(select(Location).where(Location.type == LocationType.country)).scalar_one_or_none()
+
+    code = location.upper()
+    if len(code) == 2 and code.isalpha():
+        return db.execute(
+            select(Location).where(Location.type == LocationType.state, Location.code == code)
+        ).scalar_one_or_none()
+
+    return db.execute(
+        select(Location).where(Location.type == LocationType.municipality, Location.code == location)
+    ).scalar_one_or_none()
+
+
 @router.get("/{slug}", response_model=IndicatorDetailOut)
-def get_indicator(slug: str, db: Session = Depends(get_db)) -> IndicatorDetailOut:
+def get_indicator(slug: str, location: str | None = None, db: Session = Depends(get_db)) -> IndicatorDetailOut:
     definition = db.execute(
         select(IndicatorDefinition).where(IndicatorDefinition.slug == slug)
     ).scalar_one_or_none()
     if definition is None or not definition.enabled:
         raise HTTPException(status_code=404, detail="Indicador não encontrado")
 
-    country = db.execute(select(Location).where(Location.type == LocationType.country)).scalar_one_or_none()
+    resolved_location = _resolve_location(db, location)
+    if resolved_location is None and location is not None:
+        # `location` foi informado mas não corresponde a nenhum estado/
+        # município conhecido — diferente de "location válida mas sem
+        # dado sincronizado para este indicador" (esse caso cai no ramo
+        # abaixo e devolve history/summary vazios, não 404).
+        raise HTTPException(status_code=404, detail="Localização não encontrada")
 
     summary_row = None
     history: list[IndicatorValuePoint] = []
-    if country is not None:
+    if resolved_location is not None:
         summary_row = db.execute(
             select(indicator_summary).where(
                 indicator_summary.c.indicator_id == definition.id,
-                indicator_summary.c.location_id == country.id,
+                indicator_summary.c.location_id == resolved_location.id,
             )
         ).mappings().first()
 
@@ -48,7 +73,7 @@ def get_indicator(slug: str, db: Session = Depends(get_db)) -> IndicatorDetailOu
             select(IndicatorValue)
             .where(
                 IndicatorValue.indicator_id == definition.id,
-                IndicatorValue.location_id == country.id,
+                IndicatorValue.location_id == resolved_location.id,
                 IndicatorValue.is_revised == False,  # noqa: E712
             )
             .order_by(IndicatorValue.reference_date)

@@ -67,7 +67,7 @@ export default async function EstadoPage({ params }: { params: Promise<Params> }
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     <ClassificationBadge classification={indicator.classification} />
                     <Link
-                      href={`/indicadores/${indicator.slug}`}
+                      href={`/estados/${uf.toLowerCase()}/${indicator.slug}`}
                       className="text-xs text-gray-500 underline underline-offset-2 hover:text-ink"
                     >
                       ver indicador

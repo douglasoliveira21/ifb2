@@ -62,9 +62,12 @@ export interface IndicatorDetailResult {
   isDemo: boolean;
 }
 
-export async function getIndicatorDetail(slug: string): Promise<IndicatorDetailResult> {
+export async function getIndicatorDetail(slug: string, locationCode?: string): Promise<IndicatorDetailResult> {
   try {
-    const res = await fetch(`${API_URL}/api/indicators/${slug}`, { next: { revalidate: 3600 } });
+    const url = locationCode
+      ? `${API_URL}/api/indicators/${slug}?location=${locationCode}`
+      : `${API_URL}/api/indicators/${slug}`;
+    const res = await fetch(url, { next: { revalidate: 3600 } });
     if (res.status === 404) return { detail: null, isDemo: false };
     if (!res.ok) throw new Error(`API respondeu ${res.status}`);
     return { detail: await res.json(), isDemo: false };

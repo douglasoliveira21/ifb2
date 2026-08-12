@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
-import { getGovernmentPeriods, getHomeData, getMunicipios, getRankings, getStates } from "@/lib/api";
+import { getGovernmentPeriods, getHomeData, getMunicipios, getRankings, getStateDetail, getStates } from "@/lib/api";
 
 const STATIC_ROUTES = [
   "",
@@ -26,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const municipiosByState = await Promise.all(states.map((s) => getMunicipios(s.code)));
+  const stateDetails = await Promise.all(states.map((s) => getStateDetail(s.code)));
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((path) => ({
     url: `${SITE_URL}${path}`,
@@ -44,6 +45,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "weekly",
     priority: 0.6,
   }));
+
+  const stateIndicatorEntries: MetadataRoute.Sitemap = stateDetails.flatMap((result, index) => {
+    const uf = states[index].code.toLowerCase();
+    return (result.detail?.indicators ?? []).map((i) => ({
+      url: `${SITE_URL}/estados/${uf}/${i.slug}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    }));
+  });
 
   const municipioListEntries: MetadataRoute.Sitemap = states.map((s) => ({
     url: `${SITE_URL}/municipios/${s.code.toLowerCase()}`,
@@ -76,6 +86,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticEntries,
     ...indicatorEntries,
     ...stateEntries,
+    ...stateIndicatorEntries,
     ...municipioListEntries,
     ...municipioDetailEntries,
     ...rankingEntries,
