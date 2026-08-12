@@ -1,18 +1,21 @@
 import { ImageResponse } from "next/og";
-import { NextRequest } from "next/server";
 import { getIndicatorDetail } from "@/lib/api";
 import { formatDate, formatNumber } from "@/lib/format";
-import { IndicatorOgImage, OG_SIZE } from "@/lib/og";
+import { BrandOgImage, IndicatorOgImage, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og";
+
+export const alt = "Indicador — Instituto Fiscaliza Brasil";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
 
 type Params = { slug: string };
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<Params> }) {
+export default async function Image({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
   const { detail } = await getIndicatorDetail(slug);
-
   const summary = detail?.summary ?? null;
+
   if (!detail || summary === null || summary.last_value === null) {
-    return new Response("Indicador não encontrado ou sem dado disponível", { status: 404 });
+    return new ImageResponse(<BrandOgImage />, size);
   }
 
   return new ImageResponse(
@@ -25,11 +28,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<Param
         sourceName={detail.source_name}
       />
     ),
-    {
-      ...OG_SIZE,
-      headers: {
-        "Content-Disposition": `attachment; filename="ifb-${slug}.png"`,
-      },
-    }
+    size
   );
 }

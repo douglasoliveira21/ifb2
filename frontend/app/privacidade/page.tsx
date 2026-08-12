@@ -35,14 +35,20 @@ export default function PrivacidadePage() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold">Google Analytics</h2>
+            <h2 className="text-xl font-bold">Google Analytics (só com seu consentimento)</h2>
             <p className="mt-2 text-sm text-gray-500 leading-relaxed">
               Usamos o Google Analytics para entender, de forma agregada, quantas pessoas visitam o
               site, quais páginas são mais acessadas e de onde vêm os acessos — isso nos ajuda a
-              priorizar quais indicadores e fontes desenvolver a seguir. Essa ferramenta usa cookies
-              e pode coletar informações como endereço IP (de forma truncada/anonimizada pelo
-              Google), tipo de dispositivo e páginas visitadas. Os dados são processados pelo Google
-              conforme a{" "}
+              priorizar quais indicadores e fontes desenvolver a seguir. Esse script só é carregado
+              se você clicar em &ldquo;Aceitar&rdquo; no aviso de cookies exibido na primeira
+              visita; se você recusar ou não interagir, ele nunca é carregado e nenhum cookie de
+              analytics é definido. Sua escolha fica salva no seu navegador e pode ser mudada a
+              qualquer momento limpando os dados do site nas configurações do seu navegador.
+            </p>
+            <p className="mt-3 text-sm text-gray-500 leading-relaxed">
+              Quando aceito, o Google Analytics pode coletar informações como endereço IP (de forma
+              truncada/anonimizada pelo Google), tipo de dispositivo e páginas visitadas. Os dados
+              são processados pelo Google conforme a{" "}
               <a
                 href="https://policies.google.com/privacy"
                 target="_blank"
