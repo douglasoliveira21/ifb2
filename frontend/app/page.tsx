@@ -1,9 +1,17 @@
+import type { Metadata } from "next";
 import { getHomeData } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import DemoBanner from "@/components/DemoBanner";
 import PlacarBrasil from "@/components/PlacarBrasil";
 import Brasil60Segundos from "@/components/Brasil60Segundos";
 import OQueMudou from "@/components/OQueMudou";
+
+export const metadata: Metadata = {
+  title: "Instituto Fiscaliza Brasil — O Brasil pelos números",
+  description:
+    "Fiscalizamos resultados, não discursos. Consulte indicadores públicos oficiais do Brasil e dos estados: economia, saúde, educação, segurança e mais.",
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const { indicators, updatedAt, isDemo } = await getHomeData();

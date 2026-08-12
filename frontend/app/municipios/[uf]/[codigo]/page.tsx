@@ -11,9 +11,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { uf, codigo } = await params;
   const detail = await getMunicipioDetail(uf, codigo);
   if (!detail) return { title: "Município não encontrado — Instituto Fiscaliza Brasil" };
+  const title = `Indicadores de ${detail.name} (${detail.uf}) — Dados públicos oficiais | Instituto Fiscaliza Brasil`;
+  const description = `Consulte os indicadores públicos oficiais de ${detail.name} (${detail.uf}), indicador por indicador.`;
   return {
-    title: `${detail.name} — Instituto Fiscaliza Brasil`,
-    description: `Indicadores públicos de ${detail.name} (${detail.uf}).`,
+    title,
+    description,
+    alternates: { canonical: `/municipios/${uf.toLowerCase()}/${codigo}` },
+    openGraph: { title, description },
+    twitter: { card: "summary", title, description },
   };
 }
 

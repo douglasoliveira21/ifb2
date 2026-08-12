@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getGovernmentPeriods, getIndicatorDetail } from "@/lib/api";
 import { formatDate, formatNumber } from "@/lib/format";
 import { CATEGORY_LABELS } from "@/lib/categories";
+import { SITE_URL } from "@/lib/site";
 import ClassificationBadge from "@/components/ClassificationBadge";
 import DemoBanner from "@/components/DemoBanner";
 import HistoryChart from "@/components/HistoryChart";
@@ -15,9 +16,15 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { slug } = await params;
   const { detail } = await getIndicatorDetail(slug);
   if (!detail) return { title: "Indicador não encontrado — Instituto Fiscaliza Brasil" };
+  const title = `${detail.name} — Histórico e evolução | Instituto Fiscaliza Brasil`;
+  const description =
+    detail.description_what ?? `Consulte ${detail.name}, sua evolução histórica e a fonte oficial dos dados.`;
   return {
-    title: `${detail.name} — Instituto Fiscaliza Brasil`,
-    description: detail.description_what ?? undefined,
+    title,
+    description,
+    alternates: { canonical: `/indicadores/${slug}` },
+    openGraph: { title, description, type: "article" },
+    twitter: { card: "summary", title, description },
   };
 }
 
@@ -33,8 +40,28 @@ export default async function IndicadorPage({ params }: { params: Promise<Params
   const { summary, history } = detail;
   const lastPoint = history.at(-1);
 
+  const datasetJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: detail.name,
+    description: detail.description_what ?? detail.name,
+    url: `${SITE_URL}/indicadores/${slug}`,
+    keywords: [detail.name, CATEGORY_LABELS[detail.category] ?? detail.category, "indicador público", "Brasil"],
+    creator: { "@type": "Organization", name: "Instituto Fiscaliza Brasil", url: SITE_URL },
+    ...(detail.source_name && {
+      sourceOrganization: { "@type": "Organization", name: detail.source_name, url: detail.source_url },
+    }),
+    ...(lastPoint && { temporalCoverage: `${history[0]?.reference_date}/${lastPoint.reference_date}` }),
+    variableMeasured: detail.name,
+    ...(detail.unit && { unitText: detail.unit }),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJsonLd).replace(/</g, "\\u003c") }}
+      />
       {isDemo && <DemoBanner />}
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-10 sm:pt-16">

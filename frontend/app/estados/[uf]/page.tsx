@@ -12,9 +12,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { uf } = await params;
   const { detail } = await getStateDetail(uf);
   if (!detail) return { title: "Estado não encontrado — Instituto Fiscaliza Brasil" };
+  const title = `Indicadores de ${detail.name} — Dados públicos oficiais | Instituto Fiscaliza Brasil`;
+  const description = `Consulte os indicadores públicos oficiais de ${detail.name}: economia, saúde, educação, segurança e mais, indicador por indicador.`;
   return {
-    title: `${detail.name} — Instituto Fiscaliza Brasil`,
-    description: `Placar de ${detail.name}: indicadores públicos oficiais, indicador por indicador.`,
+    title,
+    description,
+    alternates: { canonical: `/estados/${uf.toLowerCase()}` },
+    openGraph: { title, description },
+    twitter: { card: "summary", title, description },
   };
 }
 
