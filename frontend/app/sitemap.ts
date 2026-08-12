@@ -15,6 +15,10 @@ const STATIC_ROUTES = [
   "/frases-verificadas",
   "/apoiar",
   "/brasil/linha-do-tempo",
+  "/sobre",
+  "/politica-editorial",
+  "/contato",
+  "/privacidade",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
