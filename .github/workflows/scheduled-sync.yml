@@ -1,0 +1,36 @@
+name: Sincronização agendada
+
+# O EasyPanel não tem um tipo de serviço "Cron" nativo — este workflow
+# substitui isso disparando os dois endpoints administrativos protegidos
+# do backend (POST /api/admin/sync e POST /api/admin/claim-scan), que
+# rodam o job em segundo plano e retornam na hora. Ver README.md.
+#
+# Requer três Secrets configurados em Settings > Secrets and variables >
+# Actions deste repositório:
+#   BACKEND_URL     — ex: https://api.institutofiscalizabrasil.org (sem barra final)
+#   ADMIN_USERNAME  — mesmo valor da env var ADMIN_USERNAME do backend
+#   ADMIN_PASSWORD  — mesmo valor da env var ADMIN_PASSWORD do backend
+
+on:
+  schedule:
+    # Sincronização completa dos indicadores — diariamente, fora do horário de pico.
+    - cron: "0 4 * * *"
+    # Varredura de Frases Verificadas — a cada 3 horas.
+    - cron: "0 */3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar sincronização de indicadores (às 04:00 UTC)
+        if: github.event.schedule == '0 4 * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -sf -u "${{ secrets.ADMIN_USERNAME }}:${{ secrets.ADMIN_PASSWORD }}" \
+            -X POST "${{ secrets.BACKEND_URL }}/api/admin/sync"
+
+      - name: Disparar varredura de Frases Verificadas (a cada 3h)
+        if: github.event.schedule == '0 */3 * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -sf -u "${{ secrets.ADMIN_USERNAME }}:${{ secrets.ADMIN_PASSWORD }}" \
+            -X POST "${{ secrets.BACKEND_URL }}/api/admin/claim-scan"

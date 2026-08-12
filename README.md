@@ -81,26 +81,44 @@ Configure as variáveis de ambiente de cada serviço conforme `.env.example`
 (`DATABASE_URL` apontando para o Postgres do EasyPanel, `NEXT_PUBLIC_API_URL`
 apontando para a URL pública do backend, `CORS_ORIGINS` com a URL do frontend).
 
-A sincronização de dados (`app/sync/run.py`) não roda junto com o serviço web.
-Configure no EasyPanel um segundo app a partir da mesma imagem do backend, do
-tipo "Cron", com o comando `python -m app.sync.run` e um agendamento diário
-(ex: `0 4 * * *`, fora do horário de pico). Isso evita manter um processo de
-cron dentro do container da API e mantém os dois papéis (servir requisições x
-sincronizar dados) desacoplados, sem precisar de Celery ou orquestrador externo.
+### Agendando sincronização e varredura de Frases Verificadas
 
-Da mesma forma, a varredura automática de Frases Verificadas
-(`app/sync/claim_scan.py`) é um terceiro app "Cron" no EasyPanel, mesma
-imagem do backend, comando `python -m app.sync.claim_scan`, agendado a
-cada 3 horas (`0 */3 * * *`). Requer a variável `DEEPSEEK_API_KEY`
-(gerada em https://platform.deepseek.com/api_keys) configurada **apenas
-nesse serviço Cron** — sem ela o job imprime um aviso e sai sem erro,
-não afeta o resto do deploy. O job lê os feeds RSS definidos em
-`RSS_FEEDS` (hoje G1 Política e G1 Economia), manda cada matéria nova
-para o modelo DeepSeek (`deepseek-v4-flash`, API compatível com OpenAI)
-junto com os indicadores reais do IFB, e só grava um rascunho
-(`status=DRAFT`) quando encontra uma citação com número checável —
-nunca publica sozinho. Revise e aprove (ou descarte) cada rascunho em
-`/admin/frases-verificadas`.
+O EasyPanel **não tem um tipo de serviço "Cron" nativo** (confirmado na
+documentação oficial — só existe a opção de embutir um `crond` dentro do
+próprio Dockerfile, ou disparar via um agendador HTTP externo). Por isso
+a sincronização de dados (`app/sync/run.py`) e a varredura de Frases
+Verificadas (`app/sync/claim_scan.py`) não rodam como processo contínuo
+nem como um app separado — elas são disparadas por dois endpoints HTTP
+protegidos por Basic Auth (as mesmas credenciais `ADMIN_USERNAME`/
+`ADMIN_PASSWORD`):
+
+- `POST /api/admin/sync` — dispara `app/sync/run.py` em segundo plano.
+- `POST /api/admin/claim-scan` — dispara `app/sync/claim_scan.py` em segundo plano.
+
+Ambos retornam na hora (202) e rodam em background thread no próprio
+serviço `backend` — acompanhe o resultado em `/admin/sincronizacoes`
+(sync) ou `/admin/frases-verificadas` (varredura). Configure um
+agendador HTTP externo para chamá-los:
+
+- **GitHub Actions** (recomendado, já que o repo já está no GitHub): um
+  workflow com `on: schedule` fazendo `curl -u $ADMIN_USERNAME:$ADMIN_PASSWORD
+  -X POST https://sua-api.com/api/admin/sync` (diário, ex: `0 4 * * *`) e o
+  mesmo para `/claim-scan` (a cada 3h, `0 */3 * * *`), com as credenciais
+  guardadas como GitHub Secrets do repositório.
+- **[cron-job.org](https://cron-job.org)** (gratuito, sem precisar mexer no
+  repo): cadastre a URL do endpoint, método POST, e configure Basic Auth
+  com as mesmas credenciais do admin.
+
+A varredura de Frases Verificadas requer também a variável
+`DEEPSEEK_API_KEY` (gerada em https://platform.deepseek.com/api_keys)
+configurada no serviço `backend` — sem ela, `claim_scan.main()` imprime
+um aviso e sai sem erro, não afeta o resto do deploy. O job lê os feeds
+RSS definidos em `RSS_FEEDS` (hoje G1 Política e G1 Economia), manda
+cada matéria nova para o modelo DeepSeek (`deepseek-v4-flash`, API
+compatível com OpenAI) junto com os indicadores reais do IFB, e só
+grava um rascunho (`status=DRAFT`) quando encontra uma citação com
+número checável — nunca publica sozinho. Revise e aprove (ou descarte)
+cada rascunho em `/admin/frases-verificadas`.
 
 ### Indicadores integrados (Fases 2–4)
 

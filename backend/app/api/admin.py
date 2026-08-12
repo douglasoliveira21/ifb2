@@ -208,6 +208,40 @@ def trigger_sync(background_tasks: BackgroundTasks) -> dict[str, str]:
     return {"status": "iniciado"}
 
 
+_claim_scan_lock = threading.Lock()
+_claim_scan_running = False
+
+
+def _run_claim_scan_and_release() -> None:
+    global _claim_scan_running
+    try:
+        from app.sync.claim_scan import main as run_claim_scan  # import local, mesmo motivo do sync
+
+        run_claim_scan()
+    finally:
+        with _claim_scan_lock:
+            _claim_scan_running = False
+
+
+@router.post("/claim-scan", status_code=202)
+def trigger_claim_scan(background_tasks: BackgroundTasks) -> dict[str, str]:
+    """Dispara a varredura de Frases Verificadas em segundo plano.
+
+    O EasyPanel não tem um tipo de serviço "Cron" nativo — este endpoint
+    existe pra ser chamado por um agendador externo (ver README) a cada
+    3 horas, no mesmo espírito do POST /sync acima. Sem DEEPSEEK_API_KEY
+    configurada, app.sync.claim_scan.main() simplesmente não faz nada
+    (sai cedo, sem erro) — ver docstring do módulo."""
+    global _claim_scan_running
+    with _claim_scan_lock:
+        if _claim_scan_running:
+            raise HTTPException(status_code=409, detail="Uma varredura já está em andamento.")
+        _claim_scan_running = True
+
+    background_tasks.add_task(_run_claim_scan_and_release)
+    return {"status": "iniciado"}
+
+
 @router.get("/corrections", response_model=list[CorrectionOut])
 def list_corrections(db: Session = Depends(get_db)) -> list[CorrectionOut]:
     rows = db.execute(
