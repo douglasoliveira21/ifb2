@@ -1,8 +1,9 @@
 """Varredura automática de Frases Verificadas.
 
-Lê feeds RSS de notícias, manda cada matéria nova para o modelo Claude
-junto com os indicadores reais do IFB, e — só quando o modelo identifica
-uma citação com número checável atribuída a uma autoridade — grava um
+Lê feeds RSS de notícias, manda cada matéria nova para o modelo DeepSeek
+(deepseek-v4-flash, API compatível com OpenAI) junto com os indicadores
+reais do IFB, e — só quando o modelo identifica uma citação com número
+checável atribuída a uma autoridade — grava um
 `VerifiedClaim` com `status=DRAFT, origin=AI_SCAN`. Nunca publica
 sozinho: todo rascunho fica pendente de aprovação humana em
 /admin/frases-verificadas antes de aparecer em /frases-verificadas
@@ -53,62 +54,65 @@ REQUEST_HEADERS = {
     "User-Agent": "IFB-Sync/1.0 (+https://github.com/douglasoliveira21/ifb2)",
 }
 
-ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
-ANTHROPIC_MODEL = "claude-sonnet-5"
+DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions"
+DEEPSEEK_MODEL = "deepseek-v4-flash"
 
 VERDICT_VALUES = [v.value for v in ClaimVerdict]
 
 SCAN_TOOL = {
-    "name": "record_scan_result",
-    "description": (
-        "Registra o resultado da análise de uma matéria de notícia em busca de uma citação "
-        "pública, com número checável, atribuída por nome a uma autoridade (presidente, "
-        "ministro, governador, prefeito, senador, deputado), sobre um tema coberto por um "
-        "dos indicadores fornecidos."
-    ),
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "has_claim": {
-                "type": "boolean",
-                "description": (
-                    "true somente se o texto contém uma citação direta ou paráfrase clara "
-                    "com um número específico, atribuída por nome a uma autoridade, sobre um "
-                    "tema que corresponda a um dos indicadores fornecidos. false em qualquer "
-                    "outro caso — inclusive se a matéria é sobre política/economia mas não "
-                    "cita nenhum número, ou cita número sem atribuir a uma pessoa nomeada."
-                ),
+    "type": "function",
+    "function": {
+        "name": "record_scan_result",
+        "description": (
+            "Registra o resultado da análise de uma matéria de notícia em busca de uma citação "
+            "pública, com número checável, atribuída por nome a uma autoridade (presidente, "
+            "ministro, governador, prefeito, senador, deputado), sobre um tema coberto por um "
+            "dos indicadores fornecidos."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "has_claim": {
+                    "type": "boolean",
+                    "description": (
+                        "true somente se o texto contém uma citação direta ou paráfrase clara "
+                        "com um número específico, atribuída por nome a uma autoridade, sobre um "
+                        "tema que corresponda a um dos indicadores fornecidos. false em qualquer "
+                        "outro caso — inclusive se a matéria é sobre política/economia mas não "
+                        "cita nenhum número, ou cita número sem atribuir a uma pessoa nomeada."
+                    ),
+                },
+                "speaker_name": {"type": ["string", "null"], "description": "Nome da autoridade citada."},
+                "speaker_role": {"type": ["string", "null"], "description": "Cargo da autoridade, ex: Presidente da República."},
+                "quote": {
+                    "type": ["string", "null"],
+                    "description": "A citação ou paráfrase exata do texto fornecido, em português.",
+                },
+                "indicator_slug": {
+                    "type": ["string", "null"],
+                    "description": "O slug do indicador da lista fornecida que corresponde ao tema da citação.",
+                },
+                "verdict": {
+                    "type": ["string", "null"],
+                    "enum": VERDICT_VALUES + [None],
+                    "description": (
+                        "Comparando o número citado com o valor real do indicador fornecido no "
+                        "contexto: CONFIRMADO (bate), PARCIALMENTE_CONFIRMADO (direção certa, "
+                        "número impreciso), DISTORCIDO (número real existe mas foi descrito de "
+                        "forma enganosa), FALSO (contradiz o dado real), INCONCLUSIVO (não dá "
+                        "pra checar com o dado disponível)."
+                    ),
+                },
+                "explanation": {
+                    "type": ["string", "null"],
+                    "description": (
+                        "1-2 frases em português citando o valor real do indicador (com data) e "
+                        "explicando o veredito. Nunca opine sobre a pessoa, só compare o número."
+                    ),
+                },
             },
-            "speaker_name": {"type": ["string", "null"], "description": "Nome da autoridade citada."},
-            "speaker_role": {"type": ["string", "null"], "description": "Cargo da autoridade, ex: Presidente da República."},
-            "quote": {
-                "type": ["string", "null"],
-                "description": "A citação ou paráfrase exata do texto fornecido, em português.",
-            },
-            "indicator_slug": {
-                "type": ["string", "null"],
-                "description": "O slug do indicador da lista fornecida que corresponde ao tema da citação.",
-            },
-            "verdict": {
-                "type": ["string", "null"],
-                "enum": VERDICT_VALUES + [None],
-                "description": (
-                    "Comparando o número citado com o valor real do indicador fornecido no "
-                    "contexto: CONFIRMADO (bate), PARCIALMENTE_CONFIRMADO (direção certa, "
-                    "número impreciso), DISTORCIDO (número real existe mas foi descrito de "
-                    "forma enganosa), FALSO (contradiz o dado real), INCONCLUSIVO (não dá "
-                    "pra checar com o dado disponível)."
-                ),
-            },
-            "explanation": {
-                "type": ["string", "null"],
-                "description": (
-                    "1-2 frases em português citando o valor real do indicador (com data) e "
-                    "explicando o veredito. Nunca opine sobre a pessoa, só compare o número."
-                ),
-            },
+            "required": ["has_claim"],
         },
-        "required": ["has_claim"],
     },
 }
 
@@ -180,49 +184,58 @@ def analyze_article(client: httpx.Client, item: FeedItem, indicators: list[dict]
     indicators_json = json.dumps(indicators, ensure_ascii=False)
 
     response = client.post(
-        ANTHROPIC_API_URL,
+        DEEPSEEK_API_URL,
         json={
-            "model": ANTHROPIC_MODEL,
+            "model": DEEPSEEK_MODEL,
             "max_tokens": 1024,
-            "system": (
-                "Você é um assistente de checagem factual do Instituto Fiscaliza Brasil (IFB), "
-                "um projeto não-partidário. Sua única tarefa é identificar, em um trecho de "
-                "notícia, se alguma autoridade citou um número específico sobre um tema coberto "
-                "pelos indicadores fornecidos — e, se sim, comparar esse número com o valor real "
-                "fornecido no contexto (nunca use conhecimento próprio sobre os números, use "
-                "apenas o que está na lista de indicadores). Seja rigoroso: na dúvida, prefira "
-                "has_claim=false a inventar uma citação que não está claramente no texto."
-            ),
             "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "Você é um assistente de checagem factual do Instituto Fiscaliza Brasil "
+                        "(IFB), um projeto não-partidário. Sua única tarefa é identificar, em um "
+                        "trecho de notícia, se alguma autoridade citou um número específico sobre "
+                        "um tema coberto pelos indicadores fornecidos — e, se sim, comparar esse "
+                        "número com o valor real fornecido no contexto (nunca use conhecimento "
+                        "próprio sobre os números, use apenas o que está na lista de indicadores). "
+                        "Seja rigoroso: na dúvida, prefira has_claim=false a inventar uma citação "
+                        "que não está claramente no texto."
+                    ),
+                },
                 {
                     "role": "user",
                     "content": (
                         f"Indicadores disponíveis (JSON):\n{indicators_json}\n\n"
                         f"Trecho da notícia:\n{text}"
                     ),
-                }
+                },
             ],
             "tools": [SCAN_TOOL],
-            "tool_choice": {"type": "tool", "name": "record_scan_result"},
+            "tool_choice": {"type": "function", "function": {"name": "record_scan_result"}},
         },
         headers={
-            "x-api-key": get_settings().anthropic_api_key or "",
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
+            "Authorization": f"Bearer {get_settings().deepseek_api_key or ''}",
+            "Content-Type": "application/json",
         },
     )
     response.raise_for_status()
     body = response.json()
-    for block in body.get("content", []):
-        if block.get("type") == "tool_use":
-            return block.get("input")
-    return None
+    choices = body.get("choices") or []
+    if not choices:
+        return None
+    tool_calls = choices[0].get("message", {}).get("tool_calls") or []
+    if not tool_calls:
+        return None
+    arguments_raw = tool_calls[0].get("function", {}).get("arguments")
+    if not arguments_raw:
+        return None
+    return json.loads(arguments_raw)
 
 
 def main() -> None:
     settings = get_settings()
-    if not settings.anthropic_api_key:
-        print("ANTHROPIC_API_KEY não configurada — varredura de Frases Verificadas pulada.")
+    if not settings.deepseek_api_key:
+        print("DEEPSEEK_API_KEY não configurada — varredura de Frases Verificadas pulada.")
         sys.exit(0)
 
     db = SessionLocal()
@@ -246,11 +259,11 @@ def main() -> None:
         new_items = new_items[:MAX_ARTICLES_PER_RUN]
         drafts_created = 0
 
-        with httpx.Client(timeout=60.0) as anthropic_client:
+        with httpx.Client(timeout=60.0) as deepseek_client:
             for item in new_items:
                 claim_extracted = False
                 try:
-                    result = analyze_article(anthropic_client, item, indicators)
+                    result = analyze_article(deepseek_client, item, indicators)
                     if result and result.get("has_claim") and result.get("indicator_slug") in indicator_by_slug:
                         verdict_raw = result.get("verdict")
                         if verdict_raw in VERDICT_VALUES and result.get("quote") and result.get("speaker_name"):
