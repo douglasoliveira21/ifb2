@@ -191,6 +191,9 @@ oficiais via API pública, sem scraping:
 | Despesa com Saúde (% do total de despesas), por estado | Tesouro Nacional (SICONFI) | RREO-Anexo 02, conta "Saúde", coluna "% (d/total d)" |
 | Exportações totais, Brasil e por estado | MDIC (Comex Stat) | API pública, `flow: "export"`, métrica FOB |
 | Importações totais, Brasil e por estado | MDIC (Comex Stat) | API pública, `flow: "import"`, métrica FOB |
+| Taxa de feminicídio, Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota acima) | Mesma planilha do Anuário, tabela "Homicídios de mulheres e feminicídios" (T24) |
+| Carga tributária bruta do governo geral (% do PIB), Brasil | Tesouro Nacional | Boletim anual "Carga Tributária do Governo Geral", anexo `Base CTB GG.xlsx`, Tabela 1 |
+| Razão de mortalidade materna, Brasil e por estado | Ministério da Saúde (RIPSA/SIM/Sinasc) | CSV do indicador MRT.2.01, publicado em dadosabertos.saude.gov.br |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de

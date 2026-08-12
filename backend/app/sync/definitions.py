@@ -642,6 +642,28 @@ SOURCE_TESOURO_TRANSFERENCIAS = SourceSpec(
     ),
 )
 
+SOURCE_RIPSA_MORTALIDADE_MATERNA = SourceSpec(
+    key="ripsa-mortalidade-materna",
+    name="Ministério da Saúde — RIPSA (Rede Interagencial de Informação para a Saúde)",
+    url="https://dadosabertos.saude.gov.br/dataset/ripsa-mortalidade-dimensao-2-mortalidade-materna",
+    description=(
+        "Indicador MRT.2.01 (Razão de Mortalidade Materna) do catálogo RIPSA, calculado a "
+        "partir do Sistema de Informações sobre Mortalidade (SIM) e do Sistema de Informações "
+        "sobre Nascidos Vivos (Sinasc), publicado no Portal de Dados Abertos do SUS."
+    ),
+)
+
+SOURCE_TESOURO_CARGA_TRIBUTARIA = SourceSpec(
+    key="tesouro-carga-tributaria",
+    name="Tesouro Nacional — Carga Tributária do Governo Geral",
+    url="https://www.tesourotransparente.gov.br/publicacoes/carga-tributaria-do-governo-geral",
+    description=(
+        "Secretaria do Tesouro Nacional — boletim anual da Carga Tributária Bruta do Governo "
+        "Geral, metodologia do Manual de Estatísticas de Finanças Públicas (MEFP/GFSM 2014, "
+        "FMI)."
+    ),
+)
+
 _RGF_METHODOLOGY_NOTE = (
     "**Sobre a apuração**: o Relatório de Gestão Fiscal (RGF) é declarado pelo próprio ente "
     "federativo ao Tesouro Nacional a cada quadrimestre, conforme exigido pela Lei de "
@@ -920,6 +942,118 @@ TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL = StaticIndicatorMeta(
         "Anuário, sem API — cada edição nova exige atualizar manualmente a URL no código "
         "(mesmo padrão já usado para o IDEB/INEP). A edição vigente (2025) traz os anos 2023 "
         "e 2024."
+    ),
+)
+
+TAXA_FEMINICIDIO_ESTADUAL = StaticIndicatorMeta(
+    slug="taxa-feminicidio-estadual",
+    name="Taxa de feminicídio",
+    category=IndicatorCategory.MULHERES,
+    unit="por 100 mil mulheres",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Número de feminicídios (homicídio de mulher pela condição de sexo feminino, conforme "
+        "tipificação do art. 121, §2º-A do Código Penal) por 100 mil mulheres — diferente da "
+        "taxa geral de homicídios de mulheres, que inclui também mortes não motivadas pelo "
+        "gênero da vítima."
+    ),
+    description_how=(
+        "Quanto menor, melhor. É uma taxa (por 100 mil mulheres), não um número absoluto — "
+        "permite comparar estados de tamanhos diferentes diretamente."
+    ),
+    update_frequency="anual",
+    source=SOURCE_FBSP,
+    methodology=(
+        "# Metodologia — Taxa de feminicídio por estado\n\n"
+        "Mesma fonte e mesmas ressalvas do indicador de Mortes Violentas Intencionais (MVI) — "
+        "ver metodologia daquele indicador para o histórico de por que o IFB usa o FBSP em vez "
+        "da fonte oficial (Sinesp/MJSP). Aqui a leitura vem da Tabela 24 do Anuário "
+        "(\"Homicídios de mulheres e feminicídios\"), coluna \"Taxa\" da seção "
+        "\"Feminicídios\" — não confundir com a coluna \"Taxa\" da seção \"Homicídios "
+        "(incluindo feminicídios)\" da mesma tabela, que é a taxa geral de homicídio de "
+        "mulheres (número maior, inclui feminicídios e outros homicídios de mulheres).\n\n"
+        "Conferido contra o número nacional amplamente noticiado na divulgação da edição 2025: "
+        "Brasil 2024 = 1,4 por 100 mil mulheres (recorde histórico da série do FBSP)."
+    ),
+)
+
+CARGA_TRIBUTARIA_GOVERNO_GERAL = StaticIndicatorMeta(
+    slug="carga-tributaria-governo-geral",
+    name="Carga tributária bruta do governo geral (% do PIB)",
+    category=IndicatorCategory.CONTAS_PUBLICAS,
+    unit="%",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Soma de todos os tributos arrecadados no Brasil — União, estados e municípios — "
+        "dividida pelo PIB do ano. Mede o peso total da arrecadação tributária na economia, "
+        "não a eficiência ou a justiça de como esse dinheiro é cobrado ou gasto."
+    ),
+    description_how=(
+        "Indicador neutro: carga tributária alta ou baixa não é, por si só, bom ou ruim — "
+        "depende do que o Estado entrega em troca (serviços públicos, investimento) e de como "
+        "a cobrança é distribuída entre a população. O IFB não classifica este indicador como "
+        "\"melhorou\"/\"piorou\"."
+    ),
+    update_frequency="anual",
+    source=SOURCE_TESOURO_CARGA_TRIBUTARIA,
+    methodology=(
+        "# Metodologia — Carga tributária bruta do governo geral\n\n"
+        "Fonte: Secretaria do Tesouro Nacional, boletim \"Carga Tributária do Governo "
+        "Geral\", anexo \"Base CTB GG.xlsx\", Tabela 1, linha \"Governo Geral\" do bloco em "
+        "% do PIB (soma União + estados + municípios). Metodologia do Manual de Estatísticas "
+        "de Finanças Públicas (MEFP/GFSM 2014) do FMI.\n\n"
+        "**Só nível Brasil**: a carga tributária bruta soma a arrecadação de todas as esferas "
+        "de governo sobre o PIB nacional — não é um dado declarado por ente federativo como o "
+        "SICONFI, então não existe quebra por estado ou município.\n\n"
+        "**Sem série histórica automática**: o Tesouro publica um anexo novo a cada edição — a "
+        "URL do arquivo muda a cada divulgação e precisa ser atualizada manualmente no código "
+        "(mesmo padrão já usado para o IDEB/INEP e o Anuário/FBSP). A edição vigente (2025) "
+        "traz a série completa desde 2010.\n\n"
+        "Conferido contra a divulgação oficial: Brasil 2025 = 32,40% do PIB (maior valor da "
+        "série histórica, +0,18 ponto percentual sobre 2024 = 32,22%)."
+    ),
+)
+
+RAZAO_MORTALIDADE_MATERNA_ESTADUAL = StaticIndicatorMeta(
+    slug="razao-mortalidade-materna-estadual",
+    name="Razão de mortalidade materna",
+    category=IndicatorCategory.SAUDE,
+    unit="por 100 mil nascidos vivos",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Número de óbitos de mulheres por causas relacionadas à gravidez, parto ou puerpério "
+        "(até 42 dias após o fim da gestação), por 100 mil nascidos vivos — um dos indicadores "
+        "de saúde pública mais usados internacionalmente para medir a qualidade da assistência "
+        "à gestação e ao parto."
+    ),
+    description_how=(
+        "Quanto menor, melhor. O número de óbitos maternos é pequeno e varia bastante de ano "
+        "para ano em estados menores — por isso o Ministério da Saúde aplica um \"fator de "
+        "correção\" aos óbitos declarados, para compensar a subnotificação já documentada no "
+        "sistema de registro civil."
+    ),
+    update_frequency="anual",
+    source=SOURCE_RIPSA_MORTALIDADE_MATERNA,
+    methodology=(
+        "# Metodologia — Razão de mortalidade materna por estado\n\n"
+        "Fonte: indicador MRT.2.01 do catálogo RIPSA (Rede Interagencial de Informação para a "
+        "Saúde), calculado pelo Ministério da Saúde a partir do cruzamento entre o Sistema de "
+        "Informações sobre Mortalidade (SIM) e o Sistema de Informações sobre Nascidos Vivos "
+        "(Sinasc), publicado como CSV no Portal de Dados Abertos do SUS.\n\n"
+        "O arquivo traz numerador (óbitos maternos já com fator de correção de subnotificação "
+        "aplicado pelo Ministério) e denominador (nascidos vivos) separados, não a razão "
+        "pronta — o IFB calcula `(óbitos corrigidos ÷ nascidos vivos) × 100.000` para cada "
+        "estado e ano. Para o valor nacional, o IFB soma o numerador e o denominador de todos "
+        "os 27 estados antes de calcular a razão (agregação correta para uma taxa — a média "
+        "simples das 27 razões estaduais distorceria o resultado a favor de estados com poucos "
+        "nascimentos).\n\n"
+        "**Defasagem de publicação**: dado de mortalidade tem atraso de consolidação — a série "
+        "disponível vai até 2023 (não o ano corrente), reflexo do tempo que os sistemas SIM/"
+        "Sinasc levam para fechar um ano de registros de forma confiável.\n\n"
+        "Conferido contra fato amplamente documentado: o valor nacional salta para 117,4 por "
+        "100 mil nascidos vivos em 2021 — o pico da pandemia de covid-19, quando complicações "
+        "da doença em gestantes elevaram a mortalidade materna no Brasil, revertendo em 2022-"
+        "2023 para patamar próximo ao pré-pandemia (~55-58)."
     ),
 )
 

@@ -95,9 +95,27 @@ def _download_with_retry(url: str, *, timeout: float) -> bytes:
 class FbspAnuarioSpec:
     url: str = ANUARIO_URL
     sheet_name: str = _MVI_SHEET
+    data_start_row: int = _DATA_START_ROW
+    rate_columns_by_year: dict = None  # type: ignore[assignment]
+
+    def __post_init__(self) -> None:
+        if self.rate_columns_by_year is None:
+            object.__setattr__(self, "rate_columns_by_year", dict(_RATE_COLUMNS_BY_YEAR))
 
 
 DEFAULT_ANUARIO_SPEC = FbspAnuarioSpec()
+
+# Tabela 24 do Anuário — "Homicídios de mulheres e feminicídios". Mesmo
+# arquivo do MVI (cacheado por processo, ver `_download_with_retry`), só
+# lê outra aba: Brasil está na linha 10 (não 11, como na Tabela 01), e a
+# coluna "Taxa" de feminicídio (por 100 mil mulheres) é I=9 (2023) e
+# J=10 (2024) — conferido contra o valor nacional já divulgado pela
+# imprensa na edição 2025: Brasil 2024 = 1,37 por 100 mil mulheres.
+FEMINICIDIO_SPEC = FbspAnuarioSpec(
+    sheet_name="T24",
+    data_start_row=10,
+    rate_columns_by_year={2023: 9, 2024: 10},
+)
 
 
 def fetch_mvi_rate_by_state(
@@ -113,7 +131,7 @@ def fetch_mvi_rate_by_state(
     ws = wb[spec.sheet_name]
 
     by_state: dict[str, list[SeriesPoint]] = {}
-    for row_idx in range(_DATA_START_ROW, ws.max_row + 1):
+    for row_idx in range(spec.data_start_row, ws.max_row + 1):
         raw_name = ws.cell(row=row_idx, column=_STATE_NAME_COL).value
         if not isinstance(raw_name, str):
             continue
@@ -123,7 +141,7 @@ def fetch_mvi_rate_by_state(
             continue
 
         points: list[SeriesPoint] = []
-        for year, col in _RATE_COLUMNS_BY_YEAR.items():
+        for year, col in spec.rate_columns_by_year.items():
             value = ws.cell(row=row_idx, column=col).value
             if isinstance(value, (int, float)):
                 points.append(SeriesPoint(reference_date=date(year, 1, 1), value=float(value)))
@@ -139,10 +157,10 @@ def fetch_mvi_rate_brasil(spec: FbspAnuarioSpec = DEFAULT_ANUARIO_SPEC, *, timeo
     wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
     ws = wb[spec.sheet_name]
 
-    for row_idx in range(_DATA_START_ROW, ws.max_row + 1):
+    for row_idx in range(spec.data_start_row, ws.max_row + 1):
         if ws.cell(row=row_idx, column=_STATE_NAME_COL).value == "Brasil":
             points = []
-            for year, col in _RATE_COLUMNS_BY_YEAR.items():
+            for year, col in spec.rate_columns_by_year.items():
                 value = ws.cell(row=row_idx, column=col).value
                 if isinstance(value, (int, float)):
                     points.append(SeriesPoint(reference_date=date(year, 1, 1), value=float(value)))

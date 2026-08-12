@@ -23,10 +23,29 @@ from app.sync.bcb_client import (
     invert_sign,
     resample_to_month_end,
 )
+from app.sync.comexstat_client import fetch_totals_brasil as fetch_comex_totals_brasil
+from app.sync.comexstat_client import (
+    fetch_totals_by_state as fetch_comex_totals_by_state,
+)
+from app.sync.datajud_client import (
+    fetch_processos_ajuizados_series_brasil,
+    fetch_processos_ajuizados_series_by_state,
+)
 from app.sync.definitions import (
     ALFABETISMO,
     ALFABETISMO_QUERY,
     AREA_ALERTA_DESMATAMENTO_CERRADO,
+    CARGA_TRIBUTARIA_GOVERNO_GERAL,
+    CRESCIMENTO_PIB,
+    CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA,
+    CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA_QUERY,
+    CRESCIMENTO_PIB_AGROPECUARIO,
+    CRESCIMENTO_PIB_AGROPECUARIO_QUERY,
+    CRESCIMENTO_PIB_INDUSTRIAL,
+    CRESCIMENTO_PIB_INDUSTRIAL_QUERY,
+    CRESCIMENTO_PIB_QUERY,
+    CRESCIMENTO_PIB_SERVICOS,
+    CRESCIMENTO_PIB_SERVICOS_QUERY,
     DEFORESTATION_LEGAL_AMAZON,
     DESPESA_COM_PESSOAL_ESTADUAL,
     DESPESA_COM_PESSOAL_MUNICIPAL,
@@ -73,24 +92,17 @@ from app.sync.definitions import (
     MEDIA_ANOS_ESTUDO_QUERY,
     MORTALIDADE_INFANTIL,
     MORTALIDADE_INFANTIL_QUERY,
-    NIVEL_OCUPACAO,
-    NIVEL_OCUPACAO_QUERY,
-    OBITOS_CAUSAS_NAO_NATURAIS,
-    OBITOS_CAUSAS_NAO_NATURAIS_QUERY,
-    CRESCIMENTO_PIB,
-    CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA,
-    CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA_QUERY,
-    CRESCIMENTO_PIB_AGROPECUARIO,
-    CRESCIMENTO_PIB_AGROPECUARIO_QUERY,
-    CRESCIMENTO_PIB_INDUSTRIAL,
-    CRESCIMENTO_PIB_INDUSTRIAL_QUERY,
-    CRESCIMENTO_PIB_QUERY,
-    CRESCIMENTO_PIB_SERVICOS,
-    CRESCIMENTO_PIB_SERVICOS_QUERY,
     NASCIMENTOS,
     NASCIMENTOS_QUERY,
+    NIVEL_OCUPACAO,
+    NIVEL_OCUPACAO_QUERY,
     OBITOS,
+    OBITOS_CAUSAS_NAO_NATURAIS,
+    OBITOS_CAUSAS_NAO_NATURAIS_QUERY,
     OBITOS_QUERY,
+    PESSOAS_COM_DEFICIENCIA_CENSO_2022,
+    PESSOAS_COM_DEFICIENCIA_QUERY,
+    PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY,
     PIB_DEFLATOR,
     PIB_DEFLATOR_QUERY,
     PIB_PER_CAPITA,
@@ -100,22 +112,17 @@ from app.sync.definitions import (
     POPULACAO_RESIDENTE,
     POPULACAO_RESIDENTE_QUERY,
     PROCESSOS_AJUIZADOS_ESTADUAL,
-    PESSOAS_COM_DEFICIENCIA_CENSO_2022,
-    PESSOAS_COM_DEFICIENCIA_QUERY,
-    PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY,
     PRODUCAO_INDUSTRIAL,
-    VALOR_CONTRATACOES_PREGAO_ELETRONICO,
     PRODUCAO_INDUSTRIAL_QUERY,
     RAZAO_DEPENDENCIA_IDOSOS,
     RAZAO_DEPENDENCIA_IDOSOS_QUERY,
+    RAZAO_MORTALIDADE_MATERNA_ESTADUAL,
     RAZAO_RENDIMENTO_MULHER_HOMEM,
     RECEITA_TOTAL_REALIZADA_ESTADUAL,
     RENDIMENTO_HOMENS_QUERY,
-    RENDIMENTO_MULHERES_QUERY,
-    TAXA_FREQUENCIA_PRE_ESCOLA,
-    TAXA_FREQUENCIA_PRE_ESCOLA_QUERY,
     RENDIMENTO_MEDIO_ANUAL,
     RENDIMENTO_MEDIO_ANUAL_QUERY,
+    RENDIMENTO_MULHERES_QUERY,
     TAXA_CRESCIMENTO_POPULACIONAL,
     TAXA_CRESCIMENTO_POPULACIONAL_QUERY,
     TAXA_DESOCUPACAO_ANUAL,
@@ -126,6 +133,9 @@ from app.sync.definitions import (
     TAXA_ESCOLARIZACAO_15_A_17_QUERY,
     TAXA_FECUNDIDADE,
     TAXA_FECUNDIDADE_QUERY,
+    TAXA_FEMINICIDIO_ESTADUAL,
+    TAXA_FREQUENCIA_PRE_ESCOLA,
+    TAXA_FREQUENCIA_PRE_ESCOLA_QUERY,
     TAXA_INFORMALIDADE,
     TAXA_INFORMALIDADE_QUERY,
     TAXA_INVESTIMENTO,
@@ -139,18 +149,21 @@ from app.sync.definitions import (
     TAXA_POUPANCA_QUERY,
     TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
     TRANSFERENCIAS_CONSTITUCIONAIS_MUNICIPAL,
+    VALOR_CONTRATACOES_PREGAO_ELETRONICO,
     VALOR_PRODUCAO_AGRICOLA,
     VALOR_PRODUCAO_AGRICOLA_QUERY,
     IndicatorSpec,
     StaticIndicatorMeta,
 )
-from app.sync.comexstat_client import fetch_totals_brasil as fetch_comex_totals_brasil
-from app.sync.comexstat_client import fetch_totals_by_state as fetch_comex_totals_by_state
-from app.sync.datajud_client import (
-    fetch_processos_ajuizados_series_brasil,
-    fetch_processos_ajuizados_series_by_state,
+from app.sync.deter_client import (
+    fetch_area_desmatada_brasil,
+    fetch_area_desmatada_by_state,
 )
-from app.sync.fbsp_client import fetch_mvi_rate_brasil, fetch_mvi_rate_by_state
+from app.sync.fbsp_client import (
+    FEMINICIDIO_SPEC,
+    fetch_mvi_rate_brasil,
+    fetch_mvi_rate_by_state,
+)
 from app.sync.ibge_client import (
     drop_future_years,
     drop_future_years_by_state,
@@ -161,18 +174,19 @@ from app.sync.ibge_client import (
     fetch_sidra_series_quarterly,
 )
 from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
-from app.sync.deter_client import fetch_area_desmatada_brasil, fetch_area_desmatada_by_state
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
-from app.sync.leitos_sus_client import fetch_leitos_sus_brasil, fetch_leitos_sus_by_state
+from app.sync.leitos_sus_client import (
+    fetch_leitos_sus_brasil,
+    fetch_leitos_sus_by_state,
+)
 from app.sync.pncp_client import (
     read_accumulated_totals_brasil,
     read_accumulated_totals_by_state,
     sync_pncp_incremental,
 )
-from app.sync.siop_client import fetch_execucao_orcamentaria_uniao
-from app.sync.sinesp_vde_client import (
-    fetch_homicidio_doloso_brasil,
-    fetch_homicidio_doloso_by_state,
+from app.sync.ripsa_client import (
+    fetch_razao_mortalidade_materna_brasil,
+    fetch_razao_mortalidade_materna_by_state,
 )
 from app.sync.seed_government_periods import seed as seed_government_periods
 from app.sync.seed_municipios import seed as seed_municipios
@@ -186,6 +200,12 @@ from app.sync.siconfi_client import (
     fetch_rgf_by_state,
     fetch_rreo_by_state,
 )
+from app.sync.sinesp_vde_client import (
+    fetch_homicidio_doloso_brasil,
+    fetch_homicidio_doloso_by_state,
+)
+from app.sync.siop_client import fetch_execucao_orcamentaria_uniao
+from app.sync.tesouro_carga_tributaria_client import fetch_carga_tributaria_brasil
 from app.sync.tesouro_transferencias_client import (
     fetch_transferencias_constitucionais_by_municipio,
     fetch_transferencias_constitucionais_by_state,
@@ -604,6 +624,16 @@ def main() -> None:
     sync_indicator(TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL, fetch_mvi_rate_brasil)
     sync_by_state(TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL, fetch_mvi_rate_by_state)
     # Fonte não-governamental (FBSP) — ver metodologia do indicador.
+
+    sync_indicator(TAXA_FEMINICIDIO_ESTADUAL, lambda: fetch_mvi_rate_brasil(FEMINICIDIO_SPEC))
+    sync_by_state(TAXA_FEMINICIDIO_ESTADUAL, lambda: fetch_mvi_rate_by_state(FEMINICIDIO_SPEC))
+    # Mesma planilha FBSP acima, tabela diferente (T24) — ver metodologia do indicador.
+
+    sync_indicator(CARGA_TRIBUTARIA_GOVERNO_GERAL, fetch_carga_tributaria_brasil)
+    # Só nível Brasil — ver metodologia do indicador.
+
+    sync_indicator(RAZAO_MORTALIDADE_MATERNA_ESTADUAL, fetch_razao_mortalidade_materna_brasil)
+    sync_by_state(RAZAO_MORTALIDADE_MATERNA_ESTADUAL, fetch_razao_mortalidade_materna_by_state)
 
     sync_indicator(
         HOMICIDIO_DOLOSO_ESTADUAL, lambda: fetch_homicidio_doloso_brasil(start_year=2019)
