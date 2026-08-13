@@ -12,12 +12,36 @@ import SimpleMarkdown from "@/components/SimpleMarkdown";
 
 type Params = { uf: string; slug: string };
 
+// Gera uma frase de contexto específica do estado a partir dos dados reais
+// (não é texto-molde com o nome trocado) — evita que a mesma prosa genérica
+// se repita nas ~1.200 páginas de indicador × estado, o que pesa contra o
+// site em rankings de busca (conteúdo quase duplicado em escala).
+function buildContextSentence(
+  stateName: string,
+  unit: string,
+  first: { reference_date: string; value: number } | undefined,
+  last: { reference_date: string; value: number } | undefined
+): string | null {
+  if (!first || !last || first.reference_date === last.reference_date || first.value === 0) return null;
+  const deltaPct = ((last.value - first.value) / Math.abs(first.value)) * 100;
+  const direction = deltaPct > 0.5 ? "subiu" : deltaPct < -0.5 ? "caiu" : "se manteve estável";
+  const magnitude = Math.abs(deltaPct) >= 1 ? ` (${Math.abs(deltaPct).toFixed(1).replace(".", ",")}%)` : "";
+  return `Em ${stateName}, o valor foi de ${formatNumber(first.value, unit)} em ${formatDate(first.reference_date)} para ${formatNumber(last.value, unit)} em ${formatDate(last.reference_date)} — ${direction}${magnitude} no período.`;
+}
+
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { uf, slug } = await params;
   const [{ detail }, { detail: state }] = await Promise.all([getIndicatorDetail(slug, uf), getStateDetail(uf)]);
   if (!detail || !state) return { title: "Não encontrado — Instituto Fiscaliza Brasil" };
-  const title = `${detail.name} de ${state.name} — Histórico e evolução | Instituto Fiscaliza Brasil`;
-  const description = `Consulte ${detail.name.toLowerCase()} de ${state.name}, sua evolução histórica e a fonte oficial dos dados.`;
+  const year = detail.summary?.last_date?.slice(0, 4);
+  const title = `${detail.name} em ${state.name}${year ? ` (${year})` : ""} — Instituto Fiscaliza Brasil`;
+  const value =
+    detail.summary?.last_value !== null && detail.summary?.last_value !== undefined
+      ? formatNumber(detail.summary.last_value, detail.unit)
+      : null;
+  const description = value
+    ? `${detail.name} em ${state.name}: ${value}${year ? ` (${year})` : ""}. Histórico completo e fonte oficial dos dados.`
+    : `Consulte ${detail.name.toLowerCase()} de ${state.name}, sua evolução histórica e a fonte oficial dos dados.`;
   return {
     title,
     description,
@@ -39,12 +63,13 @@ export default async function IndicadorEstadoPage({ params }: { params: Promise<
 
   const { summary, history } = detail;
   const lastPoint = history.at(-1);
+  const contextSentence = buildContextSentence(state.name, detail.unit, history[0], lastPoint);
 
   const datasetJsonLd = {
     "@context": "https://schema.org",
     "@type": "Dataset",
     name: `${detail.name} — ${state.name}`,
-    description: `${detail.description_what ?? detail.name} Dados específicos de ${state.name}.`,
+    description: contextSentence ?? `${detail.description_what ?? detail.name} Dados específicos de ${state.name}.`,
     url: `${SITE_URL}/estados/${uf.toLowerCase()}/${slug}`,
     keywords: [detail.name, state.name, CATEGORY_LABELS[detail.category] ?? detail.category, "indicador público"],
     creator: { "@type": "Organization", name: "Instituto Fiscaliza Brasil", url: SITE_URL },
@@ -91,6 +116,7 @@ export default async function IndicadorEstadoPage({ params }: { params: Promise<
         {lastPoint && (
           <p className="mt-2 text-sm text-gray-500">Referente a {formatDate(lastPoint.reference_date)}.</p>
         )}
+        {contextSentence && <p className="mt-4 text-base leading-relaxed">{contextSentence}</p>}
         <p className="mt-4 text-sm text-gray-500">
           Veja também{" "}
           <Link href={`/indicadores/${slug}`} className="underline underline-offset-2 hover:text-ink">

@@ -16,7 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { slug } = await params;
   const { detail } = await getIndicatorDetail(slug);
   if (!detail) return { title: "Indicador não encontrado — Instituto Fiscaliza Brasil" };
-  const title = `${detail.name} — Histórico e evolução | Instituto Fiscaliza Brasil`;
+  const year = detail.summary?.last_date?.slice(0, 4);
+  const title = `${detail.name} no Brasil${year ? ` (${year})` : ""} — Instituto Fiscaliza Brasil`;
   const description =
     detail.description_what ?? `Consulte ${detail.name}, sua evolução histórica e a fonte oficial dos dados.`;
   return {
