@@ -8,7 +8,6 @@ const NAV_LINKS = [
   { href: "/comparar", label: "Comparar" },
   { href: "/frases-verificadas", label: "Frases Verificadas" },
   { href: "/indicadores", label: "Indicadores" },
-  { href: "/metodologia", label: "Metodologia" },
 ];
 
 export default function Header() {
