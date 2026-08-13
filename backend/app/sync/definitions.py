@@ -2964,6 +2964,43 @@ PESSOAS_COM_DEFICIENCIA_CENSO_2022 = StaticIndicatorMeta(
 PESSOAS_COM_DEFICIENCIA_QUERY = SidraQuery(table=10130, variable=11852, classifications={2: 6794, 839: 58765})
 PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY = SidraQuery(table=10130, variable=11852, classifications={2: 6794, 839: 46583})
 
+TAXA_OCUPACAO_PESSOAS_COM_DEFICIENCIA = StaticIndicatorMeta(
+    slug="taxa-ocupacao-pessoas-com-deficiencia",
+    name="Nível de ocupação de pessoas com deficiência",
+    category=IndicatorCategory.PESSOAS_COM_DEFICIENCIA,
+    unit="%",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual de pessoas com deficiência de 14 anos ou mais de idade que estavam "
+        "ocupadas (trabalhando) na semana de referência da pesquisa."
+    ),
+    description_how=(
+        "Quanto maior, melhor — mais perto do nível de ocupação da população sem "
+        "deficiência (60,7% em 2022, contra 26,6% das pessoas com deficiência, segundo o "
+        "mesmo levantamento). Pesquisa suplementar da PNAD Contínua feita uma única vez, em "
+        "2022 — não há série histórica nem garantia de repetição periódica."
+    ),
+    update_frequency="único (módulo especial de 2022)",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Nível de ocupação de pessoas com deficiência\n\n"
+        "Fonte: IBGE, PNAD Contínua — módulo especial \"Pessoas com Deficiência 2022\" "
+        "(3º trimestre de 2022), tabela SIDRA 4177, variável 4097 (\"Nível da ocupação, na "
+        "semana de referência, das pessoas de 14 anos ou mais de idade\"), classificação 2 "
+        "(\"Sexo\"), categoria 6794 (\"Total\"), e classificação 839 (\"Existência de "
+        "deficiência\"), categoria 58765 (\"Pessoa com deficiência\").\n\n"
+        "Diferente do indicador `pessoas-com-deficiencia-censo-2022` (que vem do Censo "
+        "Demográfico, usa a metodologia do Grupo de Washington e mede prevalência), este "
+        "indicador vem de uma pesquisa amostral diferente (PNAD Contínua) com seu próprio "
+        "critério de identificação de deficiência — os dois não são diretamente comparáveis.\n\n"
+        "Conferido: Brasil 2022 = 26,6%, mesmo número já divulgado pelo IBGE na publicação do "
+        "módulo."
+    ),
+)
+TAXA_OCUPACAO_PESSOAS_COM_DEFICIENCIA_QUERY = SidraQuery(
+    table=4177, variable=4097, classifications={2: 6794, 839: 58765}
+)
+
 SOURCE_PNCP = SourceSpec(
     key="pncp",
     name="Portal Nacional de Contratações Públicas (PNCP)",

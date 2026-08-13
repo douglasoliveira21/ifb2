@@ -157,6 +157,8 @@ from app.sync.definitions import (
     TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL,
     TAXA_NATALIDADE,
     TAXA_NATALIDADE_QUERY,
+    TAXA_OCUPACAO_PESSOAS_COM_DEFICIENCIA,
+    TAXA_OCUPACAO_PESSOAS_COM_DEFICIENCIA_QUERY,
     TAXA_OCUPACAO_PRISIONAL_ESTADUAL,
     TAXA_POBREZA,
     TAXA_POBREZA_QUERY,
@@ -624,6 +626,15 @@ def main() -> None:
             fetch_sidra_series_by_state(PESSOAS_COM_DEFICIENCIA_QUERY),
             fetch_sidra_series_by_state(PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY),
         ),
+    )
+
+    sync_indicator(
+        TAXA_OCUPACAO_PESSOAS_COM_DEFICIENCIA,
+        lambda: fetch_sidra_series(TAXA_OCUPACAO_PESSOAS_COM_DEFICIENCIA_QUERY),
+    )
+    sync_by_state(
+        TAXA_OCUPACAO_PESSOAS_COM_DEFICIENCIA,
+        lambda: fetch_sidra_series_by_state(TAXA_OCUPACAO_PESSOAS_COM_DEFICIENCIA_QUERY),
     )
 
     sync_indicator(

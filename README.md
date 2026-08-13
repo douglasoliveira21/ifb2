@@ -205,6 +205,7 @@ oficiais via API pública, sem scraping:
 | Taxa de mortalidade por lesão de trânsito, Brasil e por estado | Ministério da Saúde (RIPSA/SIM) | CSV do indicador MRT.4.03, ~1,7 milhão de linhas agregadas por UF/ano no sync |
 | Taxa de ocupação do sistema prisional, Brasil e por estado | Senappen (SISDEPEN) | Censo semestral por unidade prisional (~1.700 colunas), capacidade e população agregadas por estado no sync — só ciclo mais recente, sem série histórica em arquivo único |
 | Taxa de trabalho infantil (5 a 17 anos), Brasil | IBGE (PNAD Contínua, suplemento de Trabalho Infantil) | Tabela SIDRA 9831, estatística experimental, só Brasil, sem dado em 2020/2021 (suplemento suspenso na pandemia) |
+| Nível de ocupação de pessoas com deficiência, Brasil e por estado | IBGE (PNAD Contínua, módulo especial "Pessoas com Deficiência 2022") | Tabela SIDRA 4177, dado único de 2022, sem série histórica |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
