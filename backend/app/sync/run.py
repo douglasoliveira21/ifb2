@@ -162,6 +162,8 @@ from app.sync.definitions import (
     TAXA_POBREZA_QUERY,
     TAXA_POUPANCA,
     TAXA_POUPANCA_QUERY,
+    TAXA_TRABALHO_INFANTIL,
+    TAXA_TRABALHO_INFANTIL_QUERY,
     TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
     TRANSFERENCIAS_CONSTITUCIONAIS_MUNICIPAL,
     VALOR_CONTRATACOES_PREGAO_ELETRONICO,
@@ -628,6 +630,9 @@ def main() -> None:
         TAXA_FREQUENCIA_PRE_ESCOLA, lambda: fetch_sidra_series(TAXA_FREQUENCIA_PRE_ESCOLA_QUERY)
     )
     # Tabela 7140 não tem quebra por estado no SIDRA (só Brasil e Grandes Regiões).
+
+    sync_indicator(TAXA_TRABALHO_INFANTIL, lambda: fetch_sidra_series(TAXA_TRABALHO_INFANTIL_QUERY))
+    # Tabela 9831 não tem quebra por estado no SIDRA (só Brasil).
 
     sync_indicator(
         IDEB_ANOS_INICIAIS,

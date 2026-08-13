@@ -2474,6 +2474,41 @@ TAXA_FREQUENCIA_PRE_ESCOLA = StaticIndicatorMeta(
 )
 TAXA_FREQUENCIA_PRE_ESCOLA_QUERY = SidraQuery(table=7140, variable=10280, classifications={58: 47813, 12081: 47810})
 
+TAXA_TRABALHO_INFANTIL = StaticIndicatorMeta(
+    slug="taxa-trabalho-infantil",
+    name="Taxa de trabalho infantil (5 a 17 anos)",
+    category=IndicatorCategory.CRIANCAS,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual de crianças e adolescentes de 5 a 17 anos de idade em situação de "
+        "trabalho infantil, segundo a definição da Organização Internacional do Trabalho "
+        "(OIT) — inclui trabalho remunerado ou não, em atividade econômica, mesmo que "
+        "informal ou dentro de casa."
+    ),
+    description_how=(
+        "Quanto menor, melhor. A pesquisa é um suplemento especial da PNAD Contínua, não "
+        "aplicado todo ano — não há dado para 2020 e 2021 (suspenso durante a pandemia). O "
+        "IBGE classifica como 'Estatísticas experimentais', metodologia ainda em consolidação. "
+        "Não tem quebra por estado disponível — só Brasil."
+    ),
+    update_frequency="anual (com interrupções)",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de trabalho infantil (5 a 17 anos)\n\n"
+        "Fonte: IBGE, PNAD Contínua, suplemento de Trabalho Infantil — tabela SIDRA 9831, "
+        "variável 9489 (\"Percentual de pessoas de 5 a 17 anos de idade em situação de "
+        "trabalho infantil\"), classificação 58 (\"Grupo de idade\"), categoria 95253 "
+        "(\"Total\") e classificação 2 (\"Sexo\"), categoria 6794 (\"Total\"). Estatística "
+        "experimental do IBGE (Indicador ODS 8.7.1 tem definição mais restrita e não é usado "
+        "aqui — diverge do número amplamente noticiado).\n\n"
+        "A tabela do IBGE só tem nível Brasil (N1) — não há quebra por estado nesta pesquisa.\n\n"
+        "Conferido: 2022 = 4,9%, 2023 = 4,2%, mesmos números já noticiados amplamente na "
+        "imprensa a partir do mesmo levantamento do IBGE."
+    ),
+)
+TAXA_TRABALHO_INFANTIL_QUERY = SidraQuery(table=9831, variable=9489, classifications={58: 95253, 2: 6794})
+
 RAZAO_DEPENDENCIA_IDOSOS = StaticIndicatorMeta(
     slug="razao-dependencia-idosos",
     name="Razão de dependência de idosos",
