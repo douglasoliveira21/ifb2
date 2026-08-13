@@ -759,6 +759,40 @@ IDEB_ENSINO_MEDIO = StaticIndicatorMeta(
 
 IDEB_ZIP_URL = _IDEB_ZIP_URL
 
+TAXA_ABANDONO_ENSINO_MEDIO = StaticIndicatorMeta(
+    slug="taxa-abandono-ensino-medio",
+    name="Taxa de abandono escolar (Ensino Médio)",
+    category=IndicatorCategory.EDUCACAO,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual de matrículas do Ensino Médio que terminaram o ano letivo sem "
+        "aprovação nem reprovação — o aluno simplesmente deixou de frequentar a escola "
+        "antes do fim do ano, segundo o Censo Escolar."
+    ),
+    description_how=(
+        "Quanto menor, melhor. Considera todas as redes (federal, estadual, municipal e "
+        "privada) e localizações (urbana e rural) combinadas."
+    ),
+    update_frequency="anual",
+    source=SOURCE_INEP,
+    methodology=(
+        "# Metodologia — Taxa de abandono escolar (Ensino Médio)\n\n"
+        "Fonte: INEP, Censo Escolar — planilha \"Taxas de Rendimento Escolar\" (Aprovação, "
+        "Reprovação e Abandono), publicada anualmente em "
+        "gov.br/inep/dados-abertos/indicadores-educacionais/taxas-de-rendimento. Leitura da "
+        "coluna \"Taxa de Abandono — Ensino Médio — Total\" (código de coluna `3_CAT_MED`), "
+        "filtrando Localização=\"Total\" e Dependência Administrativa=\"Total\" (todas as "
+        "redes e áreas combinadas).\n\n"
+        "**Sem série histórica automática**: diferente do IDEB (uma planilha só com todos os "
+        "anos), esta fonte publica um arquivo novo por ano — a URL muda a cada edição. Por "
+        "ora o IFB só sincroniza o ano mais recente (2025); os anos anteriores (2012–2024, "
+        "cada um com arquivo próprio no mesmo padrão) ainda não foram integrados.\n\n"
+        "Conferido: Brasil 2025 = 2,2%, São Paulo 2025 = 2,8% — valores consistentes com o "
+        "abandono no Ensino Médio já documentado pelo INEP em anos recentes."
+    ),
+)
+
 SOURCE_SICONFI = SourceSpec(
     key="siconfi",
     name="Tesouro Nacional (SICONFI)",

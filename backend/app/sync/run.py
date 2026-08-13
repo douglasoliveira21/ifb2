@@ -128,6 +128,7 @@ from app.sync.definitions import (
     RENDIMENTO_MEDIO_ANUAL_QUERY,
     RENDIMENTO_MULHERES_QUERY,
     ROUBO_TOTAL_ESTADUAL,
+    TAXA_ABANDONO_ENSINO_MEDIO,
     TAXA_CRESCIMENTO_POPULACIONAL,
     TAXA_CRESCIMENTO_POPULACIONAL_QUERY,
     TAXA_DESOCUPACAO_ANUAL,
@@ -187,6 +188,10 @@ from app.sync.ibge_client import (
     fetch_sidra_series_quarterly,
 )
 from app.sync.inep_client import IdebSheetSpec, fetch_ideb_series
+from app.sync.inep_taxa_rendimento_client import (
+    fetch_taxa_abandono_medio_brasil,
+    fetch_taxa_abandono_medio_by_state,
+)
 from app.sync.inpe_client import fetch_prodes_by_state, fetch_prodes_legal_amazon
 from app.sync.leitos_sus_client import (
     fetch_leitos_sus_brasil,
@@ -458,6 +463,9 @@ def main() -> None:
     sync_by_state(AREA_ALERTA_DESMATAMENTO_CERRADO, fetch_area_desmatada_by_state)
     sync_indicator(ALFABETISMO, lambda: fetch_sidra_series(ALFABETISMO_QUERY))
     sync_by_state(ALFABETISMO, lambda: fetch_sidra_series_by_state(ALFABETISMO_QUERY))
+
+    sync_indicator(TAXA_ABANDONO_ENSINO_MEDIO, fetch_taxa_abandono_medio_brasil)
+    sync_by_state(TAXA_ABANDONO_ENSINO_MEDIO, fetch_taxa_abandono_medio_by_state)
 
     sync_indicator(TAXA_POBREZA, lambda: fetch_sidra_series(TAXA_POBREZA_QUERY))
     sync_by_state(TAXA_POBREZA, lambda: fetch_sidra_series_by_state(TAXA_POBREZA_QUERY))

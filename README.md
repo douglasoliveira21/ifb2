@@ -200,6 +200,7 @@ oficiais via API pública, sem scraping:
 | Taxa de roubo (total), Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota acima) | Mesma planilha do Anuário, tabela "Roubo a instituição financeira, de carga e roubo total" (T17) |
 | Taxa de insegurança alimentar, Brasil | IBGE (PNAD Contínua, suplemento não-anual) | SIDRA tabela 6665, variável 800 (ODS 2.1.2, categoria "Com insegurança alimentar") |
 | Desigualdade racial de renda, Brasil | IBGE (PNAD Contínua) | SIDRA tabela 6583, variável 4971 (ODS 10.2.1), razão preta/branca calculada no sync |
+| Taxa de abandono escolar (Ensino Médio), Brasil e por estado | INEP (Censo Escolar) | Planilha anual "Taxas de Rendimento Escolar", coluna `3_CAT_MED` — só ano corrente (2025), sem série histórica |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
