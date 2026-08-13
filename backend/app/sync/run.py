@@ -157,6 +157,7 @@ from app.sync.definitions import (
     TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL,
     TAXA_NATALIDADE,
     TAXA_NATALIDADE_QUERY,
+    TAXA_OCUPACAO_PRISIONAL_ESTADUAL,
     TAXA_POBREZA,
     TAXA_POBREZA_QUERY,
     TAXA_POUPANCA,
@@ -231,6 +232,10 @@ from app.sync.sinesp_vde_client import (
     fetch_homicidio_doloso_by_state,
 )
 from app.sync.siop_client import fetch_execucao_orcamentaria_uniao
+from app.sync.sisdepen_client import (
+    fetch_taxa_ocupacao_prisional_brasil,
+    fetch_taxa_ocupacao_prisional_by_state,
+)
 from app.sync.tesouro_carga_tributaria_client import fetch_carga_tributaria_brasil
 from app.sync.tesouro_transferencias_client import (
     fetch_transferencias_constitucionais_by_municipio,
@@ -700,6 +705,9 @@ def main() -> None:
 
     sync_indicator(TAXA_MORTALIDADE_TRANSITO_ESTADUAL, fetch_taxa_mortalidade_transito_brasil)
     sync_by_state(TAXA_MORTALIDADE_TRANSITO_ESTADUAL, fetch_taxa_mortalidade_transito_by_state)
+
+    sync_indicator(TAXA_OCUPACAO_PRISIONAL_ESTADUAL, fetch_taxa_ocupacao_prisional_brasil)
+    sync_by_state(TAXA_OCUPACAO_PRISIONAL_ESTADUAL, fetch_taxa_ocupacao_prisional_by_state)
 
     sync_indicator(
         HOMICIDIO_DOLOSO_ESTADUAL, lambda: fetch_homicidio_doloso_brasil(start_year=2019)

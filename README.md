@@ -203,6 +203,7 @@ oficiais via API pública, sem scraping:
 | Taxa de abandono escolar (Ensino Médio), Brasil e por estado | INEP (Censo Escolar) | Planilha anual "Taxas de Rendimento Escolar", coluna `3_CAT_MED` — só ano corrente (2025), sem série histórica |
 | Investimento público (% do total de despesas), por estado | Tesouro Nacional (SICONFI) | RREO-Anexo 01, contas "Investimentos" e "TotalDespesas", razão calculada no sync |
 | Taxa de mortalidade por lesão de trânsito, Brasil e por estado | Ministério da Saúde (RIPSA/SIM) | CSV do indicador MRT.4.03, ~1,7 milhão de linhas agregadas por UF/ano no sync |
+| Taxa de ocupação do sistema prisional, Brasil e por estado | Senappen (SISDEPEN) | Censo semestral por unidade prisional (~1.700 colunas), capacidade e população agregadas por estado no sync — só ciclo mais recente, sem série histórica em arquivo único |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de

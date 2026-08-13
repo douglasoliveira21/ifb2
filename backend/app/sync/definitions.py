@@ -1328,6 +1328,55 @@ TAXA_MORTALIDADE_TRANSITO_ESTADUAL = StaticIndicatorMeta(
     ),
 )
 
+SOURCE_SISDEPEN = SourceSpec(
+    key="sisdepen",
+    name="Secretaria Nacional de Políticas Penais (Senappen) — SISDEPEN",
+    url="https://www.gov.br/senappen/pt-br/servicos/sisdepen/bases-de-dados",
+    description=(
+        "Levantamento Nacional de Informações Penitenciárias (SISDEPEN), censo semestral de "
+        "todas as unidades prisionais brasileiras conduzido pela Secretaria Nacional de "
+        "Políticas Penais (Ministério da Justiça e Segurança Pública)."
+    ),
+)
+
+TAXA_OCUPACAO_PRISIONAL_ESTADUAL = StaticIndicatorMeta(
+    slug="taxa-ocupacao-prisional-estadual",
+    name="Taxa de ocupação do sistema prisional",
+    category=IndicatorCategory.SEGURANCA,
+    unit="% da capacidade",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Proporção entre o número de pessoas presas e o número de vagas declaradas pelos "
+        "próprios estabelecimentos penais. Acima de 100% significa que o sistema abriga mais "
+        "presos do que sua capacidade projetada — superlotação."
+    ),
+    description_how=(
+        "Quanto menor, melhor (mais perto de 100% = sistema dentro da capacidade projetada). "
+        "A capacidade é autodeclarada por cada unidade prisional no censo, não é uma medida "
+        "externa auditada — varia conforme o critério de cada gestão estadual sobre o que "
+        "conta como vaga disponível."
+    ),
+    update_frequency="semestral",
+    source=SOURCE_SISDEPEN,
+    methodology=(
+        "# Metodologia — Taxa de ocupação do sistema prisional por estado\n\n"
+        "Fonte: Levantamento Nacional de Informações Penitenciárias (SISDEPEN/Senappen), CSV "
+        "censitário com uma linha por unidade prisional (~1.700 colunas, ciclo semestral).\n\n"
+        "O IFB soma, por estado, a capacidade declarada (colunas '1.3 Capacidade do "
+        "estabelecimento | Masculino | Total' + '...Feminino | Total') e a população prisional "
+        "total (coluna '5.1 Quantidade de pessoas privadas de liberdade por faixa etária | "
+        "Total') de todas as unidades daquele estado, e calcula população/capacidade × 100 "
+        "(agregação correta — soma antes de dividir).\n\n"
+        "**Sem série histórica em arquivo único**: cada ciclo semestral é publicado como um "
+        "CSV separado, sem um consolidado histórico para download direto — o indicador reflete "
+        "só o ciclo mais recente disponível, e a URL de origem precisa ser atualizada a cada "
+        "novo ciclo (mesma limitação já documentada para as Taxas de Rendimento do INEP).\n\n"
+        "Conferido: 19º ciclo (2º semestre de 2025) — Brasil: 679.763 vagas declaradas, "
+        "936.981 pessoas presas, taxa de ocupação 137,8%, mesma ordem de grandeza da "
+        "superlotação já amplamente noticiada para o sistema prisional brasileiro."
+    ),
+)
+
 # --- Piloto de granularidade municipal (Fase municipal) ---------------------
 #
 # Diferente dos indicadores estaduais (27 UFs, histórico completo desde
