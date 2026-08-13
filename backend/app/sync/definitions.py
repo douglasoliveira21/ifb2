@@ -508,6 +508,42 @@ TAXA_EXTREMA_POBREZA = StaticIndicatorMeta(
 )
 TAXA_EXTREMA_POBREZA_QUERY = SidraQuery(table=5817, variable=9617)
 
+TAXA_INSEGURANCA_ALIMENTAR = StaticIndicatorMeta(
+    slug="taxa-inseguranca-alimentar",
+    name="Taxa de insegurança alimentar",
+    category=IndicatorCategory.POBREZA,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual de domicílios particulares em que os moradores relataram algum grau de "
+        "insegurança alimentar (leve, moderada ou grave) — ou seja, incerteza ou restrição no "
+        "acesso a alimentos por falta de recursos, mesmo que não cheguem a passar fome."
+    ),
+    description_how=(
+        "Quanto menor, melhor. Soma os três graus de insegurança alimentar (leve, moderada e "
+        "grave) medidos pela Escala Brasileira de Insegurança Alimentar (EBIA) — não distingue "
+        "aqui entre \"preocupação em faltar comida\" (leve) e privação severa (grave)."
+    ),
+    update_frequency="irregular — levantamento não é anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de insegurança alimentar\n\n"
+        "Fonte: IBGE, PNAD Contínua (suplemento de Segurança Alimentar) — tabela SIDRA 6665, "
+        "indicador 2.1.2 dos Objetivos de Desenvolvimento Sustentável (ODS), variável 800 "
+        "(\"Domicílios particulares\", % ), categoria \"Com insegurança alimentar\" (soma dos "
+        "graus leve, moderada e grave) da classificação \"Situação de segurança alimentar\".\n\n"
+        "**Só nível Brasil**: esta tabela do SIDRA só publica o resultado nacional, sem quebra "
+        "por estado.\n\n"
+        "**Levantamento não é anual**: o suplemento de segurança alimentar da PNAD Contínua só "
+        "roda em anos específicos (2004, 2009, 2013, 2018, 2023, 2024 até agora) — a série "
+        "aparece com lacunas nos anos em que a pesquisa não foi a campo, isso é do "
+        "levantamento, não uma falha de sincronização.\n\n"
+        "Conferido: Brasil 2024 = 24,2% dos domicílios, seguindo a tendência de queda já "
+        "documentada desde o pico da pandemia."
+    ),
+)
+TAXA_INSEGURANCA_ALIMENTAR_QUERY = SidraQuery(table=6665, variable=800, classifications={12404: 109099})
+
 ESPERANCA_VIDA = StaticIndicatorMeta(
     slug="esperanca-de-vida",
     name="Esperança de vida ao nascer",

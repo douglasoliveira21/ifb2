@@ -142,6 +142,8 @@ from app.sync.definitions import (
     TAXA_FREQUENCIA_PRE_ESCOLA_QUERY,
     TAXA_INFORMALIDADE,
     TAXA_INFORMALIDADE_QUERY,
+    TAXA_INSEGURANCA_ALIMENTAR,
+    TAXA_INSEGURANCA_ALIMENTAR_QUERY,
     TAXA_INVESTIMENTO,
     TAXA_INVESTIMENTO_QUERY,
     TAXA_MORTALIDADE_GERAL,
@@ -458,6 +460,8 @@ def main() -> None:
     sync_by_state(TAXA_POBREZA, lambda: fetch_sidra_series_by_state(TAXA_POBREZA_QUERY))
     sync_indicator(TAXA_EXTREMA_POBREZA, lambda: fetch_sidra_series(TAXA_EXTREMA_POBREZA_QUERY))
     sync_by_state(TAXA_EXTREMA_POBREZA, lambda: fetch_sidra_series_by_state(TAXA_EXTREMA_POBREZA_QUERY))
+    sync_indicator(TAXA_INSEGURANCA_ALIMENTAR, lambda: fetch_sidra_series(TAXA_INSEGURANCA_ALIMENTAR_QUERY))
+    # Só nível Brasil — ver metodologia do indicador.
 
     sync_indicator(ESPERANCA_VIDA, lambda: drop_future_years(fetch_sidra_series(ESPERANCA_VIDA_QUERY)))
     sync_by_state(

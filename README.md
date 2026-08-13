@@ -198,6 +198,7 @@ oficiais via API pública, sem scraping:
 | Taxa de extrema pobreza, Brasil e por estado | IBGE (PNAD Contínua) | SIDRA tabela 5817, variável 9617 (ODS 1.1.1, linha internacional US$ 2,15/dia) |
 | Letalidade policial, Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota acima) | Mesma planilha do Anuário, tabela "Mortes decorrentes de intervenções policiais" (T09) |
 | Taxa de roubo (total), Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota acima) | Mesma planilha do Anuário, tabela "Roubo a instituição financeira, de carga e roubo total" (T17) |
+| Taxa de insegurança alimentar, Brasil | IBGE (PNAD Contínua, suplemento não-anual) | SIDRA tabela 6665, variável 800 (ODS 2.1.2, categoria "Com insegurança alimentar") |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
