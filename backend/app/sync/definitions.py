@@ -2343,6 +2343,40 @@ VALOR_PRODUCAO_AGRICOLA = StaticIndicatorMeta(
 )
 VALOR_PRODUCAO_AGRICOLA_QUERY = SidraQuery(table=5457, variable=215, classifications={782: 0})
 
+AREA_PLANTADA_AGRICOLA = StaticIndicatorMeta(
+    slug="area-plantada-agricola",
+    name="Área plantada agrícola",
+    category=IndicatorCategory.AGRICULTURA,
+    unit="hectares",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Soma da área plantada (ou destinada à colheita) de todas as lavouras temporárias "
+        "(soja, milho, cana etc.) e permanentes (café, laranja etc.) acompanhadas pelo IBGE, "
+        "em hectares."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — é uma medida de área ocupada pela "
+        "agricultura, não de produtividade nem de impacto ambiental. Uma expansão de área "
+        "plantada pode vir de conversão de pastagem já existente ou de novo desmatamento; "
+        "este indicador sozinho não distingue as duas origens (ver os indicadores de "
+        "desmatamento na categoria Meio Ambiente para essa medida separadamente)."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Área plantada agrícola\n\n"
+        "Fonte: IBGE, Produção Agrícola Municipal (PAM) — tabela SIDRA 5457, variável 8331 "
+        "(\"Área plantada ou destinada à colheita\"), classificação 782 (\"Produto das "
+        "lavouras temporárias e permanentes\"), categoria 0 (\"Total\").\n\n"
+        "Mesma tabela do indicador `valor-producao-agricola`, mas sem o problema de moeda — "
+        "hectare é uma unidade estável desde o início da série (1974), então não há corte "
+        "de anos iniciais aqui.\n\n"
+        "Conferido: Brasil 2024 = 97,3 milhões de hectares, mesma ordem de grandeza já "
+        "amplamente divulgada para a área agrícola plantada no país."
+    ),
+)
+AREA_PLANTADA_AGRICOLA_QUERY = SidraQuery(table=5457, variable=8331, classifications={782: 0})
+
 PRODUCAO_INDUSTRIAL = StaticIndicatorMeta(
     slug="producao-industrial",
     name="Produção industrial (variação interanual)",

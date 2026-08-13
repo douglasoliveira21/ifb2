@@ -35,6 +35,8 @@ from app.sync.definitions import (
     ALFABETISMO,
     ALFABETISMO_QUERY,
     AREA_ALERTA_DESMATAMENTO_CERRADO,
+    AREA_PLANTADA_AGRICOLA,
+    AREA_PLANTADA_AGRICOLA_QUERY,
     CARGA_TRIBUTARIA_GOVERNO_GERAL,
     CRESCIMENTO_PIB,
     CRESCIMENTO_PIB_ADMINISTRACAO_PUBLICA,
@@ -767,6 +769,11 @@ def main() -> None:
             uf: [p for p in points if p.reference_date.year >= 1994]
             for uf, points in fetch_sidra_series_by_state(VALOR_PRODUCAO_AGRICOLA_QUERY).items()
         },
+    )
+
+    sync_indicator(AREA_PLANTADA_AGRICOLA, lambda: fetch_sidra_series(AREA_PLANTADA_AGRICOLA_QUERY))
+    sync_by_state(
+        AREA_PLANTADA_AGRICOLA, lambda: fetch_sidra_series_by_state(AREA_PLANTADA_AGRICOLA_QUERY)
     )
 
     sync_indicator(INDICE_GINI_PIB_MUNICIPAL, lambda: fetch_sidra_series(INDICE_GINI_PIB_MUNICIPAL_QUERY))
