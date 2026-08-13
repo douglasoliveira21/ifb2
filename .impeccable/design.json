@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-12T00:00:00Z",
+  "title": "Design System: Instituto Fiscaliza Brasil (IFB)",
+  "extensions": {
+    "colorMeta": {
+      "yellow": {
+        "role": "primary",
+        "displayName": "Grifo Amarelo",
+        "canonical": "#f5c400",
+        "tonalRamp": ["#4d3f00", "#7a6400", "#a68700", "#d3ab00", "#f5c400", "#f7d033", "#f9dd66", "#fbe999"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#111111",
+        "tonalRamp": ["#000000", "#111111", "#2b2b2b", "#454545", "#5f5f5f", "#7a7a7a", "#a5a5a5", "#d0d0d0"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Papel",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#e6e6e6", "#eeeeee", "#f2f2f2", "#f6f6f6", "#fafafa", "#fcfcfc", "#fefefe", "#ffffff"]
+      },
+      "gray-50": {
+        "role": "neutral",
+        "displayName": "Neblina Clara",
+        "canonical": "#f6f6f3",
+        "tonalRamp": ["#c9c9c1", "#d6d6cf", "#e2e2dc", "#eeeee9", "#f6f6f3", "#f9f9f7", "#fbfbfa", "#fdfdfc"]
+      },
+      "gray-100": {
+        "role": "neutral",
+        "displayName": "Linha Fina",
+        "canonical": "#ececE7",
+        "tonalRamp": ["#bdbdb4", "#cbcbc3", "#d9d9d2", "#e6e6e0", "#ececE7", "#f0f0eb", "#f4f4f0", "#f9f9f6"]
+      },
+      "gray-500": {
+        "role": "neutral",
+        "displayName": "Cinza Texto Secundário",
+        "canonical": "#656565",
+        "tonalRamp": ["#1f1f1f", "#333333", "#474747", "#5b5b5b", "#656565", "#8a8a8a", "#afafaf", "#d4d4d4"]
+      },
+      "positive": {
+        "role": "secondary",
+        "displayName": "Verde Melhora",
+        "canonical": "#1f7a3d",
+        "tonalRamp": ["#0d3319", "#154f28", "#1c6a36", "#1f7a3d", "#2c9950", "#5cb87a", "#8dd6a4", "#c0eece"]
+      },
+      "negative": {
+        "role": "secondary",
+        "displayName": "Vermelho Piora",
+        "canonical": "#b3261e",
+        "tonalRamp": ["#4a0f0c", "#701712", "#951e18", "#b3261e", "#cf4a42", "#e07b74", "#f0aca7", "#f9d6d3"]
+      },
+      "neutral": {
+        "role": "tertiary",
+        "displayName": "Cinza Neutro (status)",
+        "canonical": "#656565",
+        "tonalRamp": ["#1f1f1f", "#333333", "#474747", "#5b5b5b", "#656565", "#8a8a8a", "#afafaf", "#d4d4d4"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Stat Figure", "purpose": "O número de um indicador — elemento tipográfico primário do IFB." },
+      "label": { "displayName": "Label/Nav", "purpose": "Navegação, rótulos de classificação, cabeçalhos pequenos." },
+      "body": { "displayName": "Body", "purpose": "Texto corrido, metodologia, descrições." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "color-transition", "value": "transition-colors (Tailwind default)", "purpose": "Hover em links de navegação — única transição usada no sistema." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "CTA de apoio/doação — único uso de fundo amarelo sólido no sistema.",
+      "html": "<a class=\"ds-btn-primary\" href=\"/apoiar\">Apoiar o IFB</a>",
+      "css": ".ds-btn-primary { display: inline-block; background: #f5c400; color: #111111; font-weight: 600; font-size: 0.875rem; padding: 8px 16px; border-radius: 0; text-decoration: none; transition: filter 0.15s; } .ds-btn-primary:hover { filter: brightness(0.95); } .ds-btn-primary:focus-visible { outline: 2px solid #111111; outline-offset: 2px; }"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Link de navegação do header — texto cinza, tinta no hover, sem sublinhado.",
+      "html": "<a class=\"ds-nav-link\" href=\"/indicadores\">Indicadores</a>",
+      "css": ".ds-nav-link { color: #656565; font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: color 0.15s; } .ds-nav-link:hover, .ds-nav-link:focus-visible { color: #111111; } .ds-nav-link:focus-visible { outline: 2px solid #111111; outline-offset: 2px; }"
+    },
+    {
+      "name": "Classification Badge — Melhorou",
+      "kind": "chip",
+      "refersTo": "badge-melhorou",
+      "description": "Classificação de indicador em alta — ícone geométrico obrigatório, nunca só cor.",
+      "html": "<span class=\"ds-badge ds-badge-positive\"><span aria-hidden=\"true\">▲</span> Melhorou</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; } .ds-badge-positive { color: #1f7a3d; }"
+    },
+    {
+      "name": "Classification Badge — Piorou",
+      "kind": "chip",
+      "refersTo": "badge-piorou",
+      "description": "Classificação de indicador em queda.",
+      "html": "<span class=\"ds-badge ds-badge-negative\"><span aria-hidden=\"true\">▼</span> Piorou</span>",
+      "css": ".ds-badge-negative { color: #b3261e; }"
+    },
+    {
+      "name": "Stat Block",
+      "kind": "card",
+      "refersTo": "stat-block",
+      "description": "Bloco de estatística do Placar Brasil — número tabular grande sobre legenda, sem fundo nem sombra, separado por borda fina.",
+      "html": "<div class=\"ds-stat-block\"><p class=\"ds-stat-figure\">42</p><p class=\"ds-stat-label\">Indicadores melhoraram</p></div>",
+      "css": ".ds-stat-block { border-left: 1px solid #ececE7; padding-left: 24px; } .ds-stat-figure { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 0.95; font-size: 3rem; font-weight: 700; color: #111111; margin: 0; } .ds-stat-label { margin-top: 8px; font-size: 0.875rem; color: #656565; }"
+    },
+    {
+      "name": "Header",
+      "kind": "nav",
+      "refersTo": "header",
+      "description": "Header fixo com logotipo quadrado tinta+amarelo, wordmark uppercase de duas linhas, borda inferior de 1px em vez de sombra.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-logo\">IFB</span></header>",
+      "css": ".ds-header { background: #ffffff; border-bottom: 1px solid #111111; height: 64px; display: flex; align-items: center; padding: 0 24px; } .ds-logo { display: inline-flex; align-items: center; justify-content: center; height: 32px; width: 32px; background: #111111; color: #f5c400; font-weight: 700; font-size: 0.875rem; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Placar Editorial",
+    "overview": "O IFB parece a página de um jornal impresso que virou um placar esportivo — não um dashboard de SaaS. A hierarquia vem de tipografia grande e algarismos tabulares, não de cards flutuando em sombra. Divisões entre blocos são linhas finas de 1px, nunca superfícies elevadas — o layout inteiro é plano, deliberadamente. O amarelo #F5C400 é usado como grifo, não como fundo padrão: aparece no logotipo, em CTAs pontuais e em destaques de foco — nunca como cor de fundo de uma seção inteira. A tinta #111111 carrega quase todo o peso visual, reforçando a leitura de 'documento oficial' em vez de 'produto'. Classificações nunca dependem só de cor — sempre vêm com um glifo geométrico e o texto por extenso.",
+    "keyCharacteristics": [
+      "Tipografia como hierarquia primária — não cor, não sombra, não profundidade.",
+      "Zero elevação: o site é fisicamente plano, como papel.",
+      "Cantos sempre retos (0px de raio) em qualquer superfície ou botão.",
+      "Amarelo é escasso e intencional; tinta preta é o peso visual dominante.",
+      "Classificação nunca é só cor — sempre ícone geométrico + texto."
+    ],
+    "rules": [
+      { "name": "The Rare Yellow Rule", "body": "Se o amarelo aparece em mais de ~10% da viewport, está sendo mal usado.", "section": "colors" },
+      { "name": "The One Voice Rule", "body": "O amarelo é o único acento cromático do sistema — não introduzir uma segunda cor de marca para 'diferenciar' uma seção nova.", "section": "colors" },
+      { "name": "The Color-Is-Never-Alone Rule", "body": "Nenhuma informação de classificação pode depender só da cor — sempre par com ícone geométrico e rótulo textual.", "section": "colors" },
+      { "name": "The Never-Redo-The-Contrast-Fix Rule", "body": "Não reverter o cinza secundário para #737373 ou tom mais claro que #656565 em texto de corpo — foi escurecido deliberadamente para WCAG AA.", "section": "colors" },
+      { "name": "The Tabular Numerals Rule", "body": "Todo número que representa um valor de indicador usa tabular-nums.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Nenhum elemento recebe box-shadow, backdrop-filter ou glassmorphism.", "section": "elevation" },
+      { "name": "The Square Corners Rule", "body": "Não introduzir rounded-* em nenhum componente novo sem decisão explícita de rebrand.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do usar bordas finas de 1px para separar blocos — é o único mecanismo de divisão visual do sistema.",
+      "Do parear toda classificação colorida com um ícone geométrico e o rótulo por extenso.",
+      "Do usar tabular-nums em qualquer número que representa um valor de indicador ao longo do tempo.",
+      "Do manter o amarelo raro e intencional — CTA, logotipo, foco, destaque pontual."
+    ],
+    "donts": [
+      "Don't adicionar border-radius, box-shadow, glassmorphism ou blur a qualquer componente.",
+      "Don't usar o amarelo como fundo de uma seção inteira ou introduzir uma segunda cor de marca.",
+      "Don't trazer ícones de biblioteca (Lucide, Heroicons, Font Awesome).",
+      "Don't reverter o cinza secundário para #737373 ou tom mais claro que #656565."
+    ]
+  }
+}
