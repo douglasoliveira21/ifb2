@@ -544,6 +544,44 @@ TAXA_INSEGURANCA_ALIMENTAR = StaticIndicatorMeta(
 )
 TAXA_INSEGURANCA_ALIMENTAR_QUERY = SidraQuery(table=6665, variable=800, classifications={12404: 109099})
 
+RAZAO_DESIGUALDADE_RACIAL_RENDA = StaticIndicatorMeta(
+    slug="razao-desigualdade-racial-renda",
+    name="Desigualdade racial de renda",
+    category=IndicatorCategory.POBREZA,
+    unit="% da taxa de pessoas brancas",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual de pessoas pretas vivendo com renda domiciliar per capita abaixo de 50% "
+        "da renda mediana nacional, como proporção do mesmo percentual entre pessoas brancas. "
+        "Acima de 100% significa que pessoas pretas têm mais chance de estar nessa faixa de "
+        "renda baixa do que pessoas brancas."
+    ),
+    description_how=(
+        "Quanto mais perto de 100%, menor a disparidade racial. Compara só as categorias "
+        "\"preta\" e \"branca\" da classificação oficial de cor/raça do IBGE — não inclui "
+        "parda, amarela ou indígena nesta razão, embora o IBGE publique dados também para "
+        "essas categorias."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Desigualdade racial de renda\n\n"
+        "Fonte: IBGE, PNAD Contínua — tabela SIDRA 6583, indicador 10.2.1 dos Objetivos de "
+        "Desenvolvimento Sustentável (ODS), variável 4971 (\"Percentual de pessoas vivendo com "
+        "abaixo de 50% do rendimento mediano mensal real domiciliar per capita\"), "
+        "classificação \"Cor ou raça\", categorias \"Preta\" e \"Branca\".\n\n"
+        "O IFB busca as duas séries separadamente e calcula a razão preta/branca em cada ano "
+        "— a própria tabela do SIDRA não traz essa razão pronta (mesmo método já usado para a "
+        "razão de rendimento mulher/homem). Só nível Brasil — a tabela não tem quebra por "
+        "estado.\n\n"
+        "Conferido: Brasil 2024 — 24,0% das pessoas pretas vs. 13,8% das pessoas brancas "
+        "vivem abaixo dessa linha de renda, uma razão de ~174%, consistente com a desigualdade "
+        "racial de renda amplamente documentada pelo próprio IBGE."
+    ),
+)
+RENDA_ABAIXO_MEDIANA_PRETA_QUERY = SidraQuery(table=6583, variable=4971, classifications={86: 2777})
+RENDA_ABAIXO_MEDIANA_BRANCA_QUERY = SidraQuery(table=6583, variable=4971, classifications={86: 2776})
+
 ESPERANCA_VIDA = StaticIndicatorMeta(
     slug="esperanca-de-vida",
     name="Esperança de vida ao nascer",

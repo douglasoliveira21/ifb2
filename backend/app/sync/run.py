@@ -117,9 +117,12 @@ from app.sync.definitions import (
     PRODUCAO_INDUSTRIAL_QUERY,
     RAZAO_DEPENDENCIA_IDOSOS,
     RAZAO_DEPENDENCIA_IDOSOS_QUERY,
+    RAZAO_DESIGUALDADE_RACIAL_RENDA,
     RAZAO_MORTALIDADE_MATERNA_ESTADUAL,
     RAZAO_RENDIMENTO_MULHER_HOMEM,
     RECEITA_TOTAL_REALIZADA_ESTADUAL,
+    RENDA_ABAIXO_MEDIANA_BRANCA_QUERY,
+    RENDA_ABAIXO_MEDIANA_PRETA_QUERY,
     RENDIMENTO_HOMENS_QUERY,
     RENDIMENTO_MEDIO_ANUAL,
     RENDIMENTO_MEDIO_ANUAL_QUERY,
@@ -461,6 +464,15 @@ def main() -> None:
     sync_indicator(TAXA_EXTREMA_POBREZA, lambda: fetch_sidra_series(TAXA_EXTREMA_POBREZA_QUERY))
     sync_by_state(TAXA_EXTREMA_POBREZA, lambda: fetch_sidra_series_by_state(TAXA_EXTREMA_POBREZA_QUERY))
     sync_indicator(TAXA_INSEGURANCA_ALIMENTAR, lambda: fetch_sidra_series(TAXA_INSEGURANCA_ALIMENTAR_QUERY))
+    # Só nível Brasil — ver metodologia do indicador.
+
+    sync_indicator(
+        RAZAO_DESIGUALDADE_RACIAL_RENDA,
+        lambda: _ratio_series(
+            fetch_sidra_series(RENDA_ABAIXO_MEDIANA_PRETA_QUERY),
+            fetch_sidra_series(RENDA_ABAIXO_MEDIANA_BRANCA_QUERY),
+        ),
+    )
     # Só nível Brasil — ver metodologia do indicador.
 
     sync_indicator(ESPERANCA_VIDA, lambda: drop_future_years(fetch_sidra_series(ESPERANCA_VIDA_QUERY)))
