@@ -87,6 +87,7 @@ from app.sync.definitions import (
     INDICE_GINI_PIB_MUNICIPAL_QUERY,
     INDICE_GINI_RENDA,
     INDICE_GINI_RENDA_QUERY,
+    INVESTIMENTO_PUBLICO_ESTADUAL,
     LEITOS_SUS_ESTADUAL,
     LETALIDADE_POLICIAL_ESTADUAL,
     MEDIA_ANOS_ESTUDO,
@@ -214,6 +215,8 @@ from app.sync.siconfi_client import (
     DESPESA_EDUCACAO_PERCENTUAL,
     DESPESA_SAUDE_PERCENTUAL,
     DIVIDA_CONSOLIDADA_LIQUIDA_RCL,
+    INVESTIMENTOS_LIQUIDADOS,
+    TOTAL_DESPESAS_LIQUIDADAS,
     fetch_rgf_by_municipio,
     fetch_rgf_by_state,
     fetch_rreo_by_state,
@@ -654,6 +657,16 @@ def main() -> None:
     )
     # Ambos só têm dado por estado (RREO é declarado por ente federativo) —
     # não existe uma agregação "Brasil" oficial para despesa por função.
+
+    sync_by_state(
+        INVESTIMENTO_PUBLICO_ESTADUAL,
+        lambda: _ratio_series_by_state(
+            fetch_rreo_by_state(INVESTIMENTOS_LIQUIDADOS),
+            fetch_rreo_by_state(TOTAL_DESPESAS_LIQUIDADAS),
+        ),
+    )
+    # Só por estado — mesmo motivo acima. Categoria econômica (Anexo 01),
+    # não função (Anexo 02) — ver metodologia do indicador.
 
     sync_indicator(LEITOS_SUS_ESTADUAL, fetch_leitos_sus_brasil)
     sync_by_state(LEITOS_SUS_ESTADUAL, fetch_leitos_sus_by_state)

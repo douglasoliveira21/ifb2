@@ -98,6 +98,7 @@ class RreoQuery:
     cod_conta: str
     conta: str | None = None
     coluna: str | None = None
+    column_marker: str | None = None  # trecho ASCII-seguro, ver `_row_matches_column_rreo`
 
 
 RECEITA_TOTAL_REALIZADA = RreoQuery(no_anexo="RREO-Anexo 01", cod_conta="TotalReceitas")
@@ -109,6 +110,16 @@ DESPESA_SAUDE_PERCENTUAL = RreoQuery(
     no_anexo="RREO-Anexo 02", cod_conta="RREO2TotalDespesas", conta="Saúde", coluna="% (d/total d)"
 )
 
+# Investimentos (categoria econômica, não função) não tem coluna de "%
+# do total" pronta como o Anexo 02 — o IFB calcula a razão a partir de
+# duas linhas do Anexo 01: "Investimentos" e "TotalDespesas", ambas na
+# coluna "Despesas Liquidadas Até o Bimestre (h)" (valor acumulado no
+# ano). `column_marker="(h)"` é a única coluna do Anexo 01 com esse
+# sufixo — suficiente para identificá-la mesmo com o bug de codificação
+# de acentos já documentado no início do módulo.
+INVESTIMENTOS_LIQUIDADOS = RreoQuery(no_anexo="RREO-Anexo 01", cod_conta="Investimentos", column_marker="(h)")
+TOTAL_DESPESAS_LIQUIDADAS = RreoQuery(no_anexo="RREO-Anexo 01", cod_conta="TotalDespesas", column_marker="(h)")
+
 
 def _row_matches_column_rgf(query: RgfQuery, coluna: str) -> bool:
     if query.no_anexo == "RGF-Anexo 02":
@@ -119,6 +130,12 @@ def _row_matches_column_rgf(query: RgfQuery, coluna: str) -> bool:
 def _row_matches_column_rreo(query: RreoQuery, coluna: str) -> bool:
     if query.coluna is not None:
         return coluna == query.coluna
+    if query.column_marker is not None:
+        # As tabelas de despesa do Anexo 01 usam "BIMESTRE" (maiúsculas),
+        # diferente de "Bimestre" nas tabelas de receita do mesmo anexo —
+        # por isso a checagem aqui é case-insensitive (diferente do
+        # fallback "(c)" abaixo, que não precisa disso).
+        return query.column_marker in coluna and "bimestre" in coluna.lower()
     # Mesmo bug de codificação do RGF (ver docstring do módulo) — "(c)" e
     # "Bimestre" sobrevivem intactos e distinguem "Até o Bimestre (c)"
     # (acumulado no ano) de "No Bimestre (b)" (só aquele bimestre).

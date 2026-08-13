@@ -2550,6 +2550,42 @@ DESPESA_SAUDE_ESTADUAL = StaticIndicatorMeta(
     ),
 )
 
+INVESTIMENTO_PUBLICO_ESTADUAL = StaticIndicatorMeta(
+    slug="investimento-publico-estadual",
+    name="Investimento público (% do total de despesas)",
+    category=IndicatorCategory.GESTAO_PUBLICA,
+    unit="% do total de despesas liquidadas",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Percentual do total de despesas liquidadas pelo governo estadual no ano que foi "
+        "destinado a Investimentos — obras, equipamentos e outros bens de capital, categoria "
+        "econômica distinta de despesas correntes (pessoal, custeio) e de outras despesas de "
+        "capital (amortização de dívida, inversões financeiras)."
+    ),
+    description_how=(
+        "Quanto maior, mais o governo está investindo em vez de só cobrir despesas correntes "
+        "e financeiras. Não mede a qualidade ou o retorno social do investimento — só o "
+        "volume, como fração do orçamento total executado."
+    ),
+    update_frequency="anual",
+    source=SOURCE_SICONFI,
+    methodology=(
+        "# Metodologia — Investimento público (% do total de despesas)\n\n"
+        "Fonte: Tesouro Nacional, SICONFI — Relatório Resumido de Execução Orçamentária "
+        "(RREO), Anexo 01 (Balanço Orçamentário), duas contas: \"Investimentos\" e "
+        "\"TotalDespesas\", ambas na coluna \"Despesas Liquidadas Até o Bimestre (h)\" "
+        "(valor acumulado no ano). Diferente da Despesa com Educação/Saúde (Anexo 02, por "
+        "função de governo), Investimentos é uma categoria econômica do Anexo 01 e não tem "
+        "coluna de percentual pronta — o IFB calcula `Investimentos ÷ TotalDespesas` no sync "
+        "(`app/sync/run.py`), mesmo método já usado para a razão de rendimento mulher/homem.\n\n"
+        "**Sem dado antes de 2015**: mesma limitação das demais séries do SICONFI (RGF/RREO) "
+        "— o sistema não retroage a exercícios anteriores.\n\n"
+        "Conferido: São Paulo 2023 = 4,5% — na faixa historicamente baixa de investimento "
+        "público estadual já documentada no debate sobre finanças públicas brasileiras (a "
+        "maior parte do orçamento vai para despesas correntes, sobretudo pessoal)."
+    ),
+)
+
 SOURCE_COMEXSTAT = SourceSpec(
     key="comexstat",
     name="Ministério do Desenvolvimento, Indústria, Comércio e Serviços (Comex Stat)",
