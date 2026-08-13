@@ -194,6 +194,10 @@ oficiais via API pública, sem scraping:
 | Taxa de feminicídio, Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota acima) | Mesma planilha do Anuário, tabela "Homicídios de mulheres e feminicídios" (T24) |
 | Carga tributária bruta do governo geral (% do PIB), Brasil | Tesouro Nacional | Boletim anual "Carga Tributária do Governo Geral", anexo `Base CTB GG.xlsx`, Tabela 1 |
 | Razão de mortalidade materna, Brasil e por estado | Ministério da Saúde (RIPSA/SIM/Sinasc) | CSV do indicador MRT.2.01, publicado em dadosabertos.saude.gov.br |
+| Taxa de pobreza, Brasil e por estado | IBGE (PNAD Contínua) | SIDRA tabela 5877, variável 9948 (ODS 1.2.1, linha de pobreza nacional) |
+| Taxa de extrema pobreza, Brasil e por estado | IBGE (PNAD Contínua) | SIDRA tabela 5817, variável 9617 (ODS 1.1.1, linha internacional US$ 2,15/dia) |
+| Letalidade policial, Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota acima) | Mesma planilha do Anuário, tabela "Mortes decorrentes de intervenções policiais" (T09) |
+| Taxa de roubo (total), Brasil e por estado | **Fórum Brasileiro de Segurança Pública** (não-governamental — ver nota acima) | Mesma planilha do Anuário, tabela "Roubo a instituição financeira, de carga e roubo total" (T17) |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de

@@ -33,6 +33,7 @@ class IndicatorCategory(str, enum.Enum):
     TRANSPARENCIA_CONTROLE = "TRANSPARENCIA_CONTROLE"
     PESSOAS_COM_DEFICIENCIA = "PESSOAS_COM_DEFICIENCIA"
     COMPRAS_PUBLICAS = "COMPRAS_PUBLICAS"
+    POBREZA = "POBREZA"
 
 
 class IndicatorPolarity(str, enum.Enum):

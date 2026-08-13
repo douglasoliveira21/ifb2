@@ -117,6 +117,28 @@ FEMINICIDIO_SPEC = FbspAnuarioSpec(
     rate_columns_by_year={2023: 9, 2024: 10},
 )
 
+# Tabela 09 — "Mortes decorrentes de intervenções policiais, segundo
+# corporação e situação". Brasil na linha 9; coluna "Taxa" (por 100 mil
+# habitantes) é L=12 (2023) e M=13 (2024). Conferido: Brasil 2024 = 2,94
+# por 100 mil — ordem de grandeza já documentada em anos anteriores do
+# Anuário para letalidade policial no Brasil.
+LETALIDADE_POLICIAL_SPEC = FbspAnuarioSpec(
+    sheet_name="T09",
+    data_start_row=9,
+    rate_columns_by_year={2023: 12, 2024: 13},
+)
+
+# Tabela 17 — "Roubo a instituição financeira, de carga e roubo total".
+# Brasil na linha 9; coluna "Taxa" da seção "Roubo (total)" é N=14 (2023)
+# e O=15 (2024) — não confundir com as colunas "Taxa" das seções de
+# roubo a instituição financeira (D/E) ou roubo de carga (I/J) da mesma
+# tabela. Conferido: Brasil 2024 = 350,6 por 100 mil.
+ROUBO_TOTAL_SPEC = FbspAnuarioSpec(
+    sheet_name="T17",
+    data_start_row=9,
+    rate_columns_by_year={2023: 14, 2024: 15},
+)
+
 
 def fetch_mvi_rate_by_state(
     spec: FbspAnuarioSpec = DEFAULT_ANUARIO_SPEC, *, timeout: float = 60.0

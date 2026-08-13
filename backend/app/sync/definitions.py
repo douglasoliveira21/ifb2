@@ -445,6 +445,69 @@ ALFABETISMO = StaticIndicatorMeta(
 )
 ALFABETISMO_QUERY = SidraQuery(table=7113, variable=10267, classifications={2: 6794, 58: 2795})
 
+TAXA_POBREZA = StaticIndicatorMeta(
+    slug="taxa-pobreza",
+    name="Taxa de pobreza",
+    category=IndicatorCategory.POBREZA,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual da população vivendo em domicílios com rendimento domiciliar per capita "
+        "abaixo da linha de pobreza nacional (indicador 1.2.1 dos Objetivos de Desenvolvimento "
+        "Sustentável da ONU, com linha de corte definida pelo IBGE para o Brasil)."
+    ),
+    description_how=(
+        "Quanto menor, melhor. Diferente da taxa de extrema pobreza (linha de corte mais "
+        "baixa, padrão internacional do Banco Mundial), esta usa uma linha de pobreza mais "
+        "alta, definida nacionalmente — por isso o percentual é maior."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de pobreza\n\n"
+        "Fonte: IBGE, PNAD Contínua — tabela SIDRA 5877, variável 9948 (\"Proporção da "
+        "população abaixo da linha de pobreza nacional\"), indicador 1.2.1 dos Objetivos de "
+        "Desenvolvimento Sustentável (ODS) da ONU.\n\n"
+        "A linha de pobreza nacional é definida pelo IBGE especificamente para o Brasil — "
+        "diferente da linha de extrema pobreza (indicador ODS 1.1.1, ver `taxa-extrema-"
+        "pobreza`), que usa um padrão internacional do Banco Mundial. As duas medem coisas "
+        "diferentes e não devem ser somadas.\n\n"
+        "Conferido: Brasil 2024 = 26,5% — consistente com a queda de pobreza amplamente "
+        "noticiada entre 2022 e 2024."
+    ),
+)
+TAXA_POBREZA_QUERY = SidraQuery(table=5877, variable=9948)
+
+TAXA_EXTREMA_POBREZA = StaticIndicatorMeta(
+    slug="taxa-extrema-pobreza",
+    name="Taxa de extrema pobreza",
+    category=IndicatorCategory.POBREZA,
+    unit="%",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Percentual da população vivendo em domicílios com rendimento domiciliar per capita "
+        "abaixo da linha internacional de extrema pobreza do Banco Mundial (US$ 2,15 por dia, "
+        "PPC — indicador 1.1.1 dos Objetivos de Desenvolvimento Sustentável da ONU)."
+    ),
+    description_how=(
+        "Quanto menor, melhor. Usa uma linha de corte mais baixa que a taxa de pobreza "
+        "nacional (`taxa-pobreza`), por isso o percentual é menor — mede a parcela da "
+        "população em situação de privação mais severa."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Taxa de extrema pobreza\n\n"
+        "Fonte: IBGE, PNAD Contínua — tabela SIDRA 5817, variável 9617 (\"Proporção da "
+        "população abaixo da linha de pobreza internacional\"), indicador 1.1.1 dos Objetivos "
+        "de Desenvolvimento Sustentável (ODS) da ONU — linha de extrema pobreza do Banco "
+        "Mundial (US$ 2,15/dia, paridade de poder de compra).\n\n"
+        "Conferido: Brasil 2024 = 4,7% — na mesma ordem de grandeza da queda de extrema "
+        "pobreza amplamente noticiada no período."
+    ),
+)
+TAXA_EXTREMA_POBREZA_QUERY = SidraQuery(table=5817, variable=9617)
+
 ESPERANCA_VIDA = StaticIndicatorMeta(
     slug="esperanca-de-vida",
     name="Esperança de vida ao nascer",
@@ -974,6 +1037,62 @@ TAXA_FEMINICIDIO_ESTADUAL = StaticIndicatorMeta(
         "mulheres (número maior, inclui feminicídios e outros homicídios de mulheres).\n\n"
         "Conferido contra o número nacional amplamente noticiado na divulgação da edição 2025: "
         "Brasil 2024 = 1,4 por 100 mil mulheres (recorde histórico da série do FBSP)."
+    ),
+)
+
+LETALIDADE_POLICIAL_ESTADUAL = StaticIndicatorMeta(
+    slug="letalidade-policial-estadual",
+    name="Letalidade policial",
+    category=IndicatorCategory.SEGURANCA,
+    unit="por 100 mil habitantes",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Mortes decorrentes de intervenções de policiais civis e militares, em serviço e fora "
+        "de serviço, por 100 mil habitantes."
+    ),
+    description_how=(
+        "Quanto menor, melhor. Não distingue mortes consideradas legítimas (confronto armado) "
+        "de excessos — mede o volume total de mortes em intervenções policiais, não a "
+        "legalidade de cada caso."
+    ),
+    update_frequency="anual",
+    source=SOURCE_FBSP,
+    methodology=(
+        "# Metodologia — Letalidade policial por estado\n\n"
+        "Mesma fonte e mesmas ressalvas do indicador de Mortes Violentas Intencionais (MVI) — "
+        "ver metodologia daquele indicador. Leitura da Tabela 09 do Anuário (\"Mortes "
+        "decorrentes de intervenções policiais, segundo corporação e situação\"), coluna "
+        "\"Taxa\" (soma de policiais civis e militares, em serviço e fora de serviço).\n\n"
+        "Conferido contra a divulgação oficial: Brasil 2024 = 2,94 por 100 mil habitantes."
+    ),
+)
+
+ROUBO_TOTAL_ESTADUAL = StaticIndicatorMeta(
+    slug="roubo-total-estadual",
+    name="Taxa de roubo (total)",
+    category=IndicatorCategory.SEGURANCA,
+    unit="por 100 mil habitantes",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Soma de todas as modalidades de roubo (a pessoa, veículo, residência, comércio, "
+        "instituição financeira, carga etc.) registradas pelas polícias estaduais, por 100 mil "
+        "habitantes."
+    ),
+    description_how=(
+        "Quanto menor, melhor. Mede roubo (crime com ameaça ou violência), não furto (sem "
+        "confronto com a vítima) — as duas categorias são registradas e contadas separadamente "
+        "pelas polícias."
+    ),
+    update_frequency="anual",
+    source=SOURCE_FBSP,
+    methodology=(
+        "# Metodologia — Taxa de roubo (total) por estado\n\n"
+        "Mesma fonte e mesmas ressalvas do indicador de Mortes Violentas Intencionais (MVI) — "
+        "ver metodologia daquele indicador. Leitura da Tabela 17 do Anuário (\"Roubo a "
+        "instituição financeira, de carga e roubo total\"), coluna \"Taxa\" da seção \"Roubo "
+        "(total)\" — não confundir com as colunas \"Taxa\" das seções específicas de roubo a "
+        "instituição financeira ou roubo de carga, na mesma tabela.\n\n"
+        "Conferido contra a divulgação oficial: Brasil 2024 = 350,6 por 100 mil habitantes."
     ),
 )
 

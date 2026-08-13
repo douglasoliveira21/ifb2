@@ -88,6 +88,7 @@ from app.sync.definitions import (
     INDICE_GINI_RENDA,
     INDICE_GINI_RENDA_QUERY,
     LEITOS_SUS_ESTADUAL,
+    LETALIDADE_POLICIAL_ESTADUAL,
     MEDIA_ANOS_ESTUDO,
     MEDIA_ANOS_ESTUDO_QUERY,
     MORTALIDADE_INFANTIL,
@@ -123,6 +124,7 @@ from app.sync.definitions import (
     RENDIMENTO_MEDIO_ANUAL,
     RENDIMENTO_MEDIO_ANUAL_QUERY,
     RENDIMENTO_MULHERES_QUERY,
+    ROUBO_TOTAL_ESTADUAL,
     TAXA_CRESCIMENTO_POPULACIONAL,
     TAXA_CRESCIMENTO_POPULACIONAL_QUERY,
     TAXA_DESOCUPACAO_ANUAL,
@@ -131,6 +133,8 @@ from app.sync.definitions import (
     TAXA_ESCOLARIZACAO_6_A_14_QUERY,
     TAXA_ESCOLARIZACAO_15_A_17,
     TAXA_ESCOLARIZACAO_15_A_17_QUERY,
+    TAXA_EXTREMA_POBREZA,
+    TAXA_EXTREMA_POBREZA_QUERY,
     TAXA_FECUNDIDADE,
     TAXA_FECUNDIDADE_QUERY,
     TAXA_FEMINICIDIO_ESTADUAL,
@@ -145,6 +149,8 @@ from app.sync.definitions import (
     TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL,
     TAXA_NATALIDADE,
     TAXA_NATALIDADE_QUERY,
+    TAXA_POBREZA,
+    TAXA_POBREZA_QUERY,
     TAXA_POUPANCA,
     TAXA_POUPANCA_QUERY,
     TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
@@ -161,6 +167,8 @@ from app.sync.deter_client import (
 )
 from app.sync.fbsp_client import (
     FEMINICIDIO_SPEC,
+    LETALIDADE_POLICIAL_SPEC,
+    ROUBO_TOTAL_SPEC,
     fetch_mvi_rate_brasil,
     fetch_mvi_rate_by_state,
 )
@@ -446,6 +454,11 @@ def main() -> None:
     sync_indicator(ALFABETISMO, lambda: fetch_sidra_series(ALFABETISMO_QUERY))
     sync_by_state(ALFABETISMO, lambda: fetch_sidra_series_by_state(ALFABETISMO_QUERY))
 
+    sync_indicator(TAXA_POBREZA, lambda: fetch_sidra_series(TAXA_POBREZA_QUERY))
+    sync_by_state(TAXA_POBREZA, lambda: fetch_sidra_series_by_state(TAXA_POBREZA_QUERY))
+    sync_indicator(TAXA_EXTREMA_POBREZA, lambda: fetch_sidra_series(TAXA_EXTREMA_POBREZA_QUERY))
+    sync_by_state(TAXA_EXTREMA_POBREZA, lambda: fetch_sidra_series_by_state(TAXA_EXTREMA_POBREZA_QUERY))
+
     sync_indicator(ESPERANCA_VIDA, lambda: drop_future_years(fetch_sidra_series(ESPERANCA_VIDA_QUERY)))
     sync_by_state(
         ESPERANCA_VIDA,
@@ -628,6 +641,14 @@ def main() -> None:
     sync_indicator(TAXA_FEMINICIDIO_ESTADUAL, lambda: fetch_mvi_rate_brasil(FEMINICIDIO_SPEC))
     sync_by_state(TAXA_FEMINICIDIO_ESTADUAL, lambda: fetch_mvi_rate_by_state(FEMINICIDIO_SPEC))
     # Mesma planilha FBSP acima, tabela diferente (T24) — ver metodologia do indicador.
+
+    sync_indicator(LETALIDADE_POLICIAL_ESTADUAL, lambda: fetch_mvi_rate_brasil(LETALIDADE_POLICIAL_SPEC))
+    sync_by_state(LETALIDADE_POLICIAL_ESTADUAL, lambda: fetch_mvi_rate_by_state(LETALIDADE_POLICIAL_SPEC))
+    # Mesma planilha FBSP acima, tabela diferente (T09) — ver metodologia do indicador.
+
+    sync_indicator(ROUBO_TOTAL_ESTADUAL, lambda: fetch_mvi_rate_brasil(ROUBO_TOTAL_SPEC))
+    sync_by_state(ROUBO_TOTAL_ESTADUAL, lambda: fetch_mvi_rate_by_state(ROUBO_TOTAL_SPEC))
+    # Mesma planilha FBSP acima, tabela diferente (T17) — ver metodologia do indicador.
 
     sync_indicator(CARGA_TRIBUTARIA_GOVERNO_GERAL, fetch_carga_tributaria_brasil)
     # Só nível Brasil — ver metodologia do indicador.
