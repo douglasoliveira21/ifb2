@@ -3016,6 +3016,57 @@ EXECUCAO_ORCAMENTARIA_UNIAO = StaticIndicatorMeta(
     ),
 )
 
+SOURCE_CGU_CEIS = SourceSpec(
+    key="cgu-ceis",
+    name="Controladoria-Geral da União (CGU) — Portal da Transparência",
+    url="https://portaldatransparencia.gov.br/download-de-dados/ceis",
+    description=(
+        "Cadastro Nacional de Empresas Inidôneas e Suspensas (CEIS) — empresas e pessoas "
+        "físicas impedidas de contratar com o poder público, mantido pela CGU."
+    ),
+)
+
+SANCOES_ATIVAS_CEIS_ESTADUAL = StaticIndicatorMeta(
+    slug="sancoes-ativas-ceis-estadual",
+    name="Sanções ativas — Empresas Inidôneas e Suspensas (CEIS)",
+    category=IndicatorCategory.TRANSPARENCIA_CONTROLE,
+    unit="sanções",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Número de sanções administrativas ativas no Cadastro Nacional de Empresas "
+        "Inidôneas e Suspensas (CEIS) — empresas e pessoas físicas atualmente impedidas de "
+        "contratar com o poder público, por órgão sancionador de cada estado."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — um número alto pode refletir tanto mais "
+        "irregularidades quanto mais fiscalização e rigor no cumprimento da lei, mesma "
+        "ambiguidade já documentada no indicador `processos-ajuizados-estadual`. **A "
+        "localização é a UF do órgão que aplicou a sanção, não a sede da empresa "
+        "sancionada** — uma empresa de outro estado pode ter sido sancionada por um órgão "
+        "local."
+    ),
+    update_frequency="a cada sincronização (o Portal só publica o snapshot do dia)",
+    source=SOURCE_CGU_CEIS,
+    methodology=(
+        "# Metodologia — Sanções ativas (CEIS)\n\n"
+        "Fonte: Portal da Transparência (CGU), download em massa "
+        "(`portaldatransparencia.gov.br/download-de-dados/ceis/{AAAAMMDD}`) — **diferente da "
+        "API REST do Portal** (usada, por exemplo, pelo indicador "
+        "`execucao-orcamentaria-uniao` via SIOP como alternativa), este download não exige "
+        "token pessoal.\n\n"
+        "**Só o dia de hoje está disponível**: o endpoint só aceita a data corrente (datas "
+        "anteriores devolvem erro 403) — não há arquivo histórico consolidado para baixar de "
+        "uma vez. Por isso o indicador não tem uma série retroativa completa; o histórico se "
+        "forma a partir de agora, um ponto por execução do sync.\n\n"
+        "O IFB conta como \"ativa\" toda sanção cuja coluna `DATA FINAL SANÇÃO` está vazia "
+        "(sem prazo definido) ou é igual ou posterior à data de hoje, agrupando por `UF "
+        "ÓRGÃO SANCIONADOR`.\n\n"
+        "Conferido: 13/08/2026, 22.944 sanções ativas em 23.496 registros totais do arquivo, "
+        "São Paulo com o maior número (4.313) — coerente com SP ser o estado com mais órgãos "
+        "públicos e atividade econômica do país."
+    ),
+)
+
 PESSOAS_COM_DEFICIENCIA_CENSO_2022 = StaticIndicatorMeta(
     slug="pessoas-com-deficiencia-censo-2022",
     name="Pessoas com deficiência (Censo 2022)",

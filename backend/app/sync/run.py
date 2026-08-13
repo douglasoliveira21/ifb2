@@ -23,6 +23,10 @@ from app.sync.bcb_client import (
     invert_sign,
     resample_to_month_end,
 )
+from app.sync.ceis_client import (
+    fetch_sancoes_ativas_ceis_brasil,
+    fetch_sancoes_ativas_ceis_by_state,
+)
 from app.sync.comexstat_client import fetch_totals_brasil as fetch_comex_totals_brasil
 from app.sync.comexstat_client import (
     fetch_totals_by_state as fetch_comex_totals_by_state,
@@ -135,6 +139,7 @@ from app.sync.definitions import (
     RENDIMENTO_MEDIO_ANUAL_QUERY,
     RENDIMENTO_MULHERES_QUERY,
     ROUBO_TOTAL_ESTADUAL,
+    SANCOES_ATIVAS_CEIS_ESTADUAL,
     TAXA_ABANDONO_ENSINO_MEDIO,
     TAXA_CRESCIMENTO_POPULACIONAL,
     TAXA_CRESCIMENTO_POPULACIONAL_QUERY,
@@ -825,6 +830,9 @@ def main() -> None:
     )
     # Só nível Brasil — é o orçamento consolidado da União, não faz
     # sentido uma quebra por estado.
+
+    sync_indicator(SANCOES_ATIVAS_CEIS_ESTADUAL, fetch_sancoes_ativas_ceis_brasil)
+    sync_by_state(SANCOES_ATIVAS_CEIS_ESTADUAL, fetch_sancoes_ativas_ceis_by_state)
 
     _sync_compras_publicas()
 
