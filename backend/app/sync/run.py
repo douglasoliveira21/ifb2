@@ -168,6 +168,7 @@ from app.sync.definitions import (
     TAXA_TRABALHO_INFANTIL_QUERY,
     TRANSFERENCIAS_CONSTITUCIONAIS_ESTADUAL,
     TRANSFERENCIAS_CONSTITUCIONAIS_MUNICIPAL,
+    VALOR_CONTRATACOES_DIRETA,
     VALOR_CONTRATACOES_PREGAO_ELETRONICO,
     VALOR_PRODUCAO_AGRICOLA,
     VALOR_PRODUCAO_AGRICOLA_QUERY,
@@ -205,6 +206,8 @@ from app.sync.leitos_sus_client import (
     fetch_leitos_sus_by_state,
 )
 from app.sync.pncp_client import (
+    MODALIDADE_PREGAO_ELETRONICO,
+    MODALIDADES_CONTRATACAO_DIRETA,
     read_accumulated_totals_brasil,
     read_accumulated_totals_by_state,
     sync_pncp_incremental,
@@ -289,19 +292,24 @@ def _sync_compras_publicas() -> None:
     db = SessionLocal()
     try:
         sync_pncp_incremental(db)
-        brasil_totals = read_accumulated_totals_brasil(db)
-        by_state_totals = read_accumulated_totals_by_state(db)
+        pregao_brasil = read_accumulated_totals_brasil(db, [MODALIDADE_PREGAO_ELETRONICO])
+        pregao_by_state = read_accumulated_totals_by_state(db, [MODALIDADE_PREGAO_ELETRONICO])
+        direta_brasil = read_accumulated_totals_brasil(db, MODALIDADES_CONTRATACAO_DIRETA)
+        direta_by_state = read_accumulated_totals_by_state(db, MODALIDADES_CONTRATACAO_DIRETA)
     finally:
         db.close()
 
-    brasil_points = [SeriesPoint(reference_date=date(ano, 1, 1), value=valor) for ano, valor in brasil_totals]
-    by_state_points = {
-        uf: [SeriesPoint(reference_date=date(ano, 1, 1), value=valor) for ano, valor in pontos]
-        for uf, pontos in by_state_totals.items()
-    }
+    def _to_points(totals: list[tuple[int, float]]) -> list[SeriesPoint]:
+        return [SeriesPoint(reference_date=date(ano, 1, 1), value=valor) for ano, valor in totals]
 
-    sync_indicator(VALOR_CONTRATACOES_PREGAO_ELETRONICO, lambda: brasil_points)
-    sync_by_state(VALOR_CONTRATACOES_PREGAO_ELETRONICO, lambda: by_state_points)
+    def _to_points_by_state(totals: dict[str, list[tuple[int, float]]]) -> dict[str, list[SeriesPoint]]:
+        return {uf: _to_points(pontos) for uf, pontos in totals.items()}
+
+    sync_indicator(VALOR_CONTRATACOES_PREGAO_ELETRONICO, lambda: _to_points(pregao_brasil))
+    sync_by_state(VALOR_CONTRATACOES_PREGAO_ELETRONICO, lambda: _to_points_by_state(pregao_by_state))
+
+    sync_indicator(VALOR_CONTRATACOES_DIRETA, lambda: _to_points(direta_brasil))
+    sync_by_state(VALOR_CONTRATACOES_DIRETA, lambda: _to_points_by_state(direta_by_state))
 
 
 def sync_indicator(

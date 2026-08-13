@@ -12,12 +12,14 @@ vez disso, o IFB soma só o que foi publicado desde a última execução
 requisição de usuário; os usuários sempre leem o total pré-calculado
 via `indicator_values`, como qualquer outro indicador do IFB.
 
-**Escopo desta primeira versão**: só a modalidade "Pregão Eletrônico"
-(código 6 na tabela de domínio do PNCP) — a modalidade mais comum de
-contratação pública no Brasil, mas não a única (faltam, por exemplo,
-Dispensa de Licitação e Concorrência). Ampliar para mais modalidades é
-uma questão de adicionar códigos a `MODALIDADES_ACOMPANHADAS` — a
-lógica de acumulação já é genérica por modalidade.
+**Duas modalidades acompanhadas**: "Pregão Eletrônico" (código 6, a
+modalidade mais comum de contratação pública competitiva) e
+"Dispensa" + "Inexigibilidade" (códigos 8 e 9, as duas formas de
+contratação direta — sem licitação — previstas na Lei 14.133/2021).
+Cada uma alimenta um indicador separado; a tabela já guarda
+`modalidade_codigo` por linha, então as funções de leitura recebem
+explicitamente quais códigos somar — nunca misturam licitação
+competitiva com contratação direta no mesmo número.
 
 Validado ao vivo: uma semana de janeiro/2026 (modalidade Pregão
 Eletrônico) trouxe 2.530 registros reais, com valores individuais na
@@ -50,11 +52,13 @@ PAGE_SIZE = 50
 # usuário) — é só respeitar o limite da API mesmo dentro de um sync.
 DELAY_BETWEEN_PAGES_SECONDS = 0.5
 
-# Código da modalidade "Pregão - Eletrônico" na tabela de domínio do
-# PNCP (Lei 14.133/2021) — confirmado empiricamente contra a API real
-# (o campo `modalidadeNome` dos registros retornados é "Pregão -
-# Eletrônico" para este código).
-MODALIDADES_ACOMPANHADAS = [6]
+# Códigos da tabela de domínio de modalidade do PNCP (Lei 14.133/2021)
+# — confirmados empiricamente contra a API real (campo `modalidadeNome`
+# dos registros retornados: 6 = "Pregão - Eletrônico", 8 = "Dispensa",
+# 9 = "Inexigibilidade").
+MODALIDADE_PREGAO_ELETRONICO = 6
+MODALIDADES_CONTRATACAO_DIRETA = [8, 9]
+MODALIDADES_ACOMPANHADAS = [MODALIDADE_PREGAO_ELETRONICO, *MODALIDADES_CONTRATACAO_DIRETA]
 
 # Não há registro publicado no PNCP anterior a 2021 (Lei 14.133/2021,
 # que criou a obrigatoriedade de publicação).
@@ -175,15 +179,17 @@ def sync_pncp_incremental(db: Session, *, timeout: float = 30.0) -> None:
         db.commit()
 
 
-def read_accumulated_totals_by_state(db: Session) -> dict[str, list[tuple[int, float]]]:
+def read_accumulated_totals_by_state(
+    db: Session, modalidade_codigos: list[int]
+) -> dict[str, list[tuple[int, float]]]:
     """Lê os totais já acumulados (não faz nenhuma chamada HTTP), somando
-    todas as modalidades acompanhadas — devolve {uf: [(ano, valor), ...]}."""
+    só as modalidades passadas — devolve {uf: [(ano, valor), ...]}."""
     rows = db.execute(
         select(
             PncpContratacaoTotal.ano,
             PncpContratacaoTotal.uf,
             PncpContratacaoTotal.valor_total,
-        )
+        ).where(PncpContratacaoTotal.modalidade_codigo.in_(modalidade_codigos))
     ).all()
 
     by_state: dict[str, dict[int, float]] = {}
@@ -194,10 +200,12 @@ def read_accumulated_totals_by_state(db: Session) -> dict[str, list[tuple[int, f
     return {uf: sorted(anos.items()) for uf, anos in by_state.items()}
 
 
-def read_accumulated_totals_brasil(db: Session) -> list[tuple[int, float]]:
+def read_accumulated_totals_brasil(db: Session, modalidade_codigos: list[int]) -> list[tuple[int, float]]:
     """Mesma leitura, somada para o Brasil."""
     rows = db.execute(
-        select(PncpContratacaoTotal.ano, PncpContratacaoTotal.valor_total)
+        select(PncpContratacaoTotal.ano, PncpContratacaoTotal.valor_total).where(
+            PncpContratacaoTotal.modalidade_codigo.in_(modalidade_codigos)
+        )
     ).all()
 
     by_year: dict[int, float] = {}

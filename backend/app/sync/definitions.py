@@ -3046,8 +3046,50 @@ VALOR_CONTRATACOES_PREGAO_ELETRONICO = StaticIndicatorMeta(
         "`pncp_contratacao_totals`, ver `app/sync/pncp_client.py`) — nunca refaz a soma do "
         "histórico inteiro do zero. O ano de referência de cada registro é o ano de "
         "`dataPublicacaoPncp` (data em que a contratação foi publicada no portal).\n\n"
-        "**Escopo desta primeira versão**: só a modalidade \"Pregão Eletrônico\" (código 6 "
-        "na tabela de domínio do PNCP) — a mais comum, mas não a única. Não há registro "
-        "publicado no PNCP anterior a 2021 (Lei 14.133/2021, que criou essa obrigatoriedade)."
+        "**Cobre só a modalidade \"Pregão Eletrônico\"** (código 6 na tabela de domínio do "
+        "PNCP) — a mais comum entre as competitivas, mas não a única. Ver também o indicador "
+        "`valor-contratacoes-diretas`, que soma as modalidades sem licitação (Dispensa e "
+        "Inexigibilidade) separadamente. Não há registro publicado no PNCP anterior a 2021 "
+        "(Lei 14.133/2021, que criou essa obrigatoriedade)."
+    ),
+)
+
+VALOR_CONTRATACOES_DIRETA = StaticIndicatorMeta(
+    slug="valor-contratacoes-diretas",
+    name="Valor de contratações públicas — Dispensa e Inexigibilidade",
+    category=IndicatorCategory.COMPRAS_PUBLICAS,
+    unit="R$",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Soma do valor total estimado das contratações públicas publicadas no PNCP sob as "
+        "modalidades Dispensa de Licitação e Inexigibilidade — as duas formas de "
+        "\"contratação direta\" previstas na Lei 14.133/2021, em que o poder público compra "
+        "sem realizar um processo competitivo (por valor baixo, urgência, fornecedor único, "
+        "entre outras hipóteses legais)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — contratação direta é legal e prevista em "
+        "lei para casos específicos, não é sinônimo de irregularidade. Ainda assim, é um "
+        "número relevante para acompanhar: quanto maior a fatia de contratação direta em "
+        "relação à contratação competitiva (ver `valor-contratacoes-pregao-eletronico`), "
+        "menos disputa de preço houve no gasto público daquele período/local. **Não inclui "
+        "as demais modalidades competitivas** (Concorrência, Leilão, Concurso etc.), então "
+        "não deve ser lido como \"o total de compras públicas sem Pregão\"."
+    ),
+    update_frequency="anual",
+    source=SOURCE_PNCP,
+    methodology=(
+        "# Metodologia — Valor de contratações públicas (Dispensa e Inexigibilidade)\n\n"
+        "Fonte: PNCP (Portal Nacional de Contratações Públicas), API pública de consulta "
+        "(`pncp.gov.br/api/consulta`), sem chave de acesso. Mesma lógica de acumulação "
+        "incremental do indicador `valor-contratacoes-pregao-eletronico` (ver sua "
+        "metodologia) — a diferença é o código de modalidade: 8 (\"Dispensa\") e 9 "
+        "(\"Inexigibilidade\") em vez de 6 (\"Pregão Eletrônico\"). Os totais das duas "
+        "modalidades são somados juntos, mas nunca misturados com o total do Pregão "
+        "Eletrônico — a tabela interna guarda o total de cada modalidade separadamente.\n\n"
+        "Confirmado ao vivo contra a API real: uma semana de janeiro de 2026 trouxe 5.816 "
+        "registros de Dispensa e 2.105 de Inexigibilidade, mais que o dobro do volume de "
+        "registros de Pregão Eletrônico na mesma semana — coerente com o uso amplamente "
+        "conhecido da Dispensa de Licitação em contratações públicas de baixo valor."
     ),
 )
