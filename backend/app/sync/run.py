@@ -153,6 +153,7 @@ from app.sync.definitions import (
     TAXA_INVESTIMENTO_QUERY,
     TAXA_MORTALIDADE_GERAL,
     TAXA_MORTALIDADE_GERAL_QUERY,
+    TAXA_MORTALIDADE_TRANSITO_ESTADUAL,
     TAXA_MORTES_VIOLENTAS_INTENCIONAIS_ESTADUAL,
     TAXA_NATALIDADE,
     TAXA_NATALIDADE_QUERY,
@@ -206,6 +207,10 @@ from app.sync.pncp_client import (
 from app.sync.ripsa_client import (
     fetch_razao_mortalidade_materna_brasil,
     fetch_razao_mortalidade_materna_by_state,
+)
+from app.sync.ripsa_transito_client import (
+    fetch_taxa_mortalidade_transito_brasil,
+    fetch_taxa_mortalidade_transito_by_state,
 )
 from app.sync.seed_government_periods import seed as seed_government_periods
 from app.sync.seed_municipios import seed as seed_municipios
@@ -692,6 +697,9 @@ def main() -> None:
 
     sync_indicator(RAZAO_MORTALIDADE_MATERNA_ESTADUAL, fetch_razao_mortalidade_materna_brasil)
     sync_by_state(RAZAO_MORTALIDADE_MATERNA_ESTADUAL, fetch_razao_mortalidade_materna_by_state)
+
+    sync_indicator(TAXA_MORTALIDADE_TRANSITO_ESTADUAL, fetch_taxa_mortalidade_transito_brasil)
+    sync_by_state(TAXA_MORTALIDADE_TRANSITO_ESTADUAL, fetch_taxa_mortalidade_transito_by_state)
 
     sync_indicator(
         HOMICIDIO_DOLOSO_ESTADUAL, lambda: fetch_homicidio_doloso_brasil(start_year=2019)

@@ -824,6 +824,17 @@ SOURCE_RIPSA_MORTALIDADE_MATERNA = SourceSpec(
     ),
 )
 
+SOURCE_RIPSA_MORTALIDADE_TRANSITO = SourceSpec(
+    key="ripsa-mortalidade-transito",
+    name="Ministério da Saúde — RIPSA (Rede Interagencial de Informação para a Saúde)",
+    url="https://dadosabertos.saude.gov.br/dataset/ripsa-mortalidade-dimensao-4-mortalidade-por-causas-externas",
+    description=(
+        "Indicador MRT.4.03 (Taxa de Mortalidade por Lesão de Trânsito) do catálogo RIPSA, "
+        "calculado a partir do Sistema de Informações sobre Mortalidade (SIM), publicado no "
+        "Portal de Dados Abertos do SUS."
+    ),
+)
+
 SOURCE_TESOURO_CARGA_TRIBUTARIA = SourceSpec(
     key="tesouro-carga-tributaria",
     name="Tesouro Nacional — Carga Tributária do Governo Geral",
@@ -1281,6 +1292,39 @@ RAZAO_MORTALIDADE_MATERNA_ESTADUAL = StaticIndicatorMeta(
         "100 mil nascidos vivos em 2021 — o pico da pandemia de covid-19, quando complicações "
         "da doença em gestantes elevaram a mortalidade materna no Brasil, revertendo em 2022-"
         "2023 para patamar próximo ao pré-pandemia (~55-58)."
+    ),
+)
+
+TAXA_MORTALIDADE_TRANSITO_ESTADUAL = StaticIndicatorMeta(
+    slug="taxa-mortalidade-transito-estadual",
+    name="Taxa de mortalidade por lesão de trânsito",
+    category=IndicatorCategory.SAUDE,
+    unit="por 100 mil habitantes",
+    polarity=IndicatorPolarity.lower_is_better,
+    description_what=(
+        "Número de óbitos causados por acidentes de trânsito (pedestres, ciclistas, "
+        "motociclistas, ocupantes de automóveis e outros veículos), por 100 mil habitantes."
+    ),
+    description_how=(
+        "Quanto menor, melhor. Soma todos os tipos de vítima de trânsito (não separa "
+        "pedestre, motociclista etc.), então não distingue causas específicas — infraestrutura "
+        "viária, fiscalização, frota de motos, entre outros fatores, todos afetam este número "
+        "de formas diferentes."
+    ),
+    update_frequency="anual",
+    source=SOURCE_RIPSA_MORTALIDADE_TRANSITO,
+    methodology=(
+        "# Metodologia — Taxa de mortalidade por lesão de trânsito por estado\n\n"
+        "Fonte: indicador MRT.4.03 do catálogo RIPSA (Rede Interagencial de Informação para a "
+        "Saúde), calculado pelo Ministério da Saúde a partir do Sistema de Informações sobre "
+        "Mortalidade (SIM), publicado como CSV no Portal de Dados Abertos do SUS.\n\n"
+        "O arquivo de origem traz uma linha por combinação de UF, município, ano, sexo e "
+        "faixa etária (~1,7 milhão de linhas, 2000–2024) — o IFB soma o numerador (óbitos) e "
+        "o denominador (população estimada) de todas as linhas de um mesmo estado e ano antes "
+        "de calcular a taxa (agregação correta — soma antes de dividir, não a média das taxas "
+        "municipais).\n\n"
+        "Conferido: Brasil 2024 = 17,48 por 100 mil habitantes, na mesma ordem de grandeza das "
+        "cerca de 37 mil mortes no trânsito por ano já amplamente noticiadas para o Brasil."
     ),
 )
 
