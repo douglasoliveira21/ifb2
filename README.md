@@ -211,6 +211,7 @@ oficiais via API pública, sem scraping:
 | Área plantada agrícola, Brasil e por estado | IBGE (Produção Agrícola Municipal) | Tabela SIDRA 5457, variável 8331, mesma tabela do indicador de valor da produção |
 | Pessoal ocupado na indústria, Brasil | IBGE (Pesquisa Industrial Anual - Empresa) | Tabela SIDRA 1853, só Brasil, foto de fim de ano (31/12) |
 | Sanções ativas — Empresas Inidôneas e Suspensas (CEIS), Brasil e por estado | CGU (Portal da Transparência) | Download em massa sem chave de API, só o snapshot do dia — histórico se forma a cada sync |
+| Defensores Públicos por 100 mil habitantes, Brasil e por estado | ANADEP (Pesquisa Nacional da Defensoria Pública) | Planilha de dados públicos combinada com população do IBGE; conferido contra a razão nacional divulgada no relatório (1 para cada 31.107 habitantes) |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de

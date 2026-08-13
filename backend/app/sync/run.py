@@ -35,6 +35,7 @@ from app.sync.datajud_client import (
     fetch_processos_ajuizados_series_brasil,
     fetch_processos_ajuizados_series_by_state,
 )
+from app.sync.defensoria_publica_client import fetch_defensores_publicos_by_state
 from app.sync.definitions import (
     ALFABETISMO,
     ALFABETISMO_QUERY,
@@ -52,6 +53,7 @@ from app.sync.definitions import (
     CRESCIMENTO_PIB_QUERY,
     CRESCIMENTO_PIB_SERVICOS,
     CRESCIMENTO_PIB_SERVICOS_QUERY,
+    DEFENSORES_PUBLICOS_ESTADUAL,
     DEFORESTATION_LEGAL_AMAZON,
     DESPESA_COM_PESSOAL_ESTADUAL,
     DESPESA_COM_PESSOAL_MUNICIPAL,
@@ -272,27 +274,46 @@ from app.sync.upsert import (
 IndicatorMeta = IndicatorSpec | StaticIndicatorMeta
 
 
-def _ratio_series(numerator: list[SeriesPoint], denominator: list[SeriesPoint]) -> list[SeriesPoint]:
+def _ratio_series(
+    numerator: list[SeriesPoint], denominator: list[SeriesPoint], *, multiplier: float = 100
+) -> list[SeriesPoint]:
     """Combina duas séries do SIDRA ponto a ponto (mesmo ano) em uma razão
-    percentual — usado quando o indicador é uma comparação entre duas
-    séries que o SIDRA não traz prontas (ex: rendimento mulher/homem)."""
+    — usado quando o indicador é uma comparação entre duas séries que o
+    SIDRA não traz prontas (ex: rendimento mulher/homem). `multiplier`
+    é 100 por padrão (percentual); usar 100_000 para razões "por 100 mil
+    habitantes"."""
     denom_by_date = {p.reference_date: p.value for p in denominator}
     points = []
     for p in numerator:
         denom = denom_by_date.get(p.reference_date)
         if denom:
-            points.append(SeriesPoint(reference_date=p.reference_date, value=round(p.value / denom * 100, 1)))
+            points.append(
+                SeriesPoint(reference_date=p.reference_date, value=round(p.value / denom * multiplier, 1))
+            )
     return points
 
 
 def _ratio_series_by_state(
-    numerator: dict[str, list[SeriesPoint]], denominator: dict[str, list[SeriesPoint]]
+    numerator: dict[str, list[SeriesPoint]], denominator: dict[str, list[SeriesPoint]], *, multiplier: float = 100
 ) -> dict[str, list[SeriesPoint]]:
     return {
-        uf: _ratio_series(points, denominator[uf])
+        uf: _ratio_series(points, denominator[uf], multiplier=multiplier)
         for uf, points in numerator.items()
         if uf in denominator
     }
+
+
+def _sum_series_by_state(by_state: dict[str, list[SeriesPoint]]) -> list[SeriesPoint]:
+    """Soma as séries de todos os estados ano a ano — usado para formar o
+    total Brasil quando a fonte só publica um valor por estado (ex:
+    Defensores Públicos por UF)."""
+    totals: dict = {}
+    for points in by_state.values():
+        for p in points:
+            totals[p.reference_date] = totals.get(p.reference_date, 0.0) + p.value
+    return sorted(
+        (SeriesPoint(reference_date=d, value=v) for d, v in totals.items()), key=lambda p: p.reference_date
+    )
 
 
 def _sync_compras_publicas() -> None:
@@ -805,6 +826,23 @@ def main() -> None:
     sync_by_state(
         PROCESSOS_AJUIZADOS_ESTADUAL,
         lambda: fetch_processos_ajuizados_series_by_state(start_year=2019, end_year=_last_complete_year),
+    )
+
+    sync_indicator(
+        DEFENSORES_PUBLICOS_ESTADUAL,
+        lambda: _ratio_series(
+            _sum_series_by_state(fetch_defensores_publicos_by_state()),
+            fetch_sidra_series(POPULACAO_RESIDENTE_QUERY),
+            multiplier=100_000,
+        ),
+    )
+    sync_by_state(
+        DEFENSORES_PUBLICOS_ESTADUAL,
+        lambda: _ratio_series_by_state(
+            fetch_defensores_publicos_by_state(),
+            fetch_sidra_series_by_state(POPULACAO_RESIDENTE_QUERY),
+            multiplier=100_000,
+        ),
     )
 
     sync_indicator(

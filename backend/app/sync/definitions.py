@@ -2715,6 +2715,60 @@ PROCESSOS_AJUIZADOS_ESTADUAL = StaticIndicatorMeta(
     ),
 )
 
+SOURCE_ANADEP = SourceSpec(
+    key="anadep-pesquisa-nacional-defensoria",
+    name="ANADEP — Pesquisa Nacional da Defensoria Pública",
+    url="https://pesquisanacionaldefensoria.com.br/",
+    description=(
+        "Pesquisa Nacional da Defensoria Pública, realizada pela Associação Nacional dos "
+        "Defensores Públicos (ANADEP) em cooperação direta com as Defensorias Públicas "
+        "estaduais, do Distrito Federal e da União."
+    ),
+)
+
+DEFENSORES_PUBLICOS_ESTADUAL = StaticIndicatorMeta(
+    slug="defensores-publicos-estadual",
+    name="Defensores Públicos por 100 mil habitantes",
+    category=IndicatorCategory.JUSTICA,
+    unit="por 100 mil habitantes",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Número de Defensores Públicos em atividade nas Defensorias Públicas estaduais, "
+        "por 100 mil habitantes do estado. A Defensoria Pública presta assistência jurídica "
+        "gratuita a quem não pode pagar um advogado — é, na prática, a principal porta de "
+        "acesso à Justiça para a população de baixa renda."
+    ),
+    description_how=(
+        "Quanto maior, melhor — mais Defensores Públicos disponíveis para atender a "
+        "população que depende do serviço. Não inclui os Defensores Públicos da União "
+        "(Justiça Federal), que atuam por um critério diferente (subseção judiciária, não "
+        "estado) — ver a metodologia completa para essa distinção."
+    ),
+    update_frequency="anual",
+    source=SOURCE_ANADEP,
+    methodology=(
+        "# Metodologia — Defensores Públicos por 100 mil habitantes\n\n"
+        "Fonte: Pesquisa Nacional da Defensoria Pública (ANADEP), planilha de dados públicos "
+        "(\"Base de Dados\", coluna `003_0.DPT` — \"Número de Defensores Públicos (total)\" — "
+        "da aba \"Relatório Administrativo\"), combinada com a população residente estimada "
+        "pelo IBGE (mesmo indicador `populacao-residente`) para calcular a razão por 100 mil "
+        "habitantes.\n\n"
+        "**Fonte não-governamental**: como o FBSP (indicadores de segurança pública), a "
+        "ANADEP é uma associação de classe, não um órgão do governo — mas os números vêm "
+        "diretamente dos dados administrativos que cada Defensoria Pública estadual forneceu "
+        "à pesquisa, não de estimativa ou pesquisa de opinião.\n\n"
+        "**Diferente do relatório em PDF do mesmo levantamento**, que só publica os números "
+        "por estado como mapa/imagem (não extraível como texto), a planilha de dados públicos "
+        "traz uma série anual completa por estado — irregular antes de 2020, anual e completa "
+        "de 2020 em diante.\n\n"
+        "**Não inclui a Defensoria Pública da União** (DPU) — a mesma planilha reporta seus "
+        "Defensores separadamente, sob \"União\", organizados por subseção judiciária "
+        "federal, não por estado, e por isso não são somados a este indicador estadual.\n\n"
+        "Conferido: Brasil 2024 (soma dos 27 estados + DF) = 6.834 Defensores Públicos "
+        "estaduais."
+    ),
+)
+
 _RREO_FUNCAO_METHODOLOGY_NOTE = (
     "**Sobre a apuração**: o Relatório Resumido de Execução Orçamentária (RREO) é declarado "
     "pelo próprio ente ao Tesouro Nacional a cada bimestre, conforme exigido pela Lei de "
