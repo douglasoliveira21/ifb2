@@ -2409,6 +2409,37 @@ PRODUCAO_INDUSTRIAL = StaticIndicatorMeta(
 )
 PRODUCAO_INDUSTRIAL_QUERY = SidraQuery(table=8888, variable=11602, classifications={544: 129314})
 
+PESSOAL_OCUPADO_INDUSTRIA = StaticIndicatorMeta(
+    slug="pessoal-ocupado-industria",
+    name="Pessoal ocupado na indústria",
+    category=IndicatorCategory.INDUSTRIA,
+    unit="pessoas",
+    polarity=IndicatorPolarity.higher_is_better,
+    description_what=(
+        "Número de pessoas ocupadas em 31 de dezembro nas empresas industriais brasileiras "
+        "(indústrias extrativas e de transformação) com 1 ou mais pessoas ocupadas, segundo "
+        "a Pesquisa Industrial Anual (PIA) do IBGE."
+    ),
+    description_how=(
+        "Quanto maior, melhor — mais empregos formais na indústria. Uma alta pode refletir "
+        "tanto criação líquida de empregos quanto deslocamento de trabalhadores de outros "
+        "setores para a indústria; o indicador não distingue as duas origens. É uma "
+        "fotografia de fim de ano (31/12), não uma média anual."
+    ),
+    update_frequency="anual",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Pessoal ocupado na indústria\n\n"
+        "Fonte: IBGE, Pesquisa Industrial Anual - Empresa (PIA-Empresa) — tabela SIDRA 1853, "
+        "variável 631 (\"Pessoal ocupado em 31/12\"), classificação 12762 (\"Classificação "
+        "Nacional de Atividades Econômicas - CNAE 2.0\"), categoria 117897 (\"Total\").\n\n"
+        "A tabela só tem nível Brasil (N1) — não há quebra por estado nesta pesquisa.\n\n"
+        "Conferido: 2023 = 8.530.658 pessoas, mesma ordem de grandeza já divulgada pelo IBGE "
+        "na apresentação de resultados da PIA-Empresa."
+    ),
+)
+PESSOAL_OCUPADO_INDUSTRIA_QUERY = SidraQuery(table=1853, variable=631, classifications={12762: 117897})
+
 DOMICILIOS_BOLSA_FAMILIA = StaticIndicatorMeta(
     slug="domicilios-bolsa-familia",
     name="Domicílios que recebem Bolsa Família",

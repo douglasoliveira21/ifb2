@@ -106,6 +106,8 @@ from app.sync.definitions import (
     OBITOS_CAUSAS_NAO_NATURAIS,
     OBITOS_CAUSAS_NAO_NATURAIS_QUERY,
     OBITOS_QUERY,
+    PESSOAL_OCUPADO_INDUSTRIA,
+    PESSOAL_OCUPADO_INDUSTRIA_QUERY,
     PESSOAS_COM_DEFICIENCIA_CENSO_2022,
     PESSOAS_COM_DEFICIENCIA_QUERY,
     PESSOAS_TOTAL_2_ANOS_OU_MAIS_QUERY,
@@ -545,6 +547,9 @@ def main() -> None:
 
     sync_indicator(PRODUCAO_INDUSTRIAL, lambda: fetch_sidra_series_monthly(PRODUCAO_INDUSTRIAL_QUERY))
     sync_by_state(PRODUCAO_INDUSTRIAL, lambda: fetch_sidra_series_monthly_by_state(PRODUCAO_INDUSTRIAL_QUERY))
+
+    sync_indicator(PESSOAL_OCUPADO_INDUSTRIA, lambda: fetch_sidra_series(PESSOAL_OCUPADO_INDUSTRIA_QUERY))
+    # Tabela 1853 não tem quebra por estado no SIDRA (só Brasil).
 
     sync_indicator(POPULACAO_RESIDENTE, lambda: fetch_sidra_series(POPULACAO_RESIDENTE_QUERY))
     sync_by_state(POPULACAO_RESIDENTE, lambda: fetch_sidra_series_by_state(POPULACAO_RESIDENTE_QUERY))

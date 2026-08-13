@@ -209,6 +209,7 @@ oficiais via API pública, sem scraping:
 | Valor de contratações públicas — Dispensa e Inexigibilidade, Brasil e por estado | PNCP | Mesma acumulação incremental do indicador de Pregão Eletrônico, modalidades 8 e 9, somadas separadamente |
 | Grau de urbanização, Brasil e por estado | IBGE (Censo Demográfico 2022) | Tabela SIDRA 10211, dado único de 2022 (Censo é decenal) |
 | Área plantada agrícola, Brasil e por estado | IBGE (Produção Agrícola Municipal) | Tabela SIDRA 5457, variável 8331, mesma tabela do indicador de valor da produção |
+| Pessoal ocupado na indústria, Brasil | IBGE (Pesquisa Industrial Anual - Empresa) | Tabela SIDRA 1853, só Brasil, foto de fim de ano (31/12) |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
