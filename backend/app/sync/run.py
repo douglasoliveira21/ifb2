@@ -74,6 +74,8 @@ from app.sync.definitions import (
     ESPERANCA_VIDA_QUERY,
     EXECUCAO_ORCAMENTARIA_UNIAO,
     EXPORTACOES_TOTAIS,
+    GRAU_URBANIZACAO,
+    GRAU_URBANIZACAO_QUERY,
     HOMICIDIO_DOLOSO_ESTADUAL,
     IDEB_ANOS_FINAIS,
     IDEB_ANOS_INICIAIS,
@@ -771,6 +773,9 @@ def main() -> None:
     sync_by_state(
         INDICE_GINI_PIB_MUNICIPAL, lambda: fetch_sidra_series_by_state(INDICE_GINI_PIB_MUNICIPAL_QUERY)
     )
+
+    sync_indicator(GRAU_URBANIZACAO, lambda: fetch_sidra_series(GRAU_URBANIZACAO_QUERY))
+    sync_by_state(GRAU_URBANIZACAO, lambda: fetch_sidra_series_by_state(GRAU_URBANIZACAO_QUERY))
 
     # Só até o último ano completo — o ano corrente teria contagem parcial
     # (o ano ainda não acabou) e pareceria uma queda de processos que não

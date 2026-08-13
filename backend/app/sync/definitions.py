@@ -2568,6 +2568,43 @@ INDICE_GINI_PIB_MUNICIPAL = StaticIndicatorMeta(
 )
 INDICE_GINI_PIB_MUNICIPAL_QUERY = SidraQuery(table=5939, variable=529, classifications={})
 
+GRAU_URBANIZACAO = StaticIndicatorMeta(
+    slug="grau-urbanizacao",
+    name="Grau de urbanização",
+    category=IndicatorCategory.DESENVOLVIMENTO_REGIONAL,
+    unit="%",
+    polarity=IndicatorPolarity.neutral,
+    description_what=(
+        "Percentual da população residente que vive em domicílios classificados como "
+        "urbanos pelo Censo Demográfico (a classificação urbano/rural é definida por lei "
+        "municipal, não por densidade populacional ou infraestrutura)."
+    ),
+    description_how=(
+        "Não é classificado como melhora/piora — grau de urbanização é uma característica "
+        "estrutural do território, não um indicador de qualidade de vida. Estados muito "
+        "urbanizados podem ter mais acesso a serviços concentrados nas cidades, mas também "
+        "mais pressão sobre moradia, mobilidade e saneamento urbano; estados menos "
+        "urbanizados têm sua própria combinação de desafios rurais (acesso a serviços "
+        "públicos distantes, infraestrutura viária)."
+    ),
+    update_frequency="decenal (Censo Demográfico)",
+    source=SOURCE_IBGE,
+    methodology=(
+        "# Metodologia — Grau de urbanização\n\n"
+        "Fonte: IBGE, Censo Demográfico 2022 — tabela SIDRA 10211, variável 1000093 "
+        "(\"População residente - percentual do total geral\"), classificação 2661 "
+        "(\"Localização do domicílio\"), categoria 32776 (\"Total\", exclui a subdivisão por "
+        "Unidades de Conservação) e classificação 1 (\"Situação do domicílio\"), categoria 1 "
+        "(\"Urbana\").\n\n"
+        "**Só um ano disponível** (2022) — o Censo é decenal, não há como formar série "
+        "histórica comparável a partir desta tabela (censos anteriores usavam outra "
+        "codificação territorial).\n\n"
+        "Conferido: Brasil 2022 = 87,41%, mesmo número já amplamente divulgado na cobertura "
+        "do Censo 2022."
+    ),
+)
+GRAU_URBANIZACAO_QUERY = SidraQuery(table=10211, variable=1000093, classifications={2661: 32776, 1: 1})
+
 SOURCE_CNJ = SourceSpec(
     key="cnj",
     name="Conselho Nacional de Justiça (DataJud)",

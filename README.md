@@ -207,6 +207,7 @@ oficiais via API pública, sem scraping:
 | Taxa de trabalho infantil (5 a 17 anos), Brasil | IBGE (PNAD Contínua, suplemento de Trabalho Infantil) | Tabela SIDRA 9831, estatística experimental, só Brasil, sem dado em 2020/2021 (suplemento suspenso na pandemia) |
 | Nível de ocupação de pessoas com deficiência, Brasil e por estado | IBGE (PNAD Contínua, módulo especial "Pessoas com Deficiência 2022") | Tabela SIDRA 4177, dado único de 2022, sem série histórica |
 | Valor de contratações públicas — Dispensa e Inexigibilidade, Brasil e por estado | PNCP | Mesma acumulação incremental do indicador de Pregão Eletrônico, modalidades 8 e 9, somadas separadamente |
+| Grau de urbanização, Brasil e por estado | IBGE (Censo Demográfico 2022) | Tabela SIDRA 10211, dado único de 2022 (Censo é decenal) |
 
 A Selic (série diária desde 1986) exige um cuidado extra: a API do BCB
 recusa com 406 qualquer consulta a uma série diária cuja janela passe de
